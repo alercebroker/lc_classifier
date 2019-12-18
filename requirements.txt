@@ -1,0 +1,8 @@
+astropy
+numpy
+pandas
+sklearn
+imblearn
+turbofats
+scipy
+GPy
