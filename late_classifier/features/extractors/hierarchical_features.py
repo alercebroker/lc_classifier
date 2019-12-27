@@ -90,7 +90,11 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             sn_det_features = self.sn_nondet_extractor.compute_features(
                                 data_detections, non_detections=data_non_detections)
                             turbofats_features = self.turbofats_extractor.compute_features(data_detections)
+                            paps = self.paps_extractor.compute_features(detections)
+
                             df = sn_det_features.join(turbofats_features)
+                            df = df.join(paps)
+
                             features = pd.concat([features, df])
                         else:
                             df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
@@ -122,11 +126,9 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         sg_score = self.sgscore_extractor.compute_features(detections)
         color = self.color_extractor.compute_features(detections)
         rb = self.rb_extractor.compute_features(detections)
-        paps = self.paps_extractor.compute_features(detections)
 
         df = galactic.join(sg_score)
         df = df.join(color)
-        df = df.join(paps)
         df = df.join(rb)
         return df
 
@@ -170,5 +172,3 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         single = pd.concat(single_band_dfs, axis=1, join='outer', sort=True)
         df = single.join(multi)
         return df
-
-
