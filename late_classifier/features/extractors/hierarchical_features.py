@@ -95,7 +95,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             df = sn_det_features.join(turbofats_features)
                             df = df.join(paps)
 
-                            features = pd.concat([features, df])
+                            features = pd.concat([features, df], sort=True)
                         else:
                             df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
                             df = df.set_index('oid')
