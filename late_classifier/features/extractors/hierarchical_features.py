@@ -160,15 +160,18 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
 
         single_band_features = [f for f in single.columns.values if f != 'fid']
 
-        fids = single.fid.unique()
-        single_band_dfs = []
-        for fid in fids:
-            features_band_fid = single[single.fid == fid]
-            features_band_fid = features_band_fid[single_band_features]
-            features_band_fid = features_band_fid.rename(
-                lambda x: x + f'_{fid}',
-                axis='columns')
-            single_band_dfs.append(features_band_fid)
-        single = pd.concat(single_band_dfs, axis=1, join='outer', sort=True)
-        df = single.join(multi)
-        return df
+        if len(single) > 0:
+            fids = single.fid.unique()
+            single_band_dfs = []
+            for fid in fids:
+                features_band_fid = single[single.fid == fid]
+                features_band_fid = features_band_fid[single_band_features]
+                features_band_fid = features_band_fid.rename(
+                    lambda x: x + f'_{fid}',
+                    axis='columns')
+                single_band_dfs.append(features_band_fid)
+            single = pd.concat(single_band_dfs, axis=1, join='outer', sort=True)
+            df = single.join(multi)
+            return df
+        else:
+            return pd.DataFrame([])
