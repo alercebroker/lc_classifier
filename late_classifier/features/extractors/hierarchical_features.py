@@ -90,7 +90,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             sn_det_features = self.sn_nondet_extractor.compute_features(
                                 data_detections, non_detections=data_non_detections)
                             turbofats_features = self.turbofats_extractor.compute_features(data_detections)
-                            paps = self.paps_extractor.compute_features(detections)
+                            paps = self.paps_extractor.compute_features(data_detections)
 
                             df = sn_det_features.join(turbofats_features)
                             df = df.join(paps)

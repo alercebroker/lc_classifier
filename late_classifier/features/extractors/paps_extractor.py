@@ -7,7 +7,13 @@ import paps
 class PAPSExtractor(FeatureExtractorSingleBand):
     def __init__(self, t1=100, t2=10, dt=3.0, mag0=19.0, epsilon=1.0):
         super().__init__()
-        self.feature_keys = ['paps_ratio', 'paps_low', 'paps_high', 'paps_non_zero', 'paps_PN_flag']
+        self.feature_keys = [
+            'paps_ratio',
+            'paps_low',
+            'paps_high',
+            'paps_non_zero',
+            'paps_PN_flag']
+        
         self.t1 = t1
         self.t2 = t2
         self.dt = dt
