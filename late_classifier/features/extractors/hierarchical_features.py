@@ -70,7 +70,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
 
         """
         oids = detections.index.unique()
-        features = pd.DataFrame()
+        features = []
 
         for oid in oids:
             try:
@@ -95,15 +95,16 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             df = sn_det_features.join(turbofats_features)
                             df = df.join(paps)
 
-                            features = pd.concat([features, df], sort=True)
-                        else:
-                            df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
-                            df = df.set_index('oid')
-                            features = features.append(df, sort=False)
+                            # features = pd.concat([features, df], sort=True)
+                            features.append(df)
+                        # else:
+                        #     df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
+                        #     df = df.set_index('oid')
+                        #     features = features.append(df, sort=False)
 
             except Exception:
                 raise Exception('Fatal error 0x187AF')
-        return features
+        return pd.concat(features)
 
     def multi_band_features(self, detections):
         """
