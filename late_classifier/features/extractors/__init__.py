@@ -7,6 +7,8 @@ from .galactic_coordinates import *
 from .real_bogus_computer import *
 from .sg_score_computer import *
 from .paps_extractor import *
+from .iqr_computer import *
+
 
 __all__ = ['HierarchicalFeaturesComputer',
            'SupernovaeNonDetectionFeatureComputer',
@@ -16,4 +18,5 @@ __all__ = ['HierarchicalFeaturesComputer',
            'GalacticCoordinatesComputer',
            'RealBogusComputer',
            'SGScoreComputer',
-           'PAPSExtractor']
+           'PAPSExtractor',
+           'IQRExtractor']

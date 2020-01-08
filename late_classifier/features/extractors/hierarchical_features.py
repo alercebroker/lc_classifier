@@ -6,6 +6,8 @@ from late_classifier.features.extractors.color_feature_computer import ColorFeat
 from late_classifier.features.extractors.sg_score_computer import SGScoreComputer
 from late_classifier.features.extractors.real_bogus_computer import RealBogusComputer
 from late_classifier.features.extractors.paps_extractor import PAPSExtractor
+from late_classifier.features.extractors.iqr_computer import IQRExtractor
+
 from late_classifier.features.core.base import FeatureExtractor
 from functools import reduce
 import pandas as pd
@@ -23,7 +25,9 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         self.color_extractor = ColorFeatureComputer()
         self.rb_extractor = RealBogusComputer()
         self.paps_extractor = PAPSExtractor()
+        self.iqr_extractor = IQRExtractor()
         self.features_keys = self.get_features_keys()
+
 
     def get_features_keys(self):
         return self.turbofats_extractor.features_keys + \
@@ -33,7 +37,8 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                self.sgscore_extractor.features_keys + \
                self.color_extractor.features_keys + \
                self.rb_extractor.features_keys + \
-               self.paps_extractor.feature_keys
+               self.paps_extractor.feature_keys + \
+               self.iqr_extractor.features_keys
 
     def enough_alerts(self, object_alerts):
         """
@@ -91,9 +96,12 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                                 data_detections, non_detections=data_non_detections)
                             turbofats_features = self.turbofats_extractor.compute_features(data_detections)
                             paps = self.paps_extractor.compute_features(data_detections)
+                            iqr = self.iqr_extractor.compute_features(data_detections)
 
                             df = sn_det_features.join(turbofats_features)
                             df = df.join(paps)
+                            df = df.join(iqr)
+
 
                             # features = pd.concat([features, df], sort=True)
                             features.append(df)
@@ -102,7 +110,8 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                         #     df = df.set_index('oid')
                         #     features = features.append(df, sort=False)
 
-            except Exception:
+            except Exception as e:
+                #print(e)
                 raise Exception('Fatal error 0x187AF')
         return pd.concat(features)
 

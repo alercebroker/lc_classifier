@@ -18,7 +18,8 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'Pvar', 'ExcessVar',
             'GP_DRW_sigma', 'GP_DRW_tau', 'SF_ML_amplitude', 'SF_ML_gamma',
             'IAR_phi',
-            'LinearTrend'
+            'LinearTrend',
+            'PeriodPowerRate'
         ]
         self.feature_space = NewFeatureSpace(self.features_keys)
 
