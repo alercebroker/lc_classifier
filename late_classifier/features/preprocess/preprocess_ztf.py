@@ -7,7 +7,7 @@ import pandas as pd
 class DetectionsPreprocessorZTF(GenericPreprocessor):
     def __init__(self):
         super().__init__()
-        self.necessary_columns = ['mjd', 'ra', 'dec', 'magpsf_corr', 'sigmapsf_corr']
+        self.necessary_columns = ['mjd', 'ra', 'dec', 'magpsf_corr', 'sigmapsf_corr', 'rb', 'sgscore1']
         self.max_sigma = 1.0
         self.rb_threshold = 0.55
 
@@ -27,7 +27,7 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         detections = detections.replace([np.inf, -np.inf], np.nan)
         valid_alerts = detections[self.necessary_columns].notna().all(axis=1)
         detections = detections[valid_alerts.values]
-        detections[self.necessary_columns] = detections[self.necessary_columns].apply(pd.to_numeric)
+        detections[self.necessary_columns] = detections[self.necessary_columns].apply(lambda x: pd.to_numeric(x, errors='coerce'))
         return detections
 
     def drop_duplicates(self, detections):
