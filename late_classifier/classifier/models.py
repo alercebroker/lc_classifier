@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from late_classifier.classifier.preprocessing import FeaturePreprocessor
@@ -25,7 +26,7 @@ class BaseClassifier(ABC):
 
 def invert_dictionary(dictionary):
     inverted_dictionary = {}
-    for top_group, list_of_classes in dictionary:
+    for top_group, list_of_classes in dictionary.items():
         for astro_class in list_of_classes:
             inverted_dictionary[astro_class] = top_group
     return inverted_dictionary
@@ -158,12 +159,44 @@ class HierarchicalRandomForest(BaseClassifier):
             labels[is_transient]['classALeRCE'].values
         )
 
+        print(self.top_classifier.classes_)
+
     def predict(self, samples: pd.DataFrame) -> pd.DataFrame:
         pass
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         samples = self.feature_preprocessor.preprocess_features(samples)
+
         top_probs = self.top_classifier.predict_proba(samples.values)
 
+        stochastic_probs = self.stochastic_classifier.predict_proba(samples.values)
+        periodic_probs = self.periodic_classifier.predict_proba(samples.values)
+        transient_probs = self.transient_classifier.predict_proba(samples.values)
+
+        stochastic_index = self.top_classifier.classes_.tolist().index('stochastic')
+        periodic_index = self.top_classifier.classes_.tolist().index('periodic')
+        transient_index = self.top_classifier.classes_.tolist().index('transient')
+
+        stochastic_probs = stochastic_probs * top_probs[:, stochastic_index].reshape([-1, 1])
+        periodic_probs = periodic_probs * top_probs[:, periodic_index].reshape([-1, 1])
+        transient_probs = transient_probs * top_probs[:, transient_index].reshape([-1, 1])
+
+        final_probs = np.concatenate(
+            [stochastic_probs, periodic_probs, transient_probs],
+            axis=1
+        )
+
+        df = pd.DataFrame(
+            data=final_probs,
+            index=samples.index,
+            columns=self.get_list_of_classes()
+        )
+        df.index.name = samples.index.name
+        return df
+
     def get_list_of_classes(self) -> list:
-        pass
+        final_columns = (
+                self.stochastic_classifier.classes_.tolist()
+                + self.periodic_classifier.classes_.tolist()
+                + self.transient_classifier.classes_.tolist())
+        return final_columns
