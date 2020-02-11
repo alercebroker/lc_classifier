@@ -11,9 +11,15 @@ class BaseClassifier(ABC):
     def fit(self, samples: pd.DataFrame, labels: pd.DataFrame) -> None:
         pass
 
-    @abstractmethod
     def predict(self, samples: pd.DataFrame) -> pd.DataFrame:
-        pass
+        probs = self.predict_proba(samples)
+        predicted_class = probs.idxmax(axis=1)
+        predicted_class_df = pd.DataFrame(
+            predicted_class,
+            columns=['classALeRCE'],
+            index=samples.index)
+        predicted_class_df.index.name = samples.index.name
+        return predicted_class_df
 
     @abstractmethod
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
@@ -57,18 +63,6 @@ class BaselineRandomForest(BaseClassifier):
         samples_np_array = samples.values
         labels_np_array = labels['classALeRCE'].loc[samples.index].values
         self.random_forest_classifier.fit(samples_np_array, labels_np_array)
-
-    def predict(self, samples: pd.DataFrame) -> pd.DataFrame:
-        samples = self.feature_preprocessor.preprocess_features(samples)
-        samples_np_array = samples[self.feature_list].values
-        predictions = self.random_forest_classifier.predict(samples_np_array)
-        predictions_df = pd.DataFrame(
-            predictions,
-            columns=['classALeRCE'],
-            index=samples.index.values
-        )
-        predictions_df.index.name = 'oid'
-        return predictions_df
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         samples = self.feature_preprocessor.preprocess_features(samples)
@@ -160,9 +154,6 @@ class HierarchicalRandomForest(BaseClassifier):
         )
 
         print(self.top_classifier.classes_)
-
-    def predict(self, samples: pd.DataFrame) -> pd.DataFrame:
-        pass
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         samples = self.feature_preprocessor.preprocess_features(samples)

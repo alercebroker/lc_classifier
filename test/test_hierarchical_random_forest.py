@@ -23,3 +23,5 @@ class TestHierarchicalRF(unittest.TestCase):
         model.fit(self.train_features, self.train_labels)
         probs = model.predict_proba(self.train_features)
         print(probs.head())
+        predicted_classes = model.predict(self.train_features)
+        print(predicted_classes.head())
