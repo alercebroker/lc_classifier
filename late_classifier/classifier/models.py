@@ -18,6 +18,10 @@ class BaseClassifier(ABC):
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         pass
 
+    @abstractmethod
+    def get_list_of_classes(self) -> list:
+        pass
+
 
 def invert_dictionary(dictionary):
     inverted_dictionary = {}
@@ -158,4 +162,8 @@ class HierarchicalRandomForest(BaseClassifier):
         pass
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
+        samples = self.feature_preprocessor.preprocess_features(samples)
+        top_probs = self.top_classifier.predict_proba(samples.values)
+
+    def get_list_of_classes(self) -> list:
         pass
