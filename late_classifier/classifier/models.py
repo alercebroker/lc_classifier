@@ -153,7 +153,6 @@ class HierarchicalRandomForest(BaseClassifier):
             labels[is_transient]['classALeRCE'].values
         )
 
-        print(self.top_classifier.classes_)
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         samples = self.feature_preprocessor.preprocess_features(samples)

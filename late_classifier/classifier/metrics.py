@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from sklearn.metrics import classification_report as sklearn_classification_report
 
 
 def balanced_recall(predictions, labels):
@@ -44,3 +45,9 @@ def kaggle_score(prediction_probs, labels):
         class_score = -np.mean(np.log(class_probs))
         scores.append(class_score)
     return np.array(scores).mean()
+
+def classification_report(predictions, labels):
+    if not predictions.index.equals(labels.index):
+        raise Exception('Objects on both dataframes should match')
+    predictions = predictions.loc[labels.index]
+    return sklearn_classification_report(labels.classALeRCE, predictions.classALeRCE)

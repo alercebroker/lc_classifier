@@ -49,3 +49,8 @@ labeled_non_detections = non_detections.loc[valid_oids]
 # ZTF preprocessing
 preprocessor_ztf = DetectionsPreprocessorZTF()
 labeled_detections = preprocessor_ztf.preprocess(labeled_detections)
+
+# Save data
+labeled_detections.to_pickle('dataset_detections.pkl')
+labeled_non_detections.to_pickle('dataset_non_detections.pkl')
+labels.to_pickle('dataset_labels.pkl')
