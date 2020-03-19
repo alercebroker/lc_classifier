@@ -12,7 +12,7 @@ class FeatureExtractor:
         detections :class:pandas.`DataFrame`
         DataFrame with detections of an object.
 
-        kwargs Another arguments like non detections.
+        kwargs Another arguments like Non detections.
         """
         raise NotImplementedError('FeatureExtractor is an interface')
 

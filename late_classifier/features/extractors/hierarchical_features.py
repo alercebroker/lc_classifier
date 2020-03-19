@@ -1,12 +1,12 @@
-from late_classifier.features.extractors.sn_non_detections_features import SupernovaeNonDetectionFeatureComputer
-from late_classifier.features.extractors.sn_detections_features import SupernovaeDetectionFeatureComputer
-from late_classifier.features.extractors.galactic_coordinates import GalacticCoordinatesComputer
+from late_classifier.features.extractors.sn_non_detections_refactor import SupernovaeNonDetectionFeatureComputer
+from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureComputer
+from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesComputer
 from late_classifier.features.extractors.turbofats_extractor import TurboFatsFeatureExtractor
-from late_classifier.features.extractors.color_feature_computer import ColorFeatureComputer
-from late_classifier.features.extractors.sg_score_computer import SGScoreComputer
-from late_classifier.features.extractors.real_bogus_computer import RealBogusComputer
-from late_classifier.features.extractors.paps_extractor import PAPSExtractor
-from late_classifier.features.extractors.iqr_computer import IQRExtractor
+from late_classifier.features.extractors.color_feature_extractor import ColorFeatureComputer
+from late_classifier.features.extractors.sg_score_extractor import SGScoreComputer
+from late_classifier.features.extractors.real_bogus_extractor import RealBogusComputer
+from late_classifier.features.extractors.paps_extractor import MHPSExtractor
+from late_classifier.features.extractors.iqr_extractor import IQRExtractor
 
 from late_classifier.features.core.base import FeatureExtractor
 from functools import reduce
@@ -24,7 +24,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         self.sgscore_extractor = SGScoreComputer()
         self.color_extractor = ColorFeatureComputer()
         self.rb_extractor = RealBogusComputer()
-        self.paps_extractor = PAPSExtractor()
+        self.paps_extractor = MHPSExtractor()
         self.iqr_extractor = IQRExtractor()
         self.features_keys = self.get_features_keys()
 

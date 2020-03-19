@@ -1,5 +1,5 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
-from late_classifier.features.extractors.sn_detections_features import SupernovaeDetectionFeatureComputer
+from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureComputer
 import pandas as pd
 import numpy as np
 

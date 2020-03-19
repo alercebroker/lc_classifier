@@ -1,13 +1,13 @@
 from .hierarchical_features import *
-from .sn_non_detections_features import *
+from .sn_non_detections_refactor import *
 from .turbofats_extractor import *
-from .color_feature_computer import *
-from .sn_detections_features import *
-from .galactic_coordinates import *
-from .real_bogus_computer import *
-from .sg_score_computer import *
+from .color_feature_extractor import *
+from .sn_detections_extractor import *
+from .galactic_coordinates_extractor import *
+from .real_bogus_extractor import *
+from .sg_score_extractor import *
 from .paps_extractor import *
-from .iqr_computer import *
+from .iqr_extractor import *
 
 
 __all__ = ['HierarchicalFeaturesComputer',
@@ -18,5 +18,5 @@ __all__ = ['HierarchicalFeaturesComputer',
            'GalacticCoordinatesComputer',
            'RealBogusComputer',
            'SGScoreComputer',
-           'PAPSExtractor',
+           'MHPSExtractor',
            'IQRExtractor']

@@ -2,6 +2,7 @@ import scipy.stats as sstats
 import pandas as pd
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 
+
 class IQRExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         super().__init__()

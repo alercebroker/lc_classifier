@@ -9,7 +9,6 @@ class ColorFeatureComputer(FeatureExtractor):
 
     def compute_features(self, detections, **kwargs):
         """
-
         Parameters
         ----------
         detections :class:pandas.`DataFrame`
@@ -19,7 +18,6 @@ class ColorFeatureComputer(FeatureExtractor):
 
         Returns :class:pandas.`DataFrame`
         -------
-
         """
         g_band_mag = detections[detections.fid == 1]['magpsf_corr']
         r_band_mag = detections[detections.fid == 2]['magpsf_corr']
