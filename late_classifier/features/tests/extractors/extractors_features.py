@@ -41,7 +41,7 @@ class TestObjectsMethods(unittest.TestCase):
         self.assertListEqual(turbofats_fs.columns, expected_cols)
 
     def test_color_features(self):
-        color_extractor = ColorFeatureComputer()
+        color_extractor = ColorFeatureExtractor()
         color_fs = color_extractor.compute_features(self.det_ZTF18abvvcko)
         self.assertEqual(type(color_fs), pd.DataFrame)
         self.assertEqual(len(color_fs.columns), 2)

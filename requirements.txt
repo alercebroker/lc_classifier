@@ -1,9 +1,9 @@
-click==7.0
-astropy==4.0
-numpy==1.18.2
-pandas==1.0.3
-scipy==1.4.1
-GPy==1.9.9
+click
+astropy
+numpy
+pandas
+scipy
+GPy
 sklearn
 imblearn
 -e git+https://git@github.com/alercebroker/paps#egg=paps

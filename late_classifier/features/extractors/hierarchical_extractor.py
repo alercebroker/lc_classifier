@@ -2,10 +2,10 @@ from late_classifier.features.extractors.sn_non_detections_refactor import Super
 from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureComputer
 from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesComputer
 from late_classifier.features.extractors.turbofats_extractor import TurboFatsFeatureExtractor
-from late_classifier.features.extractors.color_feature_extractor import ColorFeatureComputer
+from late_classifier.features.extractors.color_feature_extractor import ColorFeatureExtractor
 from late_classifier.features.extractors.sg_score_extractor import SGScoreComputer
 from late_classifier.features.extractors.real_bogus_extractor import RealBogusComputer
-from late_classifier.features.extractors.paps_extractor import MHPSExtractor
+from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
 
 from late_classifier.features.core.base import FeatureExtractor
@@ -22,7 +22,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         self.sn_nondet_extractor = SupernovaeNonDetectionFeatureComputer()
         self.galactic_coord_extractor = GalacticCoordinatesComputer()
         self.sgscore_extractor = SGScoreComputer()
-        self.color_extractor = ColorFeatureComputer()
+        self.color_extractor = ColorFeatureExtractor()
         self.rb_extractor = RealBogusComputer()
         self.paps_extractor = MHPSExtractor()
         self.iqr_extractor = IQRExtractor()
