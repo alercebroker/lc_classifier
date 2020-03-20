@@ -24,7 +24,9 @@ class MHPSExtractor(FeatureExtractorSingleBand):
         mag = detections.magpsf_corr
         magerr = detections.sigmapsf_corr
         time = detections.mjd
-
+        print(mag.values)
+        print(magerr.values)
+        print(time.values)
         ratio, low, high, non_zero, PN_flag = mhps.statistics(mag.values,
                                                               magerr.values,
                                                               time.values,

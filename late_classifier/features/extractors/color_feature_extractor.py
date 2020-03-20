@@ -26,9 +26,10 @@ class ColorFeatureExtractor(FeatureExtractor):
         Returns :class:pandas.`DataFrame`
         -------
         """
-        if not self.validate_dataframe(detections):
-            raise Exception(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - ')
 
+        if not self.validate_dataframe(detections):
+            print(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required two filters.')
+            return pd.DataFrame(columns=self.features_keys, index=[detections.index[0]])
         g_band_mag = detections[detections.fid == 1]['magpsf_corr']
         r_band_mag = detections[detections.fid == 2]['magpsf_corr']
         g_r_max = g_band_mag.groupby(level=0).min() - r_band_mag.groupby(level=0).min()

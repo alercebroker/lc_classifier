@@ -45,13 +45,13 @@ class SupernovaeDetectionFeatureComputer(FeatureExtractorSingleBand):
 
         n_pos = len(detections[detections.isdiffpos > 0])
         n_neg = len(detections[detections.isdiffpos < 0])
-        min_mag = detections['magpsf_corr'].min()
-        first_mag = detections.iloc[0]['magpsf_corr']
-        delta_mjd_fid = detections.iloc[count-1]['mjd'] - detections.iloc[0]['mjd']
-        delta_mag_fid = detections['magpsf_corr'].max() - min_mag
+        min_mag = detections['magpsf_corr'].values.min()
+        first_mag = detections['magpsf_corr'].values[0]
+        delta_mjd_fid = detections['mjd'].values[-1] - detections['mjd'].values[0]
+        delta_mag_fid = detections['magpsf_corr'].values.max() - min_mag
         positive_fraction = n_pos/(n_pos + n_neg)
-        mean_mag = detections['magpsf_corr'].mean()
-
+        mean_mag = detections['magpsf_corr'].values.mean()
+        print(detections.magpsf_corr)
         data = {
             'oid': detections.index[0],
             'delta_mag_fid': delta_mag_fid,

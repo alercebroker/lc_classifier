@@ -24,10 +24,9 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         self.sgscore_extractor = SGScoreComputer()
         self.color_extractor = ColorFeatureExtractor()
         self.rb_extractor = RealBogusComputer()
-        self.paps_extractor = MHPSExtractor()
+        self.mhps_extractor = MHPSExtractor()
         self.iqr_extractor = IQRExtractor()
         self.features_keys = self.get_features_keys()
-
 
     def get_features_keys(self):
         return self.turbofats_extractor.features_keys + \
@@ -37,7 +36,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                self.sgscore_extractor.features_keys + \
                self.color_extractor.features_keys + \
                self.rb_extractor.features_keys + \
-               self.paps_extractor.feature_keys + \
+               self.mhps_extractor.feature_keys + \
                self.iqr_extractor.features_keys
 
     def enough_alerts(self, object_alerts):
@@ -95,14 +94,12 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             sn_det_features = self.sn_nondet_extractor.compute_features(
                                 data_detections, non_detections=data_non_detections)
                             turbofats_features = self.turbofats_extractor.compute_features(data_detections)
-                            paps = self.paps_extractor.compute_features(data_detections)
+                            #mhps = self.mhps_extractor.compute_features(data_detections)
                             iqr = self.iqr_extractor.compute_features(data_detections)
 
                             df = sn_det_features.join(turbofats_features)
-                            df = df.join(paps)
+                            #df = df.join(mhps)
                             df = df.join(iqr)
-
-
                             # features = pd.concat([features, df], sort=True)
                             features.append(df)
                         # else:
@@ -111,8 +108,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                         #     features = features.append(df, sort=False)
 
             except Exception as e:
-                #print(e)
-                raise Exception('Fatal error 0x187AF')
+                raise Exception(e)
         return pd.concat(features)
 
     def multi_band_features(self, detections):
