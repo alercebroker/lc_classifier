@@ -51,7 +51,6 @@ class SupernovaeDetectionFeatureComputer(FeatureExtractorSingleBand):
         delta_mag_fid = detections['magpsf_corr'].values.max() - min_mag
         positive_fraction = n_pos/(n_pos + n_neg)
         mean_mag = detections['magpsf_corr'].values.mean()
-        print(detections.magpsf_corr)
         data = {
             'oid': detections.index[0],
             'delta_mag_fid': delta_mag_fid,

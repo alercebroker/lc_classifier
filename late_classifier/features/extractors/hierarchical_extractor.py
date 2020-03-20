@@ -94,18 +94,18 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             sn_det_features = self.sn_nondet_extractor.compute_features(
                                 data_detections, non_detections=data_non_detections)
                             turbofats_features = self.turbofats_extractor.compute_features(data_detections)
-                            #mhps = self.mhps_extractor.compute_features(data_detections)
+                            mhps = self.mhps_extractor.compute_features(data_detections)
                             iqr = self.iqr_extractor.compute_features(data_detections)
 
                             df = sn_det_features.join(turbofats_features)
-                            #df = df.join(mhps)
+                            df = df.join(mhps)
                             df = df.join(iqr)
                             # features = pd.concat([features, df], sort=True)
                             features.append(df)
-                        # else:
-                        #     df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
-                        #     df = df.set_index('oid')
-                        #     features = features.append(df, sort=False)
+                        else:
+                            df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
+                            df = df.set_index('oid')
+                            features.append(df)
 
             except Exception as e:
                 raise Exception(e)
