@@ -15,35 +15,17 @@ import pandas as pd
 import warnings
 
 
-class HierarchicalFeaturesComputer(FeatureExtractor):
+class JustSNModelFeaturesComputer(FeatureExtractor):
     def __init__(self, bands):
         super().__init__()
         self.bands = bands
-        self.turbofats_extractor = TurboFatsFeatureExtractor()
-        self.sn_det_extractor = SupernovaeDetectionFeatureComputer()
-        self.sn_nondet_extractor = SupernovaeNonDetectionFeatureComputer()
-        self.galactic_coord_extractor = GalacticCoordinatesComputer()
-        self.sgscore_extractor = SGScoreComputer()
-        self.color_extractor = ColorFeatureComputer()
-        self.rb_extractor = RealBogusComputer()
-        self.paps_extractor = PAPSExtractor()
-        self.iqr_extractor = IQRExtractor()
         self.sn_model_extractor = SNParametricModelExtractor()
         
         self.features_keys = self.get_features_keys()
 
 
     def get_features_keys(self):
-        return self.turbofats_extractor.features_keys + \
-               self.sn_det_extractor.features_keys + \
-               self.sn_nondet_extractor.features_keys + \
-               self.galactic_coord_extractor.features_keys + \
-               self.sgscore_extractor.features_keys + \
-               self.color_extractor.features_keys + \
-               self.rb_extractor.features_keys + \
-               self.paps_extractor.feature_keys + \
-               self.iqr_extractor.features_keys + \
-               self.sn_model_extractor.features_keys
+        return self.sn_model_extractor.features_keys
 
     def enough_alerts(self, object_alerts):
         """
@@ -99,18 +81,9 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                             object_non_detections.fid == band]
                         if enough_alerts_band:
                             try:
-                                sn_det_features = self.sn_nondet_extractor.compute_features(
-                                    data_detections, non_detections=data_non_detections)
-                                turbofats_features = self.turbofats_extractor.compute_features(
-                                    data_detections)
-                                paps = self.paps_extractor.compute_features(data_detections)
-                                iqr = self.iqr_extractor.compute_features(data_detections)
                                 sn_model_params = self.sn_model_extractor.compute_features(data_detections)
-                                
-                                df = sn_det_features.join(turbofats_features)
-                                df = df.join(paps)
-                                df = df.join(iqr)
-                                df = df.join(sn_model_params)
+                                df = sn_model_params
+                                df['fid'] = band
                                 
                                 # features = pd.concat([features, df], sort=True)
                                 features.append(df)
@@ -125,33 +98,6 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                 #print(e)
                 raise Exception('Fatal error 0x187AF')
         return pd.concat(features)
-
-    def multi_band_features(self, detections):
-        """
-        Extraction's features of multi band detections:
-            - Galactic Coordinates
-            - SG Score
-            - Color
-            - Real Bogus
-
-        Parameters
-        ----------
-        detections: :class:pandas.`DataFrame`
-        DataFrame that contains detections of different astronomical objects.
-
-        Returns DataFrame with multi band features joined
-        -------
-
-        """
-        galactic = self.galactic_coord_extractor.compute_features(detections)
-        sg_score = self.sgscore_extractor.compute_features(detections)
-        color = self.color_extractor.compute_features(detections)
-        rb = self.rb_extractor.compute_features(detections)
-
-        df = galactic.join(sg_score)
-        df = df.join(color)
-        df = df.join(rb)
-        return df
 
     def compute_features(self, detections, **kwargs):
         """
@@ -176,7 +122,6 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
         detections = detections.sort_values('mjd')
         non_detections = kwargs['non_detections'].sort_values('mjd')
 
-        multi = self.multi_band_features(detections)
         single = self.single_band_features(detections, non_detections)
 
         single_band_features = [f for f in single.columns.values if f != 'fid']
@@ -192,7 +137,7 @@ class HierarchicalFeaturesComputer(FeatureExtractor):
                     axis='columns')
                 single_band_dfs.append(features_band_fid)
             single = pd.concat(single_band_dfs, axis=1, join='outer', sort=True)
-            df = single.join(multi)
+            df = single
             return df
         else:
             return pd.DataFrame([])

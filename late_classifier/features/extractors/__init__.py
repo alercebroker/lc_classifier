@@ -8,6 +8,7 @@ from .real_bogus_computer import *
 from .sg_score_computer import *
 from .paps_extractor import *
 from .iqr_computer import *
+from .hierarchical_just_sn_model import *
 
 
 __all__ = ['HierarchicalFeaturesComputer',
@@ -19,4 +20,5 @@ __all__ = ['HierarchicalFeaturesComputer',
            'RealBogusComputer',
            'SGScoreComputer',
            'PAPSExtractor',
-           'IQRExtractor']
+           'IQRExtractor',
+           'JustSNModelFeaturesComputer']

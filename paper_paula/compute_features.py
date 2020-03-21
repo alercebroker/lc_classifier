@@ -1,7 +1,8 @@
 import sys
 import numpy as np
 import pandas as pd
-from late_classifier.features.extractors import HierarchicalFeaturesComputer
+# from late_classifier.features.extractors import HierarchicalFeaturesComputer
+from late_classifier.features.extractors import JustSNModelFeaturesComputer as HierarchicalFeaturesComputer
 from joblib import Parallel, delayed
 
 
@@ -12,7 +13,7 @@ def extract_features(process_id, detections_df, non_detections_df):
     return features
 
 
-batch_size = 1000
+batch_size = 200
 
 detections = pd.read_pickle(sys.argv[1])
 non_detections = pd.read_pickle(sys.argv[2])

@@ -73,6 +73,18 @@ gp_labels = pd.read_pickle(
 gp_features = feature_preprocessor.preprocess_features(gp_features)
 gp_features, gp_labels = intersect_oids_in_dataframes(gp_features, gp_labels)
 
+# subsample to have 50 % original + 50 % augmented
+subsampled_aug_oids = []
+for astro_class in gp_labels.classALeRCE.unique():
+    n_training_samples = len(training_labels[training_labels.classALeRCE == astro_class])
+    class_df = gp_labels[gp_labels.classALeRCE == astro_class]
+    subsampled_df = class_df.sample(
+        min(n_training_samples, len(class_df)), random_state=0)
+    subsampled_aug_oids += subsampled_df.index.values.tolist()
+
+gp_labels = gp_labels.loc[subsampled_aug_oids]
+gp_features = gp_features.loc[subsampled_aug_oids]
+
 # gp_labels = gp_labels[gp_labels.classALeRCE.isin(['SNIa', 'SNII'])]
 # gp_features = gp_features.loc[gp_labels.index]
 
