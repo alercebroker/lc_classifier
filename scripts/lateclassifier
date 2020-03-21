@@ -29,6 +29,9 @@ def compute_features(detections_dir, non_detections_dir, output_dir, ex):
     detections = iodf.merge_df(detections_dir)
     iodir.exists_dir(output_dir)
     ztf_v2 = DetectionsV2PreprocessorZTF()
+    detections_preprocess = ztf_v2.preprocess(detections)
+    a = extractor.ColorFeatureExtractor().compute_features(detections_preprocess)
+    print(a)
     """for file in detections_files:
         filename = iodir.get_filename(file)
         data = iodf.read_file(file, index_col="oid")

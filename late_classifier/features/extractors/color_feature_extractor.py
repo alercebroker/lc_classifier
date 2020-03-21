@@ -8,12 +8,6 @@ class ColorFeatureExtractor(FeatureExtractor):
         self.features_keys = ['g-r_max', 'g-r_mean']
         self.required_keys = ['fid', 'magpsf_corr']
 
-    def validate_dataframe(self, dataframe):
-        cols = set(dataframe.columns)
-        required = set(self.required_keys)
-        intersection = required.intersection(cols)
-        return len(intersection) == len(required) and len(dataframe.fid.unique()) == 2
-
     def compute_features(self, detections, **kwargs):
         """
         Parameters
@@ -26,15 +20,18 @@ class ColorFeatureExtractor(FeatureExtractor):
         Returns :class:pandas.`DataFrame`
         -------
         """
-
-        if not self.validate_dataframe(detections):
+        # pd.options.display.precision = 10
+        index = detections.index[0]
+        if not self.validate_df(detections) or len(detections.fid.unique()) < 2:
             print(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required two filters.')
-            return pd.DataFrame(columns=self.features_keys, index=[detections.index[0]])
-        g_band_mag = detections[detections.fid == 1]['magpsf_corr']
-        r_band_mag = detections[detections.fid == 2]['magpsf_corr']
-        g_r_max = g_band_mag.groupby(level=0).min() - r_band_mag.groupby(level=0).min()
-        g_r_max.rename('g-r_max', inplace=True)
-        g_r_mean = g_band_mag.groupby(level=0).mean() - r_band_mag.groupby(level=0).mean()
-        g_r_mean.rename('g-r_mean', inplace=True)
-        features = pd.concat([g_r_max, g_r_mean], axis=1)
-        return features
+            return self.nan_df(index)
+
+        g_band_mag = detections[detections.fid == 1]['magpsf_corr'].values
+        r_band_mag = detections[detections.fid == 2]['magpsf_corr'].values
+
+        g_r_max = g_band_mag.min() - r_band_mag.min()
+        g_r_mean = g_band_mag.mean() - r_band_mag.mean()
+
+        data = [g_r_max, g_r_mean]
+
+        return pd.DataFrame([data], columns=self.features_keys)

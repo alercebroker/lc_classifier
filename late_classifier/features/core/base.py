@@ -3,6 +3,35 @@ import pandas as pd
 
 
 class FeatureExtractor:
+    def __init__(self):
+        self.features_keys = []
+        self.required_keys = []
+
+    def validate_df(self, df):
+        """
+        Method to validate input detections. The required keys must be in df columns.
+
+        Parameters
+        ----------
+        df :class:pandas.`DataFrame`
+        DataFrame with detections of an object.
+        """
+        cols = set(df.columns)
+        required = set(self.required_keys)
+        intersection = required.intersection(cols)
+        return len(intersection) == len(required)
+
+    def nan_df(self, index):
+        """
+        Method to generate a empty dataframe with NaNs.
+
+        Parameters
+        ----------
+        index :class:String
+        Name/id/oid of the observation
+        """
+        return pd.DataFrame(columns=self.features_keys, index=[index])
+
     def compute_features(self, detections, **kwargs):
         """
         Interface to implement different features extractors.

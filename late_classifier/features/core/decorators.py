@@ -57,3 +57,8 @@ class FeatureExtractorPerBandFromSingleLC(FeatureExtractorPerBand):
         features = pd.concat(features)
         return features
 
+
+class FeatureComputer:
+    def compute(self, df):
+        df_by_oid = df.groupby(level=0)
+

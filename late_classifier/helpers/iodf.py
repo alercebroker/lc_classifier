@@ -68,13 +68,12 @@ def merge_df(input_dir, file_format=None, **kwargs):
     if not os.path.exists(input_dir):
         raise Exception("Input dir doesn't exists")
 
-    print("Start merging files")
     input_files = glob.glob(os.path.join(input_dir,"*"))
     input_files.sort()
     dfs = []
     for file in tqdm(input_files):
         fname, extension = file.split(".")
-        df = read_file(file, extension)
+        df = read_file(file, extension, index_col="oid")
         dfs.append(df)
     df_all = pd.concat(dfs)
     return df_all
