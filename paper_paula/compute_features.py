@@ -23,11 +23,23 @@ lc_idxs = detections.index.unique()
 n_batches = int(np.ceil(len(lc_idxs)/batch_size))
 print("Mini batch size: %d, Number of mini batches: %d" % (batch_size, n_batches))
 
+# k = 0
+# batch_size = 10000
+# det_batch_oids = lc_idxs[k * batch_size: (k+1) * batch_size]
+# non_det_batch_oids = non_detections_oids.intersection(det_batch_oids)  # to avoid KeyError
+# features = extract_features(
+#     k,
+#     detections.loc[det_batch_oids],
+#     non_detections.loc[non_det_batch_oids])
+#
+# print(features)
+# features.to_pickle(sys.argv[3])
+# exit()
+
 tasks = []
 for k in range(n_batches):
     det_batch_oids = lc_idxs[k * batch_size: (k+1) * batch_size]
-    non_det_batch_oids = non_detections_oids.intersection(det_batch_oids) # to avoid KeyError
-
+    non_det_batch_oids = non_detections_oids.intersection(det_batch_oids)  # to avoid KeyError
     tasks.append(
         delayed(extract_features)(
             k,
