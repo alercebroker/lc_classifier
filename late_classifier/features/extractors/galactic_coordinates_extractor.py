@@ -9,7 +9,6 @@ class GalacticCoordinatesComputer(FeatureExtractor):
         super().__init__()
         self.features_keys = ['gal_b', 'gal_l']
 
-
     def compute_features(self, detections, **kwargs):
         """
 

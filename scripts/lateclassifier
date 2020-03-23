@@ -1,67 +1,14 @@
 #!/usr/bin/env python
 
-import click
-import glob
-import os
-supported_formats = ["csv", "parquet", "pickle"]
-
-
-@click.group()
-def cli():
+def main():
     """
     ALeRCE Late Classifier.
     """
-    pass
-
-
-@cli.command()
-@click.argument('detections_dir', type=click.Path(exists=True))
-@click.argument('output_dir', default="features", type=click.Path())
-@click.option('-n', 'non_detections_dir', type=click.Path(exists=True),
-              help="Path to non-detection(s)  file(s). Valid extension [csv, pkl, parquet]")
-@click.option("-ex", type=click.STRING, help="Extractor to execute.", default=None)
-def compute_features(detections_dir, non_detections_dir, output_dir, ex):
-    from late_classifier.helpers import iodir, iodf
-    import late_classifier.features.extractors as extractor
-    from late_classifier.features.preprocess import DetectionsV2PreprocessorZTF
-
-    #detections_files = iodir.list_files(detections_dir)
-    detections = iodf.merge_df(detections_dir)
-    iodir.exists_dir(output_dir)
-    ztf_v2 = DetectionsV2PreprocessorZTF()
-    detections_preprocess = ztf_v2.preprocess(detections)
-    a = extractor.ColorFeatureExtractor().compute_features(detections_preprocess)
-    print(a)
-    """for file in detections_files:
-        filename = iodir.get_filename(file)
-        data = iodf.read_file(file, index_col="oid")
-        data = ztf_v2.preprocess(data)
-        features = extractor.features_mapping["color_feature"].compute_features(data, non_detections=None)
-        iodf.write_file(features, os.path.join(output_dir, f"{filename}_features_color.csv"))"""
-
-
-
-
-@cli.command()
-@click.argument('detections_dir', type=click.Path(exists=True))
-@click.argument('output_dir', default="preprocess", type=click.Path())
-@click.option('-t', '--type-preprocess', default=None, help="Type of preprocess, i.e 'ztf' for preprocess ZTF's data")
-def preprocess(detections_dir, output_dir, type_preprocess):
-    from late_classifier.helpers import iodir, iodf
-    from late_classifier.features.preprocess import DetectionsPreprocessorZTF, DetectionsV2PreprocessorZTF
-    detections_files = iodir.list_files(detections_dir)
-    iodir.exists_dir(output_dir)
-    type_preprocess = type_preprocess.lower() if type_preprocess is not None else "all"
-
-    ztf_v1 = DetectionsPreprocessorZTF()
-    ztf_v2 = DetectionsV2PreprocessorZTF()
-
-    for file in detections_files:
-        filename = iodir.get_filename(file)
-        data = iodf.read_file(file, index_col="oid")
-        iodf.write_file(ztf_v1.preprocess(data), os.path.join(output_dir, f"{filename}_preprocess_ztf_v1.csv"))
-        iodf.write_file(ztf_v2.preprocess(data), os.path.join(output_dir, f"{filename}_preprocess_ztf_v2.csv"))
-
+    try:
+        from late_classifier.management import cli
+    except ImportError as e:
+        raise ImportError from e
+    cli()
 
 if __name__ == '__main__':
-    cli()
+    main()

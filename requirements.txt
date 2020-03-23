@@ -6,5 +6,6 @@ scipy
 GPy
 sklearn
 imblearn
+Jinja2
 -e git+https://git@github.com/alercebroker/paps#egg=paps
 -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbo-fats
