@@ -1,7 +1,7 @@
 from late_classifier.features.core.base import FeatureExtractor
 
 
-class SGScoreComputer(FeatureExtractor):
+class SGScoreExtractor(FeatureExtractor):
     def __init__(self):
         super().__init__()
         self.features_keys = ['sgscore1']

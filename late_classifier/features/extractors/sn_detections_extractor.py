@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-class SupernovaeDetectionFeatureComputer(FeatureExtractorSingleBand):
+class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
     def __init__(self):
         super().__init__()
@@ -32,7 +32,7 @@ class SupernovaeDetectionFeatureComputer(FeatureExtractorSingleBand):
 
         """
         if len(detections.index.unique()) > 1:
-            raise Exception('SupernovaeDetectionFeatureComputer handles one lightcurve at a time')
+            raise Exception('SupernovaeDetectionFeatureExtractor handles one lightcurve at a time')
 
         detections = detections.sort_values('mjd')
         count = len(detections)

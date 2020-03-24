@@ -2,9 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/src
 # C extensions
 *.so
+
+# Pickles
+*.pkl
 
 # Distribution / packaging
 .Python

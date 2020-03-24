@@ -1,7 +1,7 @@
 from late_classifier.features.core.base import FeatureExtractor
 
 
-class RealBogusComputer(FeatureExtractor):
+class RealBogusExtractor(FeatureExtractor):
     def __init__(self):
         super().__init__()
         self.features_keys = ['rb']

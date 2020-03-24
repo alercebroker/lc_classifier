@@ -1,10 +1,10 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
-from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureComputer
+from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 import pandas as pd
 import numpy as np
 
 
-class SupernovaeNonDetectionFeatureComputer(FeatureExtractorSingleBand):
+class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         super().__init__()
         self.features_keys = ['dmag_first_det_fid',
@@ -77,11 +77,11 @@ class SupernovaeNonDetectionFeatureComputer(FeatureExtractorSingleBand):
 
         """
         if len(detections.index.unique()) > 1:
-            raise Exception('SupernovaeNonDetectionFeatureComputer handles one lightcurve at a time')
+            raise Exception('SupernovaeNonDetectionFeatureExtractor handles one lightcurve at a time')
         required = ['non_detections']
         for key in required:
             if key not in kwargs:
-                raise Exception(f'SupernovaeNonDetectionFeatureComputer required {key} argument')
+                raise Exception(f'SupernovaeNonDetectionFeatureExtractor required {key} argument')
         detections = detections.sort_values('mjd')
         non_detections = kwargs['non_detections'].sort_values('mjd')
         first_mjd = detections["mjd"].iloc[0]
@@ -90,7 +90,7 @@ class SupernovaeNonDetectionFeatureComputer(FeatureExtractorSingleBand):
         non_detections_before = non_detections[non_detections.mjd < first_mjd]
         non_detections_after = non_detections[non_detections.mjd >= first_mjd]
 
-        det_result = SupernovaeDetectionFeatureComputer().compute_features(detections)
+        det_result = SupernovaeDetectionFeatureExtractor().compute_features(detections)
         non_det_before = self.compute_before_features(det_result, non_detections_before)
         non_det_after = self.compute_after_features(non_detections_after)
 

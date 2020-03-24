@@ -1,10 +1,10 @@
-from late_classifier.features.extractors.sn_non_detections_extractor import SupernovaeNonDetectionFeatureComputer
-from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureComputer
-from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesComputer
+from late_classifier.features.extractors.sn_non_detections_extractor import SupernovaeNonDetectionFeatureExtractor
+from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
+from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from late_classifier.features.extractors.turbofats_extractor import TurboFatsFeatureExtractor
 from late_classifier.features.extractors.color_feature_extractor import ColorFeatureExtractor
-from late_classifier.features.extractors.sg_score_extractor import SGScoreComputer
-from late_classifier.features.extractors.real_bogus_extractor import RealBogusComputer
+from late_classifier.features.extractors.sg_score_extractor import SGScoreExtractor
+from late_classifier.features.extractors.real_bogus_extractor import RealBogusExtractor
 from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
 
@@ -13,17 +13,17 @@ from functools import reduce
 import pandas as pd
 
 
-class HierarchicalFeaturesComputer(FeatureExtractor):
+class HierarchicalExtractor(FeatureExtractor):
     def __init__(self, bands):
         super().__init__()
         self.bands = bands
         self.turbofats_extractor = TurboFatsFeatureExtractor()
-        self.sn_det_extractor = SupernovaeDetectionFeatureComputer()
-        self.sn_nondet_extractor = SupernovaeNonDetectionFeatureComputer()
-        self.galactic_coord_extractor = GalacticCoordinatesComputer()
-        self.sgscore_extractor = SGScoreComputer()
+        self.sn_det_extractor = SupernovaeDetectionFeatureExtractor()
+        self.sn_nondet_extractor = SupernovaeNonDetectionFeatureExtractor()
+        self.galactic_coord_extractor = GalacticCoordinatesExtractor()
+        self.sgscore_extractor = SGScoreExtractor()
         self.color_extractor = ColorFeatureExtractor()
-        self.rb_extractor = RealBogusComputer()
+        self.rb_extractor = RealBogusExtractor()
         self.mhps_extractor = MHPSExtractor()
         self.iqr_extractor = IQRExtractor()
         self.features_keys = self.get_features_keys()

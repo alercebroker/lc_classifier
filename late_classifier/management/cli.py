@@ -83,14 +83,7 @@ def create_extractor(name, single_band):
 
 @cli.command()
 def run_tests():
-    import os
-    FILE_PATH = os.path.dirname(os.path.abspath(__file__))[:-27]
-    print(FILE_PATH)
-    TEST = os.path.join(FILE_PATH, "test", "run_tests.py")
-    command = f"python {TEST}"
-    os.system(command)
-
-
+    print("Code for run tests...")
 
 
 if __name__ == '__main__':

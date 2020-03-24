@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-class GalacticCoordinatesComputer(FeatureExtractor):
+class GalacticCoordinatesExtractor(FeatureExtractor):
     def __init__(self):
         super().__init__()
         self.features_keys = ['gal_b', 'gal_l']

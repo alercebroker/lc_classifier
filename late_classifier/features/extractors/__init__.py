@@ -8,3 +8,14 @@ from .real_bogus_extractor import *
 from .sg_score_extractor import *
 from .mhps_extractor import *
 from .iqr_extractor import *
+
+__all__ = ['HierarchicalExtractor',
+           'SupernovaeNonDetectionFeatureExtractor',
+           'SupernovaeDetectionFeatureExtractor',
+           'TurboFatsFeatureExtractor',
+           'ColorFeatureExtractor',
+           'GalacticCoordinatesExtractor',
+           'RealBogusExtractor',
+           'SGScoreExtractor',
+           'MHPSExtractor',
+           'IQRExtractor']
