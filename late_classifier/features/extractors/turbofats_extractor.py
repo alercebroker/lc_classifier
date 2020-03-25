@@ -1,5 +1,6 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from turbofats import NewFeatureSpace
+import logging
 
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
@@ -23,7 +24,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         ]
         self.feature_space = NewFeatureSpace(self.features_keys)
 
-    def _compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, band=None, **kwargs):
         """
         Compute features for detections
 
@@ -37,4 +38,14 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         -------
 
         """
+        index = detections.index.unique()[0]
+        columns = self.get_features_keys(band)
+        detections = detections[detections.fid == band]
+
+        if band is None or len(detections) == 0:
+            logging.error(
+                f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
+            nan_df = self.nan_df(index)
+            nan_df.columns = columns
+            return nan_df
         return self.feature_space.calculate_features(detections)

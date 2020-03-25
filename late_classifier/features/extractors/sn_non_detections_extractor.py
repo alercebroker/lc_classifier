@@ -18,6 +18,7 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
                               'max_diffmaglim_after_fid',
                               'median_diffmaglim_after_fid'
                               ]
+        self.required_keys = []
 
     def compute_before_features(self, det_result, non_detections):
         """

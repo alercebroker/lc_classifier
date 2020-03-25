@@ -78,6 +78,17 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         """
         raise NotImplementedError('SingleBandFeatureExtractor is an abstract class')
 
+    def compute_by_bands(self, detections, bands=None):
+        if bands is None:
+            bands = [1, 2]
+        features_response = []
+        for band in bands:
+            features_response.append(self._compute_features(detections, band=band))
+        return pd.concat(features_response, axis=1)
+
+    def get_features_keys(self, band):
+        return [f'{x}_{band}' for x in self.features_keys]
+
 
 class FeatureExtractorFromFEList(FeatureExtractor):
     def __init__(self, feature_extractor_list, bands):

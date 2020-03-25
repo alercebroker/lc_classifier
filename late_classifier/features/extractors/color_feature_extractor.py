@@ -1,5 +1,6 @@
 from late_classifier.features.core.base import FeatureExtractor
 import pandas as pd
+import logging
 
 
 class ColorFeatureExtractor(FeatureExtractor):
@@ -23,7 +24,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         # pd.options.display.precision = 10
         index = detections.index[0]
         if not self.validate_df(detections) or len(detections.fid.unique()) < 2:
-            print(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required two filters.')
+            logging.error(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required two filters.')
             return self.nan_df(index)
 
         g_band_mag = detections[detections.fid == 1]['magpsf_corr'].values

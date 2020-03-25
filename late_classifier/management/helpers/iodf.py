@@ -64,7 +64,7 @@ def write_file(df, path, file_format=None, **kwargs):
     writer(path, **kwargs)
 
 
-def merge_df(input_dir, file_format=None, **kwargs):
+def merge_df(input_dir, file_format=None, index_col="oid", **kwargs):
     if not os.path.exists(input_dir):
         raise Exception("Input dir doesn't exists")
 
@@ -73,7 +73,7 @@ def merge_df(input_dir, file_format=None, **kwargs):
     dfs = []
     for file in tqdm(input_files):
         fname, extension = file.split(".")
-        df = read_file(file, extension, index_col="oid")
+        df = read_file(file, extension, index_col=index_col)
         dfs.append(df)
     df_all = pd.concat(dfs)
     return df_all

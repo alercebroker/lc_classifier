@@ -1,6 +1,6 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 import pandas as pd
-import numpy as np
+import logging
 
 
 class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
@@ -16,8 +16,9 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
                               'n_neg',
                               'n_pos',
                               'positive_fraction']
+        self.required_keys = ["isdiffpos", "magpsf_corr", "mjd", ]
 
-    def _compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, band=None, **kwargs):
         """
 
         Parameters
@@ -31,17 +32,19 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
         -------
 
         """
-        if len(detections.index.unique()) > 1:
-            raise Exception('SupernovaeDetectionFeatureExtractor handles one lightcurve at a time')
+
+        index = detections.index.unique()[0]
+        columns = self.get_features_keys(band)
+        detections = detections[detections.fid == band]
+
+        if not self.validate_df(detections) or band is None or len(detections) == 0:
+            logging.error(
+                f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
+            nan_df = self.nan_df(index)
+            nan_df.columns = columns
+            return nan_df
 
         detections = detections.sort_values('mjd')
-        count = len(detections)
-        if count == 0:
-            features = pd.DataFrame(
-                columns=self.features_keys
-            )
-            features.index.name = 'oid'
-            return features
 
         n_pos = len(detections[detections.isdiffpos > 0])
         n_neg = len(detections[detections.isdiffpos < 0])
@@ -51,16 +54,14 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
         delta_mag_fid = detections['magpsf_corr'].values.max() - min_mag
         positive_fraction = n_pos/(n_pos + n_neg)
         mean_mag = detections['magpsf_corr'].values.mean()
-        data = {
-            'oid': detections.index[0],
-            'delta_mag_fid': delta_mag_fid,
-            'delta_mjd_fid': delta_mjd_fid,
-            'first_mag': first_mag,
-            'mean_mag': mean_mag,
-            'min_mag': min_mag,
-            'n_det': n_neg + n_pos,
-            'n_neg': n_neg,
-            'n_pos': n_pos,
-            'positive_fraction': positive_fraction
-        }
-        return pd.DataFrame.from_records([data], index='oid')
+
+        data = [delta_mag_fid,
+                delta_mjd_fid,
+                first_mag,
+                mean_mag,
+                min_mag,
+                n_neg + n_pos,
+                n_neg,
+                n_pos,
+                positive_fraction]
+        return pd.DataFrame.from_records([data], columns=columns)

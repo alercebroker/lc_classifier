@@ -73,7 +73,6 @@ class HierarchicalRF:
         prob_all = pd.concat(prob_children, axis=1, sort=False)
 
         if pipeline:
-
             return {
                 "hierarchical": {
                     "root": prob_root.iloc[0].to_dict(),
@@ -83,9 +82,4 @@ class HierarchicalRF:
                 "class": prob_all.iloc[0].idxmax()
             }
 
-        return prob_children
-
-
-
-
-
+        return prob_all
