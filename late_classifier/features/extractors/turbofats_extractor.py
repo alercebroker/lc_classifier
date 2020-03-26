@@ -1,5 +1,6 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from turbofats import NewFeatureSpace
+import pandas as pd
 import logging
 
 
@@ -41,12 +42,16 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         """
         index = detections.index.unique()[0]
         columns = self.get_features_keys(band)
+        mag = [f"Harmonics_mag_{i}_{band}" for i in range(1, 8)]
+        phase = [f"Harmonics_phase_{i}_{band}" for i in range(2, 8)]
+        columns = columns + mag + phase + [f"Harmonics_mse_{band}"]
         detections = detections[detections.fid == band]
 
         if band is None or len(detections) == 0:
             logging.error(
                 f'Input dataframe invalid {index}\n - Required one filter.')
-            nan_df = self.nan_df(index)
-            nan_df.columns = columns
-            return nan_df
-        return self.feature_space.calculate_features(detections)
+            return pd.DataFrame(columns=columns, index=[index])
+
+        df =  self.feature_space.calculate_features(detections)
+        df.columns = [f'{x}_{band}' for x in df.columns]
+        return df

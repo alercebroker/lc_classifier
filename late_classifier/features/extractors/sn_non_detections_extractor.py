@@ -8,16 +8,26 @@ import logging
 class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         super().__init__()
-        self.features_keys = ['dmag_first_det_fid',
-                              'dmag_non_det_fid',
-                              'last_diffmaglim_before_fid',
-                              'last_mjd_before_fid',
+        self.features_keys = ['fid',
+                              'delta_mag_fid',
+                              'delta_mjd_fid',
+                              'first_mag',
+                              'mean_mag',
+                              'min_mag',
+                              'n_det',
+                              'n_neg',
+                              'n_pos',
+                              'positive_fraction',
+                              'n_non_det_before_fid',
                               'max_diffmaglim_before_fid',
                               'median_diffmaglim_before_fid',
-                              'n_non_det_before_fid',
+                              'last_diffmaglim_before_fid',
+                              'last_mjd_before_fid',
+                              'dmag_non_det_fid',
+                              'dmag_first_det_fid',
                               'n_non_det_after_fid',
                               'max_diffmaglim_after_fid',
-                              'median_diffmaglim_after_fid'
+                              'median_diffmaglim_after_fid',
                               ]
         self.required_keys = ["diffmaglim", "mjd", "fid"]
 
@@ -117,4 +127,5 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
         }
         df = pd.DataFrame.from_dict(features)
         df.index = [index]
+        df.columns = columns
         return df

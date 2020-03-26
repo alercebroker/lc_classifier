@@ -21,11 +21,11 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            SGScoreExtractor(),
                            ColorFeatureExtractor(),
                            RealBogusExtractor(),
-                           TurboFatsFeatureExtractor(),
-                           SupernovaeDetectionFeatureExtractor(),
-                           SupernovaeNonDetectionFeatureExtractor(),
                            MHPSExtractor(),
-                           IQRExtractor()]
+                           IQRExtractor(),
+                           TurboFatsFeatureExtractor(),
+                           #SupernovaeDetectionFeatureExtractor(),
+                           SupernovaeNonDetectionFeatureExtractor()]
 
     def enough_alerts(self, object_alerts):
         """
