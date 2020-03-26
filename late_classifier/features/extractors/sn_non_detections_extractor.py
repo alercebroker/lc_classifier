@@ -2,6 +2,7 @@ from late_classifier.features.core.base import FeatureExtractorSingleBand
 from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 import pandas as pd
 import numpy as np
+import logging
 
 
 class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
@@ -18,9 +19,9 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
                               'max_diffmaglim_after_fid',
                               'median_diffmaglim_after_fid'
                               ]
-        self.required_keys = []
+        self.required_keys = ["diffmaglim", "mjd", "fid"]
 
-    def compute_before_features(self, det_result, non_detections):
+    def compute_before_features(self, det_result, non_detections, band):
         """
 
         Parameters
@@ -42,8 +43,8 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
             'median_diffmaglim_before_fid': np.nan if count == 0 else non_detections['diffmaglim'].median(),
             'last_diffmaglim_before_fid': np.nan if count == 0 else non_detections.iloc[-1].diffmaglim,
             'last_mjd_before_fid': np.nan if count == 0 else non_detections.iloc[-1].mjd,
-            'dmag_non_det_fid': np.nan if count == 0 else non_detections['diffmaglim'].median() - det_result['min_mag'],
-            'dmag_first_det_fid': np.nan if count == 0 else non_detections.iloc[-1].diffmaglim - det_result['first_mag']
+            'dmag_non_det_fid': np.nan if count == 0 else non_detections['diffmaglim'].median() - det_result[f'min_mag_{band}'],
+            'dmag_first_det_fid': np.nan if count == 0 else non_detections.iloc[-1].diffmaglim - det_result[f'first_mag_{band}']
         }
 
     def compute_after_features(self, non_detections):
@@ -65,7 +66,7 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
             'median_diffmaglim_after_fid': np.nan if count == 0 else non_detections['diffmaglim'].median()
         }
 
-    def _compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, band=None, **kwargs):
         """
 
         Parameters
@@ -83,16 +84,29 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
         for key in required:
             if key not in kwargs:
                 raise Exception(f'SupernovaeNonDetectionFeatureExtractor required {key} argument')
-        detections = detections.sort_values('mjd')
+
+        index = detections.index[0]
+        detections = detections[detections.fid == band]
         non_detections = kwargs['non_detections'].sort_values('mjd')
+        non_detections = non_detections[non_detections.fid == band]
+        columns = self.get_features_keys(band)
+
+        if band is None or len(detections) == 0:
+            logging.error(
+                f'Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required one filter.')
+            nan_df = self.nan_df(index)
+            nan_df.columns = columns
+            return nan_df
+
+        detections = detections.sort_values('mjd')
         first_mjd = detections["mjd"].iloc[0]
         fid = detections["fid"].iloc[0]
 
         non_detections_before = non_detections[non_detections.mjd < first_mjd]
         non_detections_after = non_detections[non_detections.mjd >= first_mjd]
 
-        det_result = SupernovaeDetectionFeatureExtractor().compute_features(detections)
-        non_det_before = self.compute_before_features(det_result, non_detections_before)
+        det_result = SupernovaeDetectionFeatureExtractor()._compute_features(detections, band=band)
+        non_det_before = self.compute_before_features(det_result, non_detections_before, band)
         non_det_after = self.compute_after_features(non_detections_after)
 
         features = {
@@ -101,4 +115,6 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
             **non_det_before,
             **non_det_after
         }
-        return pd.DataFrame.from_dict(features)
+        df = pd.DataFrame.from_dict(features)
+        df.index = [index]
+        return df

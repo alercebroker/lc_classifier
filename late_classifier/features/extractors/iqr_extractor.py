@@ -24,4 +24,4 @@ class IQRExtractor(FeatureExtractorSingleBand):
         detections = detections.sort_values('mjd')
         mag_dets = detections["magpsf_corr"]
         iqr = sstats.iqr(mag_dets.values)
-        return pd.DataFrame([iqr], columns=columns)
+        return pd.DataFrame([iqr], columns=columns, index=[index])

@@ -29,4 +29,4 @@ class RealBogusExtractor(FeatureExtractor):
             return self.nan_df(index)
 
         rb = detections.rb.median()
-        return pd.DataFrame(np.array([rb]), columns=self.features_keys)
+        return pd.DataFrame(np.array([rb]), columns=self.features_keys, index=[index])

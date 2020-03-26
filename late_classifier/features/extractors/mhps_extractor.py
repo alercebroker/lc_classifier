@@ -41,5 +41,5 @@ class MHPSExtractor(FeatureExtractorSingleBand):
                                                               self.t1,
                                                               self.t2)
         values = np.array([[ratio, low, high, non_zero, PN_flag]])
-        df = pd.DataFrame(values, columns=columns)
+        df = pd.DataFrame(values, columns=columns, index=[index])
         return df

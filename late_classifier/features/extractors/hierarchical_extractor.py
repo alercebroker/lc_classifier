@@ -18,15 +18,16 @@ class HierarchicalExtractor(FeatureExtractor):
         super().__init__()
         self.bands = bands
         self.turbofats_extractor = TurboFatsFeatureExtractor()
-        self.sn_det_extractor = SupernovaeDetectionFeatureExtractor()
-        self.sn_nondet_extractor = SupernovaeNonDetectionFeatureExtractor()
+        self.sn_det_extractor = SupernovaeNonDetectionFeatureExtractor()
+        self.sn_nondet_extractor = SupernovaeDetectionFeatureExtractor()
         self.galactic_coord_extractor = GalacticCoordinatesExtractor()
         self.sgscore_extractor = SGScoreExtractor()
         self.color_extractor = ColorFeatureExtractor()
         self.rb_extractor = RealBogusExtractor()
-        self.mhps_extractor = MHPSExtractor()
+        self.paps_extractor = MHPSExtractor()
         self.iqr_extractor = IQRExtractor()
         self.features_keys = self.get_features_keys()
+
 
     def get_features_keys(self):
         return self.turbofats_extractor.features_keys + \
@@ -36,7 +37,7 @@ class HierarchicalExtractor(FeatureExtractor):
                self.sgscore_extractor.features_keys + \
                self.color_extractor.features_keys + \
                self.rb_extractor.features_keys + \
-               self.mhps_extractor.feature_keys + \
+               self.paps_extractor.features_keys + \
                self.iqr_extractor.features_keys
 
     def enough_alerts(self, object_alerts):
@@ -46,10 +47,8 @@ class HierarchicalExtractor(FeatureExtractor):
         ----------
         object_alerts: :class:pandas. `DataFrame`
         DataFrame with detections of only one object.
-
         Returns Boolean
         -------
-
         """
         if len(object_alerts) <= 0 and type(object_alerts) is not pd.DataFrame and len(object_alerts.index.unique()) == 1:
             return False
@@ -60,18 +59,14 @@ class HierarchicalExtractor(FeatureExtractor):
         """
         Compute a single band features of detections and non detections. Given a DataFrame of
         different objects this extract single band features for each objects.
-
         Parameters
         ----------
         detections: :class:pandas.`DataFrame`
         DataFrame that contains detections of different astronomical objects.
-
         non_detections: :class:pandas.`DataFrame`
         DataFrame that contains non detections of different an astronomical objects.
-
         Returns DataFrame with single band features joined
         -------
-
         """
         oids = detections.index.unique()
         features = []
@@ -85,30 +80,19 @@ class HierarchicalExtractor(FeatureExtractor):
                     except KeyError:
                         object_non_detections = pd.DataFrame(columns=["fid", "mjd"])
 
-                    for band in self.bands:
-                        n_samples = len(object_alerts[object_alerts.fid == band])
-                        enough_alerts_band = n_samples > 5
-                        data_detections = object_alerts[object_alerts.fid == band]
-                        data_non_detections = object_non_detections[object_non_detections.fid == band]
-                        if enough_alerts_band:
-                            sn_det_features = self.sn_nondet_extractor.compute_features(
-                                data_detections, non_detections=data_non_detections)
-                            turbofats_features = self.turbofats_extractor.compute_features(data_detections)
-                            mhps = self.mhps_extractor.compute_features(data_detections)
-                            iqr = self.iqr_extractor.compute_features(data_detections)
+                    data_detections = object_alerts
+                    data_non_detections = object_non_detections
+                    sn_det_features = self.sn_nondet_extractor.compute_features(data_detections, non_detections=data_non_detections)
+                    turbofats_features = self.turbofats_extractor.compute_features(data_detections)
+                    paps = self.paps_extractor.compute_features(data_detections)
+                    iqr = self.iqr_extractor.compute_features(data_detections)
 
-                            df = sn_det_features.join(turbofats_features)
-                            df = df.join(mhps)
-                            df = df.join(iqr)
-                            # features = pd.concat([features, df], sort=True)
-                            features.append(df)
-                        else:
-                            df = pd.DataFrame([[band, oid]], columns=['fid', 'oid'])
-                            df = df.set_index('oid')
-                            features.append(df)
-
+                    df = sn_det_features.join(turbofats_features)
+                    df = df.join(paps)
+                    df = df.join(iqr)
             except Exception as e:
-                raise Exception(e)
+                #print(e)
+                raise Exception('Fatal error 0x187AF')
         return pd.concat(features)
 
     def multi_band_features(self, detections):
@@ -118,15 +102,12 @@ class HierarchicalExtractor(FeatureExtractor):
             - SG Score
             - Color
             - Real Bogus
-
         Parameters
         ----------
         detections: :class:pandas.`DataFrame`
         DataFrame that contains detections of different astronomical objects.
-
         Returns DataFrame with multi band features joined
         -------
-
         """
         galactic = self.galactic_coord_extractor.compute_features(detections)
         sg_score = self.sgscore_extractor.compute_features(detections)
@@ -140,15 +121,12 @@ class HierarchicalExtractor(FeatureExtractor):
 
     def compute_features(self, detections, **kwargs):
         """
-
         Parameters
         ----------
         detections :class:pandas.`DataFrame`
         kwargs Possible non_detections :class:pandas.`DataFrame`
-
         Returns DataFrame with all features
         -------
-
         """
         required = ['non_detections']
         for key in required:
@@ -163,6 +141,8 @@ class HierarchicalExtractor(FeatureExtractor):
 
         multi = self.multi_band_features(detections)
         single = self.single_band_features(detections, non_detections)
+
+        print(single.columns)
 
         single_band_features = [f for f in single.columns.values if f != 'fid']
 

@@ -30,4 +30,4 @@ class SGScoreExtractor(FeatureExtractor):
             logging.error(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n')
             return self.nan_df(index)
         sgscore = detections['sgscore1'].median()
-        return pd.DataFrame(np.array([sgscore]), columns=self.features_keys)
+        return pd.DataFrame(np.array([sgscore]), columns=self.features_keys, index=[index])

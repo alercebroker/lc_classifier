@@ -62,10 +62,7 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         -------
 
         """
-        n_bands = len(detections.fid.unique())
-        if n_bands > 1:
-            raise Exception('SingleBandFeatureExtractor cannot handle multiple bands')
-        return self._compute_features(detections, **kwargs)
+        return self.compute_by_bands(detections, **kwargs)
 
     def _compute_features(self, detections, **kwargs):
         """
@@ -78,12 +75,12 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         """
         raise NotImplementedError('SingleBandFeatureExtractor is an abstract class')
 
-    def compute_by_bands(self, detections, bands=None):
+    def compute_by_bands(self, detections, bands=None,  **kwargs):
         if bands is None:
             bands = [1, 2]
         features_response = []
         for band in bands:
-            features_response.append(self._compute_features(detections, band=band))
+            features_response.append(self._compute_features(detections, band=band,  **kwargs))
         return pd.concat(features_response, axis=1)
 
     def get_features_keys(self, band):

@@ -34,5 +34,5 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
         coordinates = SkyCoord(ra=mean_ra, dec=mean_dec, frame='icrs', unit='deg')
         galactic = coordinates.galactic
         np_galactic = np.array([[galactic.b.degree, galactic.l.degree]])
-        df = pd.DataFrame(np_galactic, columns=self.features_keys)
+        df = pd.DataFrame(np_galactic, columns=self.features_keys, index=[index])
         return df

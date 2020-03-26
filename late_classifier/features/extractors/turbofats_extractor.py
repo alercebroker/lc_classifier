@@ -5,6 +5,7 @@ import logging
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
+        super().__init__()
         self.features_keys = [
             'Amplitude', 'AndersonDarling', 'Autocor_length',
             'Beyond1Std',
@@ -44,7 +45,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
         if band is None or len(detections) == 0:
             logging.error(
-                f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
+                f'Input dataframe invalid {index}\n - Required one filter.')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df

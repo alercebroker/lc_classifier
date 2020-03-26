@@ -39,7 +39,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
         if not self.validate_df(detections) or band is None or len(detections) == 0:
             logging.error(
-                f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
+                f'Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required one filter.')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df
@@ -64,4 +64,4 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
                 n_neg,
                 n_pos,
                 positive_fraction]
-        return pd.DataFrame.from_records([data], columns=columns)
+        return pd.DataFrame.from_records([data], columns=columns, index=[index])
