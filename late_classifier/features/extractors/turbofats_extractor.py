@@ -1,9 +1,12 @@
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from turbofats import NewFeatureSpace
+import pandas as pd
+import logging
 
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
+        super().__init__()
         self.features_keys = [
             'Amplitude', 'AndersonDarling', 'Autocor_length',
             'Beyond1Std',
@@ -23,7 +26,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         ]
         self.feature_space = NewFeatureSpace(self.features_keys)
 
-    def _compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, band=None, **kwargs):
         """
         Compute features for detections
 
@@ -37,4 +40,18 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         -------
 
         """
-        return self.feature_space.calculate_features(detections)
+        index = detections.index.unique()[0]
+        columns = self.get_features_keys(band)
+        mag = [f"Harmonics_mag_{i}_{band}" for i in range(1, 8)]
+        phase = [f"Harmonics_phase_{i}_{band}" for i in range(2, 8)]
+        columns = columns + mag + phase + [f"Harmonics_mse_{band}"]
+        detections = detections[detections.fid == band]
+
+        if band is None or len(detections) == 0:
+            logging.error(
+                f'Input dataframe invalid {index}\n - Required one filter.')
+            return pd.DataFrame(columns=columns, index=[index])
+
+        df =  self.feature_space.calculate_features(detections)
+        df.columns = [f'{x}_{band}' for x in df.columns]
+        return df

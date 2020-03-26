@@ -1,0 +1,11 @@
+import unittest
+from .generic_extractor_test import GenericExtractorTest
+from late_classifier.features.extractors.{{formal_name}}_extractor import {{extractor_name}}
+
+
+class {{extractor_name}}ExtractorTest(GenericExtractorTest, unittest.TestCase):
+    component = {{extractor_name}}
+    params = {
+        "TEST_DETECTION": "path_to_data",
+        "TEST_NON_DETECTION": "path_to_data"
+    }

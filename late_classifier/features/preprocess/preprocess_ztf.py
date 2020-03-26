@@ -44,7 +44,6 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
 
     def discard_noisy_detections(self, detections):
         """
-
         :param detections:
         :return:
         """

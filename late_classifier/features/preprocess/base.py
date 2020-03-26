@@ -14,7 +14,6 @@ class GenericPreprocessor:
         return
 
 
-
     @abstractmethod
     def preprocess(self, dataframe):
         """
