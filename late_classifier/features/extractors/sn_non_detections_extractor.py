@@ -103,7 +103,7 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
         if band is None or len(detections) == 0:
             logging.error(
-                f'Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required one filter.')
+                f'SNNONDET: Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required one filter.')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df

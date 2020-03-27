@@ -14,9 +14,9 @@ class IQRExtractor(FeatureExtractorSingleBand):
         index = detections.index[0]
         columns = self.get_features_keys(band)
 
-        if not self.validate_df(detections) or band is None or len(detections.fid.unique()) != 1:
+        if not self.validate_df(detections) or band is None:
             logging.error(
-                f'Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
+                f'IQR: Input dataframe invalid\n - Required columns: {self.required_keys}\n - Required one filter.')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df

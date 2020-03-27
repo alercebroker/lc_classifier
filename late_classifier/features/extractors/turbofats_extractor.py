@@ -49,7 +49,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
         if band is None or len(detections) == 0:
             logging.error(
-                f'Input dataframe invalid {index}\n - Required one filter.')
+                f'TURBOFATS: Input dataframe invalid {index}\n - Required one filter.')
             return pd.DataFrame(columns=columns, index=[index])
 
         df =  self.feature_space.calculate_features(detections)

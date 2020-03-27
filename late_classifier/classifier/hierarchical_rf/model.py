@@ -1,8 +1,6 @@
 import os
 import pandas as pd
 
-from tqdm import tqdm
-
 MODEL_PATH = os.path.dirname(os.path.abspath(__file__))
 PICKLE_PATH = os.path.join(MODEL_PATH, "pickles")
 
@@ -20,7 +18,7 @@ class HierarchicalRF:
     def download_model(self):
         if not os.path.exists(PICKLE_PATH):
             os.mkdir(PICKLE_PATH)
-        for pkl in tqdm(self.pickles):
+        for pkl in self.pickles:
             tmp_path = os.path.join(PICKLE_PATH, pkl)
             if not os.path.exists(tmp_path):
                 command = f"wget {self.url_model}{pkl} -O {tmp_path}"

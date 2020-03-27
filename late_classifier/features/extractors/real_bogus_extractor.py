@@ -25,7 +25,7 @@ class RealBogusExtractor(FeatureExtractor):
         """
         index = detections.index[0]
         if not self.validate_df(detections):
-            logging.error(f'Input dataframe invalid\n - Required columns: {self.required_keys}\n')
+            logging.error(f'RB: Input dataframe invalid\n - Required columns: {self.required_keys}\n')
             return self.nan_df(index)
 
         rb = detections.rb.median()
