@@ -23,7 +23,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         """
         # pd.options.display.precision = 10
         index = detections.index[0]
-        if not self.validate_df(detections) or len(detections.fid.unique()) < 2:
+        if not self.validate_df(detections) or 1 not in detections.fid.unique() or 2 not in detections.fid.unique():
             logging.error(f'Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required two filters.')
             return self.nan_df(index)
 

@@ -65,7 +65,10 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                 f'HierarchicalFeaturesComputer requires detections in pd.Dataframe datatype, not {type(detections)}')
 
         detections = detections.sort_values('mjd')
-        non_detections = kwargs['non_detections'].sort_values('mjd')
+        non_detections = kwargs['non_detections']
+
+        if len(non_detections) == 0:
+            non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
 
         features = []
         for ex in self.extractors:
