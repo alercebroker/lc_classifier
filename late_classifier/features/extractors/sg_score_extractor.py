@@ -27,7 +27,7 @@ class SGScoreExtractor(FeatureExtractor):
         """
         index = detections.index[0]
         if not self.validate_df(detections):
-            logging.error(f'SGSCORE: Input dataframe invalid\n - Required columns: {self.required_keys}\n')
+            logging.warning(f'extractor=SGSCORE  object={index}  required_cols={self.required_keys}')
             return self.nan_df(index)
         sgscore = detections['sgscore1'].median()
         return pd.DataFrame(np.array([sgscore]), columns=self.features_keys, index=[index])

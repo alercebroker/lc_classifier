@@ -26,7 +26,7 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
         """
         index = detections.index[0]
         if not self.validate_df(detections):
-            logging.info(f'Input dataframe invalid\n - Required columns: {self.required_keys}')
+            logging.info(f'extractor=GALACTIC_COORD  object={index}  required_cols={self.required_keys}  filter_qty=1')
             return self.nan_df(index)
 
         mean_ra = detections.ra.mean()

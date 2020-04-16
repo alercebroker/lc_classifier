@@ -24,7 +24,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         # pd.options.display.precision = 10
         index = detections.index[0]
         if not self.validate_df(detections) or 1 not in detections.fid.unique() or 2 not in detections.fid.unique():
-            logging.error(f'Input dataframe invalid {index}\n - Required columns: {self.required_keys}\n - Required two filters.')
+            logging.warning(f'extractor=COLOR  object={index}  required_cols={self.required_keys}  filters_qty=2')
             return self.nan_df(index)
 
         g_band_mag = detections[detections.fid == 1]['magpsf_corr'].values
