@@ -2,9 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/src
 # C extensions
 *.so
+
+.idea/
+# Pickles
+*.pkl
 
 # Distribution / packaging
 .Python
@@ -102,3 +106,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.idea

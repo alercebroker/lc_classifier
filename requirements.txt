@@ -1,7 +1,13 @@
+click
 astropy
 numpy
 pandas
-sklearn
-imblearn
 scipy
 GPy
+sklearn
+imblearn
+Jinja2
+tqdm
+matplotlib
+-e git+https://git@github.com/alercebroker/mhps#egg=mhps
+-e git+https://git@github.com/alercebroker/turbo-fats#egg=turbo-fats

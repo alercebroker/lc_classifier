@@ -3,6 +3,35 @@ import pandas as pd
 
 
 class FeatureExtractor:
+    def __init__(self):
+        self.features_keys = []
+        self.required_keys = []
+
+    def validate_df(self, df):
+        """
+        Method to validate input detections. The required keys must be in df columns.
+
+        Parameters
+        ----------
+        df :class:pandas.`DataFrame`
+        DataFrame with detections of an object.
+        """
+        cols = set(df.columns)
+        required = set(self.required_keys)
+        intersection = required.intersection(cols)
+        return len(intersection) == len(required)
+
+    def nan_df(self, index):
+        """
+        Method to generate a empty dataframe with NaNs.
+
+        Parameters
+        ----------
+        index :class:String
+        Name/id/oid of the observation
+        """
+        return pd.DataFrame(columns=self.features_keys, index=[index])
+
     def compute_features(self, detections, **kwargs):
         """
         Interface to implement different features extractors.
@@ -12,7 +41,7 @@ class FeatureExtractor:
         detections :class:pandas.`DataFrame`
         DataFrame with detections of an object.
 
-        kwargs Another arguments like non detections.
+        kwargs Another arguments like Non detections.
         """
         raise NotImplementedError('FeatureExtractor is an interface')
 
@@ -33,10 +62,7 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         -------
 
         """
-        n_bands = len(detections.fid.unique())
-        if n_bands > 1:
-            raise Exception('SingleBandFeatureExtractor cannot handle multiple bands')
-        return self._compute_features(detections, **kwargs)
+        return self.compute_by_bands(detections, **kwargs)
 
     def _compute_features(self, detections, **kwargs):
         """
@@ -48,6 +74,17 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         kwargs Possible: Non detections DataFrame.
         """
         raise NotImplementedError('SingleBandFeatureExtractor is an abstract class')
+
+    def compute_by_bands(self, detections, bands=None,  **kwargs):
+        if bands is None:
+            bands = [1, 2]
+        features_response = []
+        for band in bands:
+            features_response.append(self._compute_features(detections, band=band,  **kwargs))
+        return pd.concat(features_response, axis=1)
+
+    def get_features_keys(self, band):
+        return [f'{x}_{band}' for x in self.features_keys]
 
 
 class FeatureExtractorFromFEList(FeatureExtractor):
