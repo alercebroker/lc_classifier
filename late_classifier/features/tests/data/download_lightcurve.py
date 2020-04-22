@@ -1,8 +1,9 @@
 from alerce.api import AlerceAPI
+import sys
 
 
 alerce_api = AlerceAPI()
-oid = 'ZTF18aazsabq'
+oid = sys.argv[1]
 
 detections = alerce_api.get_detections(oid, 'pandas')
 non_detections = alerce_api.get_non_detections(oid, 'pandas')

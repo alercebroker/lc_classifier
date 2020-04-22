@@ -32,7 +32,7 @@ class FeatureExtractor:
         """
         return pd.DataFrame(columns=self.features_keys, index=[index])
 
-    def compute_features(self, detections, **kwargs):
+    def compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         Interface to implement different features extractors.
 

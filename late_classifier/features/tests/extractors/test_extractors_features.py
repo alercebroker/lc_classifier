@@ -22,6 +22,10 @@ class TestObjectsMethods(unittest.TestCase):
     raw_nondet_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
     det_ZTF18abvvcko = preprocess_ztf.preprocess(raw_det_ZTF18abvvcko)
 
+    raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
+    raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
+    det_ZTF17aaaaaxg = preprocess_ztf.preprocess(raw_det_ZTF17aaaaaxg)
+
     def turbofats_features(self):
         turbofats_extractor = TurboFatsFeatureExtractor()
         turbofats_fs = turbofats_extractor.compute_features(self.det_ZTF18abakgtm)
@@ -48,36 +52,52 @@ class TestObjectsMethods(unittest.TestCase):
         self.assertListEqual(list(color_fs.columns), color_extractor.features_keys)
 
     def test_galactic_coordinates_features(self):
-        galactic_extractor = GalacticCoordinatesComputer()
+        galactic_extractor = GalacticCoordinatesExtractor()
         galactic_fs = galactic_extractor.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(galactic_fs), pd.DataFrame)
         self.assertEqual(len(galactic_fs.columns), 2)
         self.assertListEqual(list(galactic_fs.columns), galactic_extractor.features_keys)
 
     def test_real_bogus_features(self):
-        rb_extractor = RealBogusComputer()
+        rb_extractor = RealBogusExtractor()
         rb_fs = rb_extractor.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(rb_fs), pd.DataFrame)
 
     def test_sg_score_features(self):
-        sg_score = SGScoreComputer()
+        sg_score = SGScoreExtractor()
         sg_fs = sg_score.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(sg_fs), pd.DataFrame)
 
     def test_sn_detections_features(self):
-        sn_det_extractor = SupernovaeDetectionFeatureComputer()
+        sn_det_extractor = SupernovaeDetectionFeatureExtractor()
         sn_fs = sn_det_extractor.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(sn_fs), pd.DataFrame)
 
     def test_sn_non_detections_features(self):
-        sn_non_det_extractor = SupernovaeNonDetectionFeatureComputer()
-        sn_non_det = sn_non_det_extractor.compute_features(self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
+        sn_non_det_extractor = SupernovaeNonDetectionFeatureExtractor()
+        sn_non_det = sn_non_det_extractor.compute_features(
+            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
         self.assertEqual(type(sn_non_det), pd.DataFrame)
 
     def test_hierarchical_features(self):
-        hierarchical_extractor = HierarchicalFeaturesComputer([1, 2])
-        h_fs = hierarchical_extractor.compute_features(self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
+        hierarchical_extractor = HierarchicalExtractor([1, 2])
+        h_fs = hierarchical_extractor.compute_features(
+            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
         self.assertEqual(type(h_fs), pd.DataFrame)
+
+    def test_wise_features_ok(self):
+        wise_extractor = WiseStaticExtractor()
+        wise_features = wise_extractor.compute_features(
+            self.det_ZTF17aaaaaxg, non_detections=self.raw_nondet_ZTF17aaaaaxg)
+        self.assertEqual(type(wise_features), pd.DataFrame)
+        self.assertEqual(len(wise_features.dropna()), 1)
+
+    def test_wise_features_not_found(self):
+        wise_extractor = WiseStaticExtractor()
+        wise_features = wise_extractor.compute_features(
+            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
+        self.assertEqual(type(wise_features), pd.DataFrame)
+        self.assertEqual(len(wise_features.dropna()), 0)
 
 
 if __name__ == '__main__':

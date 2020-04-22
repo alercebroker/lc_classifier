@@ -7,6 +7,7 @@ from late_classifier.features.extractors.sg_score_extractor import SGScoreExtrac
 from late_classifier.features.extractors.real_bogus_extractor import RealBogusExtractor
 from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
+from late_classifier.features.extractors.sn_parametric_model_computer import SNParametricModelExtractor
 
 from late_classifier.features.core.base import FeatureExtractor
 from functools import reduce
@@ -25,7 +26,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            IQRExtractor(),
                            TurboFatsFeatureExtractor(),
                            # SupernovaeDetectionFeatureExtractor(),
-                           SupernovaeNonDetectionFeatureExtractor()]
+                           SupernovaeNonDetectionFeatureExtractor(),
+                           SNParametricModelExtractor()
+                           ]
 
     def enough_alerts(self, object_alerts):
         """

@@ -8,6 +8,7 @@ from .real_bogus_extractor import *
 from .sg_score_extractor import *
 from .mhps_extractor import *
 from .iqr_extractor import *
+from .wise_static_extractor import WiseStaticExtractor
 
 __all__ = ['HierarchicalExtractor',
            'SupernovaeNonDetectionFeatureExtractor',
@@ -18,4 +19,6 @@ __all__ = ['HierarchicalExtractor',
            'RealBogusExtractor',
            'SGScoreExtractor',
            'MHPSExtractor',
-           'IQRExtractor']
+           'IQRExtractor',
+           'WiseStaticExtractor'
+           ]

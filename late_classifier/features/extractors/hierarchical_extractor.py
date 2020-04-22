@@ -7,6 +7,7 @@ from late_classifier.features.extractors.sg_score_extractor import SGScoreExtrac
 from late_classifier.features.extractors.real_bogus_extractor import RealBogusExtractor
 from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
+from late_classifier.features.extractors.sn_parametric_model_computer import SNParametricModelExtractor
 
 from late_classifier.features.core.base import FeatureExtractor
 from functools import reduce
@@ -30,7 +31,6 @@ class HierarchicalExtractor(FeatureExtractor):
         self.sn_model_extractor = SNParametricModelExtractor()
         
         self.features_keys = self.get_features_keys()
-
 
     def get_features_keys(self):
         return self.turbofats_extractor.features_keys + \
