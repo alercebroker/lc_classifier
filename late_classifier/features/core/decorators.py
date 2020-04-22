@@ -1,6 +1,7 @@
 import pandas as pd
 
 
+# TODO decorators.py is not being used
 class FeatureExtractorDecorator:
     def __init__(self, feature_extractor):
         self.decorated_feature_extractor = feature_extractor
