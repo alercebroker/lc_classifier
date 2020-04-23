@@ -1,3 +1,5 @@
+from typing import List
+
 from late_classifier.features.extractors.sn_non_detections_extractor import SupernovaeNonDetectionFeatureExtractor
 from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
@@ -14,10 +16,11 @@ from functools import reduce
 import pandas as pd
 import warnings
 
+# TODO deprecate this in favor of custom_hierarchical
+
 
 class HierarchicalExtractor(FeatureExtractor):
     def __init__(self, bands):
-        super().__init__()
         self.bands = bands
         self.turbofats_extractor = TurboFatsFeatureExtractor()
         self.sn_det_extractor = SupernovaeNonDetectionFeatureExtractor()
@@ -32,18 +35,21 @@ class HierarchicalExtractor(FeatureExtractor):
         
         self.features_keys = self.get_features_keys()
 
-    def get_features_keys(self):
-        return self.turbofats_extractor.features_keys + \
-               self.sn_det_extractor.features_keys + \
-               self.sn_nondet_extractor.features_keys + \
-               self.galactic_coord_extractor.features_keys + \
-               self.sgscore_extractor.features_keys + \
-               self.color_extractor.features_keys + \
-               self.rb_extractor.features_keys + \
-               self.paps_extractor.features_keys + \
-               self.iqr_extractor.features_keys
+    def get_required_keys(self) -> List[str]:
+        return ['mjd', 'magpsf_corr', 'sigmapsf_corr', 'fid']
 
-    def enough_alerts(self, object_alerts):
+    def get_features_keys(self):
+        return self.turbofats_extractor.get_features_keys() + \
+               self.sn_det_extractor.get_features_keys() + \
+               self.sn_nondet_extractor.get_features_keys() + \
+               self.galactic_coord_extractor.get_features_keys() + \
+               self.sgscore_extractor.get_features_keys() + \
+               self.color_extractor.get_features_keys() + \
+               self.rb_extractor.get_features_keys() + \
+               self.paps_extractor.get_features_keys() + \
+               self.iqr_extractor.get_features_keys()
+
+    def enough_alerts(self, object_alerts: pd.DataFrame):
         """
         Verify if an object has enough alerts.
         Parameters
@@ -53,7 +59,10 @@ class HierarchicalExtractor(FeatureExtractor):
         Returns Boolean
         -------
         """
-        if len(object_alerts) <= 0 and type(object_alerts) is not pd.DataFrame and len(object_alerts.index.unique()) == 1:
+        if (
+                len(object_alerts) <= 0
+                and type(object_alerts) is not pd.DataFrame
+                and len(object_alerts.index.unique()) == 1):
             return False
         booleans = list(map(lambda band: len(object_alerts.fid == band) > 5, self.bands))
         return reduce(lambda x, y: x | y, booleans)
@@ -85,7 +94,8 @@ class HierarchicalExtractor(FeatureExtractor):
 
                     data_detections = object_alerts
                     data_non_detections = object_non_detections
-                    sn_det_features = self.sn_nondet_extractor.compute_features(data_detections, non_detections=data_non_detections)
+                    sn_det_features = self.sn_nondet_extractor.compute_features(
+                        data_detections, non_detections=data_non_detections)
                     turbofats_features = self.turbofats_extractor.compute_features(data_detections)
                     paps = self.paps_extractor.compute_features(data_detections)
                     iqr = self.iqr_extractor.compute_features(data_detections)
@@ -93,9 +103,8 @@ class HierarchicalExtractor(FeatureExtractor):
                     df = sn_det_features.join(turbofats_features)
                     df = df.join(paps)
                     df = df.join(iqr)
-            except Exception as e:
-                #print(e)
-                raise Exception('Fatal error 0x187AF')
+            except Exception as err:
+                raise Exception(f'Fatal error at hierarchical_extractor: {err}')
         return pd.concat(features)
 
     def multi_band_features(self, detections):

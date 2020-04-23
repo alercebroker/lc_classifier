@@ -27,6 +27,7 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         )
         is_nan_feature = pd.isna(features_df).values.any()
         self.assertFalse(is_nan_feature)
+        print(features_df)
 
 
 if __name__ == '__main__':

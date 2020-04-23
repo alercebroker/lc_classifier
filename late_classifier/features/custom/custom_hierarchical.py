@@ -1,3 +1,5 @@
+from typing import List
+
 from late_classifier.features.extractors.sn_non_detections_extractor import SupernovaeNonDetectionFeatureExtractor
 # from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
@@ -9,14 +11,13 @@ from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
 from late_classifier.features.extractors.sn_parametric_model_computer import SNParametricModelExtractor
 
-from late_classifier.features.core.base import FeatureExtractor
+from late_classifier.features.core.base import FeatureExtractor, FeatureExtractorSingleBand
 from functools import reduce
 import pandas as pd
 
 
 class CustomHierarchicalExtractor(FeatureExtractor):
     def __init__(self, bands=None):
-        super().__init__()
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [GalacticCoordinatesExtractor(),
                            SGScoreExtractor(),
@@ -29,6 +30,22 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            SupernovaeNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor()
                            ]
+
+    def get_features_keys(self) -> List[str]:
+        features_keys = []
+        for extractor in self.extractors:
+            if isinstance(extractor, FeatureExtractorSingleBand):
+                for band in [1, 2]:
+                    features_keys.append(extractor.get_features_keys_with_band(band))
+            else:
+                features_keys.append(extractor.get_features_keys())
+        return features_keys
+
+    def get_required_keys(self) -> List[str]:
+        required_keys = set()
+        for extractor in self.extractors:
+            required_keys.union(set(extractor.get_required_keys()))
+        return list(required_keys)
 
     def enough_alerts(self, object_alerts):
         """

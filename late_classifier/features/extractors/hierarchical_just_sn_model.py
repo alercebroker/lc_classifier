@@ -6,6 +6,7 @@ import pandas as pd
 import warnings
 
 
+# TODO deprecate this, it's not being used
 class JustSNModelFeaturesComputer(FeatureExtractor):
     def __init__(self, bands):
         super().__init__()

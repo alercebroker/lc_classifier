@@ -1,12 +1,15 @@
 import os
+from typing import List
+
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+import tensorflow as tf
+from ..core.base import FeatureExtractorSingleBand
+from scipy.optimize import OptimizeWarning
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-import tensorflow as tf
-
-from late_classifier.features.core.base import FeatureExtractorSingleBand
 
 
 class SNModel(object):
@@ -149,7 +152,7 @@ class SNModelScipy(object):
                 bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], f_bounds[0], trise_bounds[0], tfall_bounds[0]],
                         [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1], tfall_bounds[1]]],
                 ftol=A_guess / 20.)
-        except:
+        except (ValueError, RuntimeError, OptimizeWarning):
             try:
                 pout, pcov = curve_fit(
                     self.model,
@@ -160,7 +163,7 @@ class SNModelScipy(object):
                             [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1],
                              tfall_bounds[1]]],
                     ftol=A_guess / 3.)
-            except:
+            except (ValueError, RuntimeError, OptimizeWarning):
                 pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
         self.parameters = pout
@@ -187,8 +190,10 @@ def mag_to_flux(mag):
 
 class SNParametricModelExtractor(FeatureExtractorSingleBand):
     def __init__(self):
-        super().__init__()
-        self.features_keys = [
+        self.sn_model = SNModelScipy()
+
+    def get_features_keys(self) -> List[str]:
+        return [
             'sn_model_a',
             'sn_model_t0',
             'sn_model_f',
@@ -197,10 +202,11 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
             'sn_model_t_fall',
             'sn_model_fit_error'
         ]
-        # self.sn_model = SNModel()
-        self.sn_model = SNModelScipy()
 
-    def _compute_features(self, detections, **kwargs):
+    def get_required_keys(self) -> List[str]:
+        return ['mjd', 'magpsf_corr']
+
+    def compute_feature_in_one_band(self, detections, **kwargs):
         if len(detections) > 0:
             detections = detections[['mjd', 'magpsf_corr']]
             detections = detections.dropna()
@@ -217,10 +223,10 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
             model_parameters = self.sn_model.get_model_parameters()
             model_parameters.append(fit_error)
 
-            data = np.array(model_parameters).reshape([1, len(self.features_keys)])
+            data = np.array(model_parameters).reshape([1, len(self.get_features_keys())])
             df = pd.DataFrame(
                 data=data,
-                columns=self.features_keys,
+                columns=self.get_features_keys(),
                 index=[detections.index.values[0]]
             )
             df.index.name = 'oid'

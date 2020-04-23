@@ -1,3 +1,5 @@
+from typing import List
+
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 import scipy.stats as sstats
 import pandas as pd
@@ -5,17 +7,18 @@ import logging
 
 
 class IQRExtractor(FeatureExtractorSingleBand):
-    def __init__(self):
-        super().__init__()
-        self.features_keys = ["iqr"]
-        self.required_keys = ["magpsf_corr"]
+    def get_features_keys(self) -> List[str]:
+        return ['iqr']
 
-    def _compute_features(self, detections, band=None, **kwargs):
+    def get_required_keys(self) -> List[str]:
+        return ['magpsf_corr']
+
+    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         index = detections.index[0]
-        columns = self.get_features_keys(band)
+        columns = self.get_features_keys_with_band(band)
 
         if not self.validate_df(detections) or band is None:
-            logging.warning(f'extractor=IQR  object={index}  required_cols={self.required_keys}  filters_qty=1')
+            logging.warning(f'extractor=IQR  object={index}  required_cols={self.get_required_keys()}  filters_qty=1')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df

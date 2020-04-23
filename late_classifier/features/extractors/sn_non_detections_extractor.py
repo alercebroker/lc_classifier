@@ -1,3 +1,5 @@
+from typing import List
+
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 import pandas as pd
@@ -6,30 +8,30 @@ import logging
 
 
 class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
-    def __init__(self):
-        super().__init__()
-        self.features_keys = ['fid',
-                              'delta_mag_fid',
-                              'delta_mjd_fid',
-                              'first_mag',
-                              'mean_mag',
-                              'min_mag',
-                              'n_det',
-                              'n_neg',
-                              'n_pos',
-                              'positive_fraction',
-                              'n_non_det_before_fid',
-                              'max_diffmaglim_before_fid',
-                              'median_diffmaglim_before_fid',
-                              'last_diffmaglim_before_fid',
-                              'last_mjd_before_fid',
-                              'dmag_non_det_fid',
-                              'dmag_first_det_fid',
-                              'n_non_det_after_fid',
-                              'max_diffmaglim_after_fid',
-                              'median_diffmaglim_after_fid',
-                              ]
-        self.required_keys = ["diffmaglim", "mjd", "fid"]
+    def get_features_keys(self) -> List[str]:
+        return ['fid',
+                'delta_mag_fid',
+                'delta_mjd_fid',
+                'first_mag',
+                'mean_mag',
+                'min_mag',
+                'n_det',
+                'n_neg',
+                'n_pos',
+                'positive_fraction',
+                'n_non_det_before_fid',
+                'max_diffmaglim_before_fid',
+                'median_diffmaglim_before_fid',
+                'last_diffmaglim_before_fid',
+                'last_mjd_before_fid',
+                'dmag_non_det_fid',
+                'dmag_first_det_fid',
+                'n_non_det_after_fid',
+                'max_diffmaglim_after_fid',
+                'median_diffmaglim_after_fid']
+
+    def get_required_keys(self) -> List[str]:
+        return ["diffmaglim", "mjd", "fid"]
 
     def compute_before_features(self, det_result, non_detections, band):
         """
@@ -41,6 +43,8 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
         non_detections :class:pandas.`DataFrame`
         Dataframe with non detections before a specific mjd.
+
+        band :class:int
 
         Returns class:pandas.`DataFrame`
         -------
@@ -76,7 +80,7 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
             'median_diffmaglim_after_fid': np.nan if count == 0 else non_detections['diffmaglim'].median()
         }
 
-    def _compute_features(self, detections, band=None, **kwargs):
+    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
 
         Parameters
@@ -99,10 +103,11 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
         detections = detections[detections.fid == band]
         non_detections = kwargs['non_detections'].sort_values('mjd')
         non_detections = non_detections[non_detections.fid == band]
-        columns = self.get_features_keys(band)
+        columns = self.get_features_keys_with_band(band)
 
         if band is None or len(detections) == 0:
-            logging.warning(f'extractor=SNNONDET  object={index}  required_cols={self.required_keys} filters_qty=1')
+            logging.warning(
+                f'extractor=SNNONDET  object={index}  required_cols={self.get_required_keys()} filters_qty=1')
             nan_df = self.nan_df(index)
             nan_df.columns = columns
             return nan_df
@@ -114,7 +119,7 @@ class SupernovaeNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
         non_detections_before = non_detections[non_detections.mjd < first_mjd]
         non_detections_after = non_detections[non_detections.mjd >= first_mjd]
 
-        det_result = SupernovaeDetectionFeatureExtractor()._compute_features(detections, band=band)
+        det_result = SupernovaeDetectionFeatureExtractor().compute_feature_in_one_band(detections, band=band)
         non_det_before = self.compute_before_features(det_result, non_detections_before, band)
         non_det_after = self.compute_after_features(non_detections_after)
 

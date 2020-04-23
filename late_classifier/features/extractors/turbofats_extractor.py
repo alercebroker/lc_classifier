@@ -1,3 +1,5 @@
+from typing import List
+
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from turbofats import NewFeatureSpace
 import pandas as pd
@@ -6,8 +8,10 @@ import logging
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
-        super().__init__()
-        self.features_keys = [
+        self.feature_space = NewFeatureSpace(self.get_features_keys())
+
+    def get_features_keys(self) -> List[str]:
+        return [
             'Amplitude', 'AndersonDarling', 'Autocor_length',
             'Beyond1Std',
             'Con', 'Eta_e',
@@ -24,15 +28,18 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'LinearTrend',
             'PeriodPowerRate'
         ]
-        self.feature_space = NewFeatureSpace(self.features_keys)
 
-    def _compute_features(self, detections, band=None, **kwargs):
+    def get_required_keys(self) -> List[str]:
+        return ['mjd', 'magpsf_corr', 'fid', 'sigmapsf_corr']
+
+    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
         Compute features for detections
 
         Parameters
         ----------
         detections :class:pandas.`DataFrame`
+        band :class:int
         kwargs
 
         Returns class:pandas.`DataFrame`
@@ -41,7 +48,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
         """
         index = detections.index.unique()[0]
-        columns = self.get_features_keys(band)
+        columns = self.get_features_keys_with_band(band)
         mag = [f"Harmonics_mag_{i}_{band}" for i in range(1, 8)]
         phase = [f"Harmonics_phase_{i}_{band}" for i in range(2, 8)]
         columns = columns + mag + phase + [f"Harmonics_mse_{band}"]
@@ -51,6 +58,6 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             logging.warning(f'extractor=TURBOFATS  object={index}  filters_qty=1')
             return pd.DataFrame(columns=columns, index=[index])
 
-        df =  self.feature_space.calculate_features(detections)
+        df = self.feature_space.calculate_features(detections)
         df.columns = [f'{x}_{band}' for x in df.columns]
         return df

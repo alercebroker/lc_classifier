@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 import requests
 import pandas as pd
 import logging
@@ -31,16 +33,6 @@ def compute_colors_from_bands(bands: pd.DataFrame) -> pd.DataFrame:
 
 class WiseStaticExtractor(FeatureExtractor):
     def __init__(self):
-        super().__init__()
-        self.features_keys = [
-            'W1-W2',
-            'W2-W3',
-            'g-W2',
-            'g-W3',
-            'r-W2',
-            'r-W3'
-        ]
-        self.required_keys = []
         if not os.path.exists(WISE_CSV):
             data_dir = os.path.abspath(
                 os.path.join(FILE_PATH, "data"))
@@ -53,13 +45,26 @@ class WiseStaticExtractor(FeatureExtractor):
         self.wise_bands = pd.read_csv(WISE_CSV, index_col='oid')
         self.wise_colors = compute_colors_from_bands(self.wise_bands)
 
+    def get_features_keys(self) -> List[str]:
+        return [
+            'W1-W2',
+            'W2-W3',
+            'g-W2',
+            'g-W3',
+            'r-W2',
+            'r-W3'
+        ]
+
+    def get_required_keys(self) -> List[str]:
+        return []
+
     def compute_features(self, detections, **kwargs):
         index = detections.index[0]
         if index in self.wise_colors.index:
             return self.wise_colors.loc[[index]]
         else:
             logging.warning(
-                f'extractor=WISE  object={index}  required_cols={self.required_keys}')
+                f'extractor=WISE  object={index}  required_cols={self.get_required_keys()}')
             nan_df = self.nan_df(index)
-            nan_df.columns = self.features_keys
+            nan_df.columns = self.get_features_keys()
             return nan_df

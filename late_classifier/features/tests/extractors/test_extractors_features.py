@@ -49,14 +49,14 @@ class TestObjectsMethods(unittest.TestCase):
         color_fs = color_extractor.compute_features(self.det_ZTF18abvvcko)
         self.assertEqual(type(color_fs), pd.DataFrame)
         self.assertEqual(len(color_fs.columns), 2)
-        self.assertListEqual(list(color_fs.columns), color_extractor.features_keys)
+        self.assertListEqual(list(color_fs.columns), color_extractor.get_features_keys())
 
     def test_galactic_coordinates_features(self):
         galactic_extractor = GalacticCoordinatesExtractor()
         galactic_fs = galactic_extractor.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(galactic_fs), pd.DataFrame)
         self.assertEqual(len(galactic_fs.columns), 2)
-        self.assertListEqual(list(galactic_fs.columns), galactic_extractor.features_keys)
+        self.assertListEqual(list(galactic_fs.columns), galactic_extractor.get_features_keys())
 
     def test_real_bogus_features(self):
         rb_extractor = RealBogusExtractor()
