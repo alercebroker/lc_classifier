@@ -1,4 +1,3 @@
-# from .decorators import *
 import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
@@ -93,42 +92,3 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
 
     def get_features_keys_with_band(self, band):
         return [f'{x}_{band}' for x in self.get_features_keys()]
-
-
-# This is not being used.
-# TODO delete this if it's not useful
-#
-# class FeatureExtractorFromFEList(FeatureExtractor):
-#     def __init__(self, feature_extractor_list, bands):
-#         self.feature_extractor_list = feature_extractor_list
-#         self.bands = bands
-#
-#     def compute_features(self, detections, **kwargs):
-#         """
-#
-#         Parameters
-#         ----------
-#         detections :class:pandas.`DataFrame`
-#         kwargs Possible: Non detections DataFrame.
-#
-#         Returns :class:pandas.`DataFrame`
-#         -------
-#
-#         """
-#         if len(self.feature_extractor_list) == 0 or type(self.feature_extractor_list) is not list:
-#             return pd.DataFrame()
-#         if kwargs['non_detections'] is None:
-#             print("non_detections not given")
-#
-#         non_detections = kwargs['non_detections']
-#         all_features = pd.DataFrame(detections.index.unique('oid'))
-#         all_features = all_features.set_index('oid')
-#
-#         for feature_extractor in self.feature_extractor_list:
-#             if FeatureExtractorSingleBand in feature_extractor.__class__.__mro__:
-#                 features = FeatureExtractorPerBandFromSingleLC(
-#                     feature_extractor, self.bands).compute_features(detections)
-#             else:
-#                 features = feature_extractor.compute_features(detections, non_detections=non_detections)
-#         all_features.join(features)
-#         return all_features

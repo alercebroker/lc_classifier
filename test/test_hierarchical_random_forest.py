@@ -1,6 +1,5 @@
 import unittest
 import pandas as pd
-import numpy as np
 
 from late_classifier.classifier.models import HierarchicalRandomForest
 

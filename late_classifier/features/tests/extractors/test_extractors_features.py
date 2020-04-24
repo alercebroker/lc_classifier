@@ -1,9 +1,8 @@
-from late_classifier.features.extractors import *
-from late_classifier.features.preprocess import *
-import pandas as pd
+import os
 import unittest
 
-import os
+from late_classifier.features.extractors import *
+from late_classifier.features.preprocess import *
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 print(FILE_PATH)
@@ -46,7 +45,7 @@ class TestObjectsMethods(unittest.TestCase):
 
     def test_color_features(self):
         color_extractor = ColorFeatureExtractor()
-        color_fs = color_extractor.compute_features(self.det_ZTF18abvvcko)
+        color_fs = color_extractor.compute_features(self.det_ZTF17aaaaaxg)
         self.assertEqual(type(color_fs), pd.DataFrame)
         self.assertEqual(len(color_fs.columns), 2)
         self.assertListEqual(list(color_fs.columns), color_extractor.get_features_keys())
@@ -78,12 +77,6 @@ class TestObjectsMethods(unittest.TestCase):
         sn_non_det = sn_non_det_extractor.compute_features(
             self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
         self.assertEqual(type(sn_non_det), pd.DataFrame)
-
-    def test_hierarchical_features(self):
-        hierarchical_extractor = HierarchicalExtractor([1, 2])
-        h_fs = hierarchical_extractor.compute_features(
-            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
-        self.assertEqual(type(h_fs), pd.DataFrame)
 
     def test_wise_features_ok(self):
         wise_extractor = WiseStaticExtractor()

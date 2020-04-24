@@ -1,13 +1,12 @@
 import sys
 import numpy as np
 import pandas as pd
-# from late_classifier.features.extractors import HierarchicalFeaturesComputer
-from late_classifier.features.extractors import JustSNModelFeaturesComputer as HierarchicalFeaturesComputer
+from late_classifier.features.custom import CustomHierarchicalExtractor
 from joblib import Parallel, delayed
 
 
 def extract_features(process_id, detections_df, non_detections_df):
-    hierarchical_extractor = HierarchicalFeaturesComputer([1, 2])
+    hierarchical_extractor = CustomHierarchicalExtractor([1, 2])
     features = hierarchical_extractor.compute_features(
         detections_df, non_detections=non_detections_df)
     return features

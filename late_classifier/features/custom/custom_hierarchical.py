@@ -1,7 +1,6 @@
 from typing import List
 
 from late_classifier.features.extractors.sn_non_detections_extractor import SupernovaeNonDetectionFeatureExtractor
-# from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 from late_classifier.features.extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from late_classifier.features.extractors.turbofats_extractor import TurboFatsFeatureExtractor
 from late_classifier.features.extractors.color_feature_extractor import ColorFeatureExtractor
@@ -26,7 +25,6 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            MHPSExtractor(),
                            IQRExtractor(),
                            TurboFatsFeatureExtractor(),
-                           # SupernovaeDetectionFeatureExtractor(),
                            SupernovaeNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor()
                            ]

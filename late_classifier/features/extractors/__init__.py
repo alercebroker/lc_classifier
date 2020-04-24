@@ -1,4 +1,3 @@
-from .hierarchical_extractor import *
 from .sn_non_detections_extractor import *
 from .turbofats_extractor import *
 from .color_feature_extractor import *
@@ -9,16 +8,3 @@ from .sg_score_extractor import *
 from .mhps_extractor import *
 from .iqr_extractor import *
 from .wise_static_extractor import WiseStaticExtractor
-
-__all__ = ['HierarchicalExtractor',
-           'SupernovaeNonDetectionFeatureExtractor',
-           'SupernovaeDetectionFeatureExtractor',
-           'TurboFatsFeatureExtractor',
-           'ColorFeatureExtractor',
-           'GalacticCoordinatesExtractor',
-           'RealBogusExtractor',
-           'SGScoreExtractor',
-           'MHPSExtractor',
-           'IQRExtractor',
-           'WiseStaticExtractor'
-           ]

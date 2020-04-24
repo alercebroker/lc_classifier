@@ -1,8 +1,6 @@
-import numpy as np
 import pandas as pd
 
 from late_classifier.features.preprocess import DetectionsPreprocessorZTF
-
 
 
 # Loading data

@@ -1,7 +1,8 @@
 import pandas as pd
+import unittest
 
 
-class GenericExtractorTest:
+class GenericExtractorTest(unittest.TestCase):
     extractor = None
     params = {}
 

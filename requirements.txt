@@ -1,3 +1,5 @@
+requests
+alerce
 click
 astropy
 numpy
