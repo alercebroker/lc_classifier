@@ -62,7 +62,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         booleans = list(map(lambda band: len(object_alerts.fid == band) > 5, self.bands))
         return reduce(lambda x, y: x | y, booleans)
 
-    def compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, **kwargs):
         """
 
         Parameters
@@ -90,7 +90,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
 
         features = []
         for ex in self.extractors:
-            df = ex.compute_features(detections, non_detections=non_detections)
+            df = ex._compute_features(detections, non_detections=non_detections)
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')
         return df

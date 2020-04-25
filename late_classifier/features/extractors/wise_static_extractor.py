@@ -58,7 +58,7 @@ class WiseStaticExtractor(FeatureExtractor):
     def get_required_keys(self) -> List[str]:
         return []
 
-    def compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, **kwargs):
         index = detections.index[0]
         if index in self.wise_colors.index:
             return self.wise_colors.loc[[index]]

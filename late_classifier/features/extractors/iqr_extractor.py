@@ -17,7 +17,7 @@ class IQRExtractor(FeatureExtractorSingleBand):
         index = detections.index[0]
         columns = self.get_features_keys_with_band(band)
 
-        if not self.validate_df(detections) or band is None:
+        if band is None:
             logging.warning(f'extractor=IQR  object={index}  required_cols={self.get_required_keys()}  filters_qty=1')
             nan_df = self.nan_df(index)
             nan_df.columns = columns

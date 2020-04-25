@@ -14,7 +14,7 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
     def get_required_keys(self) -> List[str]:
         return ['ra', 'dec']
 
-    def compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, **kwargs):
         """
 
         Parameters
@@ -28,10 +28,6 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
 
         """
         index = detections.index[0]
-        if not self.validate_df(detections):
-            logging.info(
-                f'extractor=GALACTIC_COORD  object={index}  required_cols={self.get_required_keys()} filter_qty=1')
-            return self.nan_df(index)
 
         mean_ra = detections.ra.mean()
         mean_dec = detections.dec.mean()

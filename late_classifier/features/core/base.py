@@ -1,6 +1,7 @@
 import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
+import logging
 
 
 class FeatureExtractor(ABC):
@@ -11,20 +12,6 @@ class FeatureExtractor(ABC):
     @abstractmethod
     def get_required_keys(self) -> List[str]:
         raise NotImplementedError('get_required_keys is an abstract method')
-
-    def validate_df(self, df):
-        """
-        Method to validate input detections. The required keys must be in df columns.
-
-        Parameters
-        ----------
-        df :class:pandas.`DataFrame`
-        DataFrame with detections of an object.
-        """
-        cols = set(df.columns)
-        required = set(self.get_required_keys())
-        intersection = required.intersection(cols)
-        return len(intersection) == len(required)
 
     def nan_df(self, index):
         """
@@ -37,7 +24,6 @@ class FeatureExtractor(ABC):
         """
         return pd.DataFrame(columns=self.get_features_keys(), index=[index])
 
-    @abstractmethod
     def compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         Interface to implement different features extractors.
@@ -49,11 +35,32 @@ class FeatureExtractor(ABC):
 
         kwargs Another arguments like Non detections.
         """
-        raise NotImplementedError('FeatureExtractor is an interface')
+        if not self.has_all_columns(detections):
+            oid = detections.index[0]
+            return self.nan_df(oid)
+        return self._compute_features(detections, **kwargs)
+
+    @abstractmethod
+    def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        raise NotImplementedError('_compute_features is an abstract method')
+
+    def has_all_columns(self, df):
+        """
+                Method to validate input detections. The required keys must be in df columns.
+
+                Parameters
+                ----------
+                df :class:pandas.`DataFrame`
+                DataFrame with detections of an object.
+                """
+        cols = set(df.columns)
+        required = set(self.get_required_keys())
+        intersection = required.intersection(cols)
+        return len(intersection) == len(required)
 
 
 class FeatureExtractorSingleBand(FeatureExtractor, ABC):
-    def compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, **kwargs):
         """
         Compute features to single band detections of an object. Verify if input has only one band.
 

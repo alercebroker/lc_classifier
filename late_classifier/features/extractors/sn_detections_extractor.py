@@ -41,7 +41,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
         detections = detections[detections.fid == band]
 
-        if not self.validate_df(detections) or band is None or len(detections) == 0:
+        if band is None or len(detections) == 0:
             logging.warning(f'extractor=SNDET  object={index}  required_cols={self.get_required_keys()} filters_qty=1')
             nan_df = self.nan_df(index)
             nan_df.columns = columns

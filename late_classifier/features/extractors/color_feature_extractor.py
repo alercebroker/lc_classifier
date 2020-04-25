@@ -12,7 +12,7 @@ class ColorFeatureExtractor(FeatureExtractor):
     def get_required_keys(self) -> List[str]:
         return ['fid', 'magpsf_corr']
 
-    def compute_features(self, detections, **kwargs):
+    def _compute_features(self, detections, **kwargs):
         """
         Parameters
         ----------
@@ -26,7 +26,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         """
         # pd.options.display.precision = 10
         index = detections.index[0]
-        if not self.validate_df(detections) or 1 not in detections.fid.unique() or 2 not in detections.fid.unique():
+        if 1 not in detections.fid.unique() or 2 not in detections.fid.unique():
             logging.warning(f'extractor=COLOR  object={index}  required_cols={self.get_required_keys()}  filters_qty=2')
             return self.nan_df(index)
 

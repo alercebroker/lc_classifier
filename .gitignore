@@ -109,3 +109,5 @@ venv.bak/
 .idea
 
 late_classifier/features/extractors/data
+
+*.profile
