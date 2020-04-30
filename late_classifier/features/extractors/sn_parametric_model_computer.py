@@ -114,7 +114,7 @@ class SNModelScipy(object):
                 * (1 - sigmoid))
         return flux
 
-    def fit(self, times, targets):
+    def fit(self, times, targets, obs_errors):
         fluxpsf = targets
         mjds = times
 
@@ -176,9 +176,16 @@ class SNModelScipy(object):
             self.parameters[4],
             self.parameters[5])
 
-        mse = np.mean((predictions - targets) ** 2)
-        nmse = mse / np.mean(targets ** 2)
-        return nmse
+        # mse = np.mean((predictions - targets) ** 2)
+        # nmse = mse / np.mean(targets ** 2)
+
+        chi = np.sum((predictions - targets) ** 2 / (obs_errors + 0.01) ** 2)
+        chi_den = len(predictions) - len(self.parameters)
+        if chi_den >= 1:
+            chi_per_degree = chi / chi_den
+        else:
+            chi_per_degree = np.NaN
+        return chi_per_degree
 
     def get_model_parameters(self):
         return self.parameters.tolist()
@@ -200,26 +207,28 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
             'sn_model_gamma',
             'sn_model_t_rise',
             'sn_model_t_fall',
-            'sn_model_fit_error'
+            'sn_model_chi2_per_degree'
         ]
 
     def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf_corr']
+        return ['mjd', 'magpsf_corr', 'sigmapsf_corr']
 
     def compute_feature_in_one_band(self, detections, **kwargs):
         if len(detections) > 0:
-            detections = detections[['mjd', 'magpsf_corr']]
+            detections = detections[['mjd', 'magpsf_corr', 'sigmapsf_corr']]
             detections = detections.dropna()
 
             times = detections['mjd'].values
             times = times - np.min(times)
-            targets = detections['magpsf_corr'].values
-            targets = mag_to_flux(targets)
+            mag_targets = detections['magpsf_corr'].values
+            targets = mag_to_flux(mag_targets)
+            errors = detections['sigmapsf_corr'].values
+            errors = mag_to_flux(mag_targets - errors) - targets
 
             times = times.astype(np.float32)
             targets = targets.astype(np.float32)
 
-            fit_error = self.sn_model.fit(times, targets)
+            fit_error = self.sn_model.fit(times, targets, errors)
             model_parameters = self.sn_model.get_model_parameters()
             model_parameters.append(fit_error)
 
