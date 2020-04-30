@@ -9,6 +9,7 @@ from late_classifier.features.extractors.real_bogus_extractor import RealBogusEx
 from late_classifier.features.extractors.mhps_extractor import MHPSExtractor
 from late_classifier.features.extractors.iqr_extractor import IQRExtractor
 from late_classifier.features.extractors.sn_parametric_model_computer import SNParametricModelExtractor
+from late_classifier.features.extractors.wise_static_extractor import WiseStaticExtractor
 
 from late_classifier.features.core.base import FeatureExtractor, FeatureExtractorSingleBand
 from functools import reduce
@@ -26,7 +27,8 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            IQRExtractor(),
                            TurboFatsFeatureExtractor(),
                            SupernovaeNonDetectionFeatureExtractor(),
-                           SNParametricModelExtractor()
+                           SNParametricModelExtractor(),
+                           WiseStaticExtractor()
                            ]
 
     def get_features_keys(self) -> List[str]:

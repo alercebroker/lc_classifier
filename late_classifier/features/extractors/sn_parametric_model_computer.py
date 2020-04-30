@@ -211,18 +211,18 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         ]
 
     def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf_corr', 'sigmapsf_corr']
+        return ['mjd', 'magpsf', 'sigmapsf']
 
     def compute_feature_in_one_band(self, detections, **kwargs):
         if len(detections) > 0:
-            detections = detections[['mjd', 'magpsf_corr', 'sigmapsf_corr']]
+            detections = detections[['mjd', 'magpsf', 'sigmapsf']]
             detections = detections.dropna()
 
             times = detections['mjd'].values
             times = times - np.min(times)
-            mag_targets = detections['magpsf_corr'].values
+            mag_targets = detections['magpsf'].values
             targets = mag_to_flux(mag_targets)
-            errors = detections['sigmapsf_corr'].values
+            errors = detections['sigmapsf'].values
             errors = mag_to_flux(mag_targets - errors) - targets
 
             times = times.astype(np.float32)
