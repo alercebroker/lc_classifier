@@ -1,9 +1,6 @@
 from typing import List
 
 from late_classifier.features.core.base import FeatureExtractor
-import pandas as pd
-import numpy as np
-import logging
 
 
 class SGScoreExtractor(FeatureExtractor):
@@ -28,7 +25,5 @@ class SGScoreExtractor(FeatureExtractor):
         -------
 
         """
-        index = detections.index[0]
-
-        sgscore = detections['sgscore1'].median()
-        return pd.DataFrame(np.array([sgscore]), columns=self.get_features_keys(), index=[index])
+        sgscore_medians = detections[['sgscore1']].groupby(level=0).median()
+        return sgscore_medians
