@@ -25,17 +25,24 @@ class ColorFeatureExtractor(FeatureExtractor):
         -------
         """
         # pd.options.display.precision = 10
-        index = detections.index[0]
-        if 1 not in detections.fid.unique() or 2 not in detections.fid.unique():
-            logging.warning(f'extractor=COLOR  object={index}  required_cols={self.get_required_keys()}  filters_qty=2')
-            return self.nan_df(index)
+        oids = detections.index.unique()
+        colors = []
+        for oid in oids:
+            oid_detections = detections.loc[oid]
+            if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
+                logging.warning(
+                    f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
+                colors.append(self.nan_df(oid))
+                continue
 
-        g_band_mag = detections[detections.fid == 1]['magpsf_corr'].values
-        r_band_mag = detections[detections.fid == 2]['magpsf_corr'].values
+            g_band_mag = oid_detections[oid_detections.fid == 1]['magpsf_corr'].values
+            r_band_mag = oid_detections[oid_detections.fid == 2]['magpsf_corr'].values
 
-        g_r_max = g_band_mag.min() - r_band_mag.min()
-        g_r_mean = g_band_mag.mean() - r_band_mag.mean()
+            g_r_max = g_band_mag.min() - r_band_mag.min()
+            g_r_mean = g_band_mag.mean() - r_band_mag.mean()
 
-        data = [g_r_max, g_r_mean]
-
-        return pd.DataFrame([data], columns=self.get_features_keys(), index=[index])
+            data = [g_r_max, g_r_mean]
+            oid_color = pd.DataFrame([data], columns=self.get_features_keys(), index=[oid])
+            colors.append(oid_color)
+        colors = pd.concat(colors, axis=0)
+        return colors
