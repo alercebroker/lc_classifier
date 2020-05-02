@@ -1,9 +1,5 @@
 from typing import List
-
 from late_classifier.features.core.base import FeatureExtractor
-import pandas as pd
-import numpy as np
-import logging
 
 
 class RealBogusExtractor(FeatureExtractor):
@@ -26,7 +22,5 @@ class RealBogusExtractor(FeatureExtractor):
         -------
 
         """
-        index = detections.index[0]
-
-        rb = detections.rb.median()
-        return pd.DataFrame(np.array([rb]), columns=self.get_features_keys(), index=[index])
+        rb_medians = detections[['rb']].groupby(level=0).median()
+        return rb_medians
