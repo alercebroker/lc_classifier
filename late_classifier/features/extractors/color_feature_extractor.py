@@ -45,4 +45,5 @@ class ColorFeatureExtractor(FeatureExtractor):
             oid_color = pd.DataFrame([data], columns=self.get_features_keys(), index=[oid])
             colors.append(oid_color)
         colors = pd.concat(colors, axis=0)
+        colors.index.name = 'oid'
         return colors
