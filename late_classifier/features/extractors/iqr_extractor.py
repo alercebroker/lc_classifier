@@ -11,19 +11,27 @@ class IQRExtractor(FeatureExtractorSingleBand):
         return ['iqr']
 
     def get_required_keys(self) -> List[str]:
-        return ['magpsf_corr']
+        return ['fid', 'magpsf_corr']
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
-        index = detections.index[0]
+        oids = detections.index.unique()
+        iqrs = []
         columns = self.get_features_keys_with_band(band)
+        for oid in oids:
+            oid_detections = detections.loc[oid]
+            if band not in oid_detections.fid.values:
+                logging.warning(
+                    f'extractor=IQR  object={oid}  required_cols={self.get_required_keys()}  band={band}')
+                nan_df = self.nan_df(oid)
+                nan_df.columns = columns
+                iqrs.append(nan_df)
+                continue
 
-        if band is None:
-            logging.warning(f'extractor=IQR  object={index}  required_cols={self.get_required_keys()}  filters_qty=1')
-            nan_df = self.nan_df(index)
-            nan_df.columns = columns
-            return nan_df
-        detections = detections[detections.fid == band]
-        detections = detections.sort_values('mjd')
-        mag_dets = detections["magpsf_corr"]
-        iqr = sstats.iqr(mag_dets.values)
-        return pd.DataFrame([iqr], columns=columns, index=[index])
+            oid_band_detections = oid_detections[oid_detections.fid == band]
+            mag_dets = oid_band_detections["magpsf_corr"]
+            iqr = sstats.iqr(mag_dets.values)
+            iqr_df = pd.DataFrame([iqr], columns=columns, index=[oid])
+            iqrs.append(iqr_df)
+        iqrs = pd.concat(iqrs, axis=0)
+        iqrs.index.name = 'oid'
+        return iqrs
