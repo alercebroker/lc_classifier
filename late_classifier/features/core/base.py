@@ -36,8 +36,9 @@ class FeatureExtractor(ABC):
         kwargs Another arguments like Non detections.
         """
         if not self.has_all_columns(detections):
-            oid = detections.index[0]
-            return self.nan_df(oid)
+            oids = detections.index.unique()
+            logging.warning(f'detections_df has missing columns: {self.__name__} requires {self.get_required_keys()}')
+            return self.nan_df(oids)
         return self._compute_features(detections, **kwargs)
 
     @abstractmethod
