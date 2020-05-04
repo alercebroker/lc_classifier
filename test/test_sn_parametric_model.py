@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from late_classifier.features.extractors.sn_parametric_model_computer import SNModel
+from late_classifier.features.extractors.sn_model_tf import SNModel
 from late_classifier.features.extractors.sn_parametric_model_computer import SNParametricModelExtractor
 
 import time
