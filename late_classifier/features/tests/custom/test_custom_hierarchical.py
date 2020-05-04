@@ -58,6 +58,7 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             ],
             axis=0
         )
+        self.just_one_non_detection = raw_nondet_ZTF17aaaaaxg[non_det_keys].iloc[[0]]
 
     def test_if_runs_many_objects(self):
         custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
@@ -74,6 +75,12 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             non_detections=self.non_detections.loc['ZTF17aaaaaxg']
         )
         print(features_df)
+
+    def test_just_one_non_detection(self):
+        extractor = CustomHierarchicalExtractor(bands=[1, 2])
+        results = extractor.compute_features(
+            self.detections,
+            non_detections=self.just_one_non_detection)
 
 
 if __name__ == '__main__':

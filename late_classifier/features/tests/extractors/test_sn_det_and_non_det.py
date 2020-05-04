@@ -46,6 +46,7 @@ class TestSNDetAndNonDetExtractor(unittest.TestCase):
             ],
             axis=0
         )
+        self.just_one_non_detection = raw_nondet_ZTF17aaaaaxg[non_det_keys].iloc[[0]]
 
     def test_many_objects(self):
         sn_extractor = SupernovaeDetectionAndNonDetectionFeatureExtractor()
@@ -53,6 +54,15 @@ class TestSNDetAndNonDetExtractor(unittest.TestCase):
             self.detections,
             non_detections=self.non_detections)
         print(sn_results)
+        self.assertEqual(
+            (4, 2 * len(sn_extractor.get_features_keys())),
+            sn_results.shape)
+
+    def test_just_one_non_detection(self):
+        sn_extractor = SupernovaeDetectionAndNonDetectionFeatureExtractor()
+        sn_results = sn_extractor.compute_features(
+            self.detections,
+            non_detections=self.just_one_non_detection)
         self.assertEqual(
             (4, 2 * len(sn_extractor.get_features_keys())),
             sn_results.shape)

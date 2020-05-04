@@ -18,7 +18,7 @@ class IQRExtractor(FeatureExtractorSingleBand):
         iqrs = []
         columns = self.get_features_keys_with_band(band)
         for oid in oids:
-            oid_detections = detections.loc[oid]
+            oid_detections = detections.loc[[oid]]
             if band not in oid_detections.fid.values:
                 logging.warning(
                     f'extractor=IQR  object={oid}  required_cols={self.get_required_keys()}  band={band}')

@@ -117,7 +117,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
         columns = self.get_features_keys_with_band(band)
 
         for oid in oids:
-            oid_detections = detections.loc[oid]
+            oid_detections = detections.loc[[oid]]
             if band not in oid_detections.fid.values:
                 logging.warning(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
@@ -133,7 +133,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             if oid not in non_detections.index.unique():
                 oid_non_detections = pd.DataFrame(columns=non_detections.columns)
             else:
-                oid_non_detections = non_detections.loc[oid]
+                oid_non_detections = non_detections.loc[[oid]]
 
             oid_band_non_detections = oid_non_detections[oid_non_detections.fid == band]
 

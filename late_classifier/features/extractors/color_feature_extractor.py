@@ -28,7 +28,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         oids = detections.index.unique()
         colors = []
         for oid in oids:
-            oid_detections = detections.loc[oid]
+            oid_detections = detections.loc[[oid]]
             if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
                 logging.warning(
                     f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
