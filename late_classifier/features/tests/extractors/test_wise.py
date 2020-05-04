@@ -1,7 +1,7 @@
 import unittest
 import os
 import pandas as pd
-from late_classifier.features import SupernovaeDetectionFeatureExtractor
+from late_classifier.features import WiseStaticExtractor
 from late_classifier.features.preprocess import DetectionsPreprocessorZTF
 
 
@@ -9,7 +9,7 @@ FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 
-class TestSNDetectionExtractor(unittest.TestCase):
+class TestWiseExtractor(unittest.TestCase):
     def setUp(self) -> None:
         preprocess_ztf = DetectionsPreprocessorZTF()
 
@@ -25,7 +25,7 @@ class TestSNDetectionExtractor(unittest.TestCase):
         raw_det_ZTF18aaveorp = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18aaveorp_det.csv'), index_col="oid")
         det_ZTF18aaveorp = preprocess_ztf.preprocess(raw_det_ZTF18aaveorp)
 
-        keys = ['mjd', 'fid', 'magpsf_corr', 'sigmapsf_corr', 'isdiffpos']
+        keys = ['ra', 'dec']
         self.detections = pd.concat(
             [det_ZTF17aaaaaxg[keys],
              det_ZTF18abvvcko[keys],
@@ -35,12 +35,11 @@ class TestSNDetectionExtractor(unittest.TestCase):
         )
 
     def test_many_objects(self):
-        sn_det_extractor = SupernovaeDetectionFeatureExtractor()
-        sn_det_results = sn_det_extractor.compute_features(self.detections)
+        wise_extractor = WiseStaticExtractor()
+        wise_colors = wise_extractor.compute_features(self.detections)
         self.assertEqual(
-            (4, 2 * len(sn_det_extractor.get_features_keys())),
-            sn_det_results.shape)
-        self.assertEqual(2, len(sn_det_results.dropna()))
+            wise_colors.shape,
+            (4, len(wise_extractor.get_features_keys())))
 
 
 if __name__ == '__main__':

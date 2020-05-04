@@ -1,7 +1,7 @@
 import unittest
 import os
 import pandas as pd
-from late_classifier.features import SupernovaeDetectionFeatureExtractor
+from late_classifier.features import TurboFatsFeatureExtractor
 from late_classifier.features.preprocess import DetectionsPreprocessorZTF
 
 
@@ -9,7 +9,7 @@ FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 
-class TestSNDetectionExtractor(unittest.TestCase):
+class TestTurbofatsExtractor(unittest.TestCase):
     def setUp(self) -> None:
         preprocess_ztf = DetectionsPreprocessorZTF()
 
@@ -35,12 +35,14 @@ class TestSNDetectionExtractor(unittest.TestCase):
         )
 
     def test_many_objects(self):
-        sn_det_extractor = SupernovaeDetectionFeatureExtractor()
-        sn_det_results = sn_det_extractor.compute_features(self.detections)
+        turbofats_extractor = TurboFatsFeatureExtractor()
+        turbofats_results = turbofats_extractor.compute_features(self.detections)
         self.assertEqual(
-            (4, 2 * len(sn_det_extractor.get_features_keys())),
-            sn_det_results.shape)
-        self.assertEqual(2, len(sn_det_results.dropna()))
+            (4, 2 * len(turbofats_extractor.get_features_keys())),
+            turbofats_results.shape)
+        band_2_features = [f'{c}_2' for c in turbofats_extractor.get_features_keys()]
+        band_2_results = turbofats_results[band_2_features]
+        self.assertEqual(4, len(band_2_results.dropna()))
 
 
 if __name__ == '__main__':

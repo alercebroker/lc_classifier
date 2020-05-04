@@ -73,7 +73,7 @@ class TestObjectsMethods(unittest.TestCase):
         self.assertEqual(type(sn_fs), pd.DataFrame)
 
     def test_sn_non_detections_features(self):
-        sn_non_det_extractor = SupernovaeNonDetectionFeatureExtractor()
+        sn_non_det_extractor = SupernovaeDetectionAndNonDetectionFeatureExtractor()
         sn_non_det = sn_non_det_extractor.compute_features(
             self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
         self.assertEqual(type(sn_non_det), pd.DataFrame)

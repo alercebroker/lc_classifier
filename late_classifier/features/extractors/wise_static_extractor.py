@@ -59,12 +59,17 @@ class WiseStaticExtractor(FeatureExtractor):
         return []
 
     def _compute_features(self, detections, **kwargs):
-        index = detections.index[0]
-        if index in self.wise_colors.index:
-            return self.wise_colors.loc[[index]]
-        else:
-            logging.warning(
-                f'extractor=WISE  object={index}  required_cols={self.get_required_keys()}')
-            nan_df = self.nan_df(index)
-            nan_df.columns = self.get_features_keys()
-            return nan_df
+        oids = detections.index.unique()
+        colors = []
+        for oid in oids:
+            if oid in self.wise_colors.index:
+                colors.append(self.wise_colors.loc[[oid]])
+            else:
+                logging.info(
+                    f'extractor=WISE object={oid} no xmatch')
+                nan_df = self.nan_df(oid)
+                nan_df.columns = self.get_features_keys()
+                colors.append(nan_df)
+        colors = pd.concat(colors, axis=0, sort=True)
+        colors.index.name = 'oid'
+        return colors

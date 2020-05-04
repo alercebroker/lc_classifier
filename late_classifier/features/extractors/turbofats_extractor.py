@@ -2,15 +2,16 @@ from typing import List
 
 from late_classifier.features.core.base import FeatureExtractorSingleBand
 from turbofats import NewFeatureSpace
+import numpy as np
 import pandas as pd
 import logging
 
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
-        self.feature_space = NewFeatureSpace(self.get_features_keys())
+        self.feature_space = NewFeatureSpace(self._feature_keys_for_new_feature_space())
 
-    def get_features_keys(self) -> List[str]:
+    def _feature_keys_for_new_feature_space(self):
         return [
             'Amplitude', 'AndersonDarling', 'Autocor_length',
             'Beyond1Std',
@@ -28,6 +29,14 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'LinearTrend',
             'PeriodPowerRate'
         ]
+
+    def get_features_keys(self) -> List[str]:
+        features_keys = self._feature_keys_for_new_feature_space()
+        features_keys += [f"Harmonics_mag_{i}" for i in range(1, 8)]
+        features_keys += [f"Harmonics_phase_{i}" for i in range(2, 8)]
+        features_keys += [f"Harmonics_mse"]
+        features_keys.remove('Harmonics')
+        return features_keys
 
     def get_required_keys(self) -> List[str]:
         return ['mjd', 'magpsf_corr', 'fid', 'sigmapsf_corr']
@@ -47,17 +56,31 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         -------
 
         """
-        index = detections.index.unique()[0]
+        oids = detections.index.unique()
+        features = []
+
+        detections = detections.sort_values('mjd')
+
         columns = self.get_features_keys_with_band(band)
-        mag = [f"Harmonics_mag_{i}_{band}" for i in range(1, 8)]
-        phase = [f"Harmonics_phase_{i}_{band}" for i in range(2, 8)]
-        columns = columns + mag + phase + [f"Harmonics_mse_{band}"]
-        detections = detections[detections.fid == band]
+        for oid in oids:
+            oid_detections = detections.loc[oid]
+            if band not in oid_detections.fid.values:
+                logging.warning(
+                    f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
+                nan_df = self.nan_df(oid)
+                nan_df.columns = columns
+                features.append(nan_df)
+                continue
 
-        if band is None or len(detections) == 0:
-            logging.warning(f'extractor=TURBOFATS  object={index}  filters_qty=1')
-            return pd.DataFrame(columns=columns, index=[index])
+            oid_band_detections = oid_detections[oid_detections.fid == band]
 
-        df = self.feature_space.calculate_features(detections)
-        df.columns = [f'{x}_{band}' for x in df.columns]
-        return df
+            object_features = self.feature_space.calculate_features(oid_band_detections)
+            object_features = pd.DataFrame(
+                data=object_features.values,
+                columns=[f'{c}_{band}' for c in object_features.columns],
+                index=object_features.index
+            )
+            features.append(object_features)
+        features = pd.concat(features, axis=0, sort=True)
+        features.index.name = 'oid'
+        return features

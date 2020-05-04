@@ -8,3 +8,4 @@ from .sg_score_extractor import *
 from .mhps_extractor import *
 from .iqr_extractor import *
 from .wise_static_extractor import WiseStaticExtractor
+from .sn_parametric_model_computer import SNParametricModelExtractor

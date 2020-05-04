@@ -7,6 +7,7 @@ from scipy.optimize import curve_fit
 import tensorflow as tf
 from ..core.base import FeatureExtractorSingleBand
 from scipy.optimize import OptimizeWarning
+import logging
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -211,18 +212,35 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         ]
 
     def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf', 'sigmapsf']
+        return ['mjd', 'magpsf', 'sigmapsf', 'fid']
 
-    def compute_feature_in_one_band(self, detections, **kwargs):
-        if len(detections) > 0:
-            detections = detections[['mjd', 'magpsf', 'sigmapsf']]
-            detections = detections.dropna()
+    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
+        oids = detections.index.unique()
+        sn_params = []
 
-            times = detections['mjd'].values
+        detections = detections.sort_values('mjd')
+        columns = self.get_features_keys_with_band(band)
+
+        for oid in oids:
+            oid_detections = detections.loc[oid]
+            if band not in oid_detections.fid.values:
+                logging.warning(
+                    f'extractor=SN parametric model object={oid} required_cols={self.get_required_keys()} band={band}')
+                nan_df = self.nan_df(oid)
+                nan_df.columns = columns
+                sn_params.append(nan_df)
+                continue
+
+            oid_band_detections = oid_detections[oid_detections.fid == band]
+
+            oid_band_detections = oid_band_detections[['mjd', 'magpsf', 'sigmapsf']]
+            oid_band_detections = oid_band_detections.dropna()
+
+            times = oid_band_detections['mjd'].values
             times = times - np.min(times)
-            mag_targets = detections['magpsf'].values
+            mag_targets = oid_band_detections['magpsf'].values
             targets = mag_to_flux(mag_targets)
-            errors = detections['sigmapsf'].values
+            errors = oid_band_detections['sigmapsf'].values
             errors = mag_to_flux(mag_targets - errors) - targets
 
             times = times.astype(np.float32)
@@ -235,10 +253,10 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
             data = np.array(model_parameters).reshape([1, len(self.get_features_keys())])
             df = pd.DataFrame(
                 data=data,
-                columns=self.get_features_keys(),
-                index=[detections.index.values[0]]
+                columns=self.get_features_keys_with_band(band),
+                index=[oid]
             )
-            df.index.name = 'oid'
-            return df
-        else:
-            return pd.DataFrame()
+            sn_params.append(df)
+        sn_params = pd.concat(sn_params, axis=0)
+        sn_params.index.name = 'oid'
+        return sn_params
