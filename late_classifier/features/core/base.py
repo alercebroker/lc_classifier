@@ -37,7 +37,7 @@ class FeatureExtractor(ABC):
         """
         if not self.has_all_columns(detections):
             oids = detections.index.unique()
-            logging.warning(
+            logging.info(
                 f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
             return self.nan_df(oids)
         return self._compute_features(detections, **kwargs)

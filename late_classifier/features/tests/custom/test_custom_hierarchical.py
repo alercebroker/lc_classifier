@@ -82,6 +82,20 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             self.detections,
             non_detections=self.just_one_non_detection)
 
+    def test_object_with_few_alerts(self):
+        custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
+        oids = self.detections.index.unique()
+        detections = self.detections.loc[oids[:3]]
+        last_curve_oid = oids[-1]
+        last_curve = self.detections.loc[last_curve_oid]
+        last_curve_short = last_curve.iloc[:4]
+        detections = pd.concat([detections, last_curve_short], axis=0)
+        features_df = custom_hierarchical_extractor.compute_features(
+            detections=detections,
+            non_detections=self.non_detections
+        )
+        print(features_df)
+
 
 if __name__ == '__main__':
     unittest.main()

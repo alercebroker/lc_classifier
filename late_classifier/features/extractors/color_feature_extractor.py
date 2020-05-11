@@ -30,7 +30,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         for oid in oids:
             oid_detections = detections.loc[[oid]]
             if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
-                logging.warning(
+                logging.info(
                     f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
                 colors.append(self.nan_df(oid))
                 continue

@@ -19,7 +19,7 @@ class TestObjectsMethods(unittest.TestCase):
     raw_data_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
 
     def test_preprocess_one_object(self):
-        self.assertEqual(self.preprocessor_ztf.valid_columns(self.raw_data_ZTF18abakgtm), True)
+        self.assertEqual(self.preprocessor_ztf.has_necessary_columns(self.raw_data_ZTF18abakgtm), True)
         self.assertEqual(self.raw_data_ZTF18abakgtm.index.name, "oid")
         preprocessed_data = self.preprocessor_ztf.preprocess(self.raw_data_ZTF18abakgtm)
         self.assertEqual(type(preprocessed_data), pd.DataFrame)
