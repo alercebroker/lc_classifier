@@ -1,9 +1,15 @@
 import numpy as np
 import pandas as pd
+import os
+import pickle
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from late_classifier.classifier.preprocessing import FeaturePreprocessor
 from late_classifier.classifier.preprocessing import intersect_oids_in_dataframes
 from abc import ABC, abstractmethod
+
+
+MODEL_PATH = os.path.dirname(os.path.abspath(__file__))
+PICKLE_PATH = os.path.join(MODEL_PATH, "pickles")
 
 
 class BaseClassifier(ABC):
@@ -29,6 +35,14 @@ class BaseClassifier(ABC):
     def get_list_of_classes(self) -> list:
         pass
 
+    @abstractmethod
+    def save_model(self, directory: str) -> None:
+        pass
+
+    @abstractmethod
+    def load_model(self, directory: str) -> None:
+        pass
+
 
 def invert_dictionary(dictionary):
     inverted_dictionary = {}
@@ -51,6 +65,7 @@ class BaselineRandomForest(BaseClassifier):
             min_samples_leaf=1)
         self.feature_preprocessor = FeaturePreprocessor()
         self.feature_list = None
+        self.model_filename = 'baseline_rf.pkl'
 
     def fit(self, samples: pd.DataFrame, labels: pd.DataFrame):
         samples = self.feature_preprocessor.preprocess_features(samples)
@@ -78,6 +93,17 @@ class BaselineRandomForest(BaseClassifier):
 
     def get_list_of_classes(self) -> list:
         return self.random_forest_classifier.classes_
+
+    def save_model(self, directory: str) -> None:
+        with open(os.path.join(directory, self.model_filename), 'wb') as f:
+            pickle.dump(
+                self.random_forest_classifier,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
+    def load_model(self, directory: str) -> None:
+        rf = pd.read_pickle(os.path.join(directory, self.model_filename))
+        self.random_forest_classifier = rf
 
 
 class HierarchicalRandomForest(BaseClassifier):
@@ -111,6 +137,13 @@ class HierarchicalRandomForest(BaseClassifier):
 
         self.taxonomy_dictionary = taxonomy_dictionary
         self.inverted_dictionary = invert_dictionary(self.taxonomy_dictionary)
+        self.pickles = [
+            "top_rf.pkl",
+            "stochastic_rf.pkl",
+            "periodic_rf.pkl",
+            "transient_rf.pkl"
+        ]
+        self.url_model = "https://assets.alerce.online/pipeline/hierarchical_rf_paper/"
 
     def fit(self, samples: pd.DataFrame, labels: pd.DataFrame) -> None:
         labels = labels.copy()
@@ -189,3 +222,88 @@ class HierarchicalRandomForest(BaseClassifier):
                 + self.periodic_classifier.classes_.tolist()
                 + self.transient_classifier.classes_.tolist())
         return final_columns
+
+    def save_model(self, directory: str) -> None:
+        with open(os.path.join(directory, 'top_rf.pkl'), 'wb') as f:
+            pickle.dump(
+                self.top_classifier,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
+        with open(os.path.join(directory, 'stochastic_rf.pkl'), 'wb') as f:
+            pickle.dump(
+                self.stochastic_classifier,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
+        with open(os.path.join(directory, 'periodic_rf.pkl'), 'wb') as f:
+            pickle.dump(
+                self.periodic_classifier,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
+        with open(os.path.join(directory, 'transient_rf.pkl'), 'wb') as f:
+            pickle.dump(
+                self.transient_classifier,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
+    def load_model(self, directory: str) -> None:
+        self.top_classifier = pd.read_pickle(
+            os.path.join(directory, 'top_rf.pkl'))
+        self.stochastic_classifier = pd.read_pickle(
+            os.path.join(directory, 'stochastic_rf.pkl'))
+        self.periodic_classifier = pd.read_pickle(
+            os.path.join(directory, 'periodic_rf.pkl'))
+        self.transient_classifier = pd.read_pickle(
+            os.path.join(directory, 'transient_rf.pkl'))
+
+    def download_model(self):
+        if not os.path.exists(PICKLE_PATH):
+            os.mkdir(PICKLE_PATH)
+        for pkl in self.pickles:
+            tmp_path = os.path.join(PICKLE_PATH, pkl)
+            if not os.path.exists(tmp_path):
+                command = f"wget {self.url_model}{pkl} -O {tmp_path}"
+                os.system(command)
+
+    def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
+        input_features = self.feature_preprocessor.preprocess_features(input_features)
+        prob_root = pd.DataFrame(
+            self.top_classifier.predict_proba(input_features),
+            columns=self.top_classifier.classes_,
+            index=input_features.index
+        )
+
+        prob_children = []
+        resp_children = {}
+
+        child_models = [
+            self.stochastic_classifier,
+            self.periodic_classifier,
+            self.transient_classifier
+        ]
+        child_names = [
+            'stochastic',
+            'periodic',
+            'transient'
+        ]
+        for name, model in zip(child_names, child_models):
+            prob_child = pd.DataFrame(
+                model.predict_proba(input_features),
+                columns=model.classes_,
+                index=input_features.index
+            )
+
+            resp_children[name] = prob_child
+            prob_child = prob_child.mul(prob_root[name].values, axis="rows")
+            prob_children.append(prob_child)
+        prob_all = pd.concat(prob_children, axis=1, sort=False)
+
+        return {
+            "hierarchical": {
+                "root": prob_root,
+                "children": resp_children},
+            "probabilities": prob_all,
+            "class": prob_all.idxmax(axis=1)
+        }

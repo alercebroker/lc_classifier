@@ -5,9 +5,7 @@ from late_classifier.features.extractors import *
 from late_classifier.features.preprocess import *
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-print(FILE_PATH)
 EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
-print(EXAMPLES_PATH)
 
 
 class TestObjectsMethods(unittest.TestCase):
