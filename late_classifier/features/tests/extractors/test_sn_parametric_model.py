@@ -3,10 +3,17 @@ import os
 import pandas as pd
 from late_classifier.features import SNParametricModelExtractor
 from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from late_classifier.features.extractors.sn_model_tf import SNModel
 
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
+
+
+# Just to test SNModel with tensorflow
+class SNParametricModelTFExtractor(SNParametricModelExtractor):
+    def __init__(self):
+        self.sn_model = SNModel()
 
 
 class TestSNParametricModelExtractor(unittest.TestCase):
@@ -36,6 +43,14 @@ class TestSNParametricModelExtractor(unittest.TestCase):
 
     def test_many_objects(self):
         sn_det_extractor = SNParametricModelExtractor()
+        sn_det_results = sn_det_extractor.compute_features(self.detections)
+        self.assertEqual(
+            (4, 2 * len(sn_det_extractor.get_features_keys())),
+            sn_det_results.shape)
+        self.assertEqual(2, len(sn_det_results.dropna()))
+
+    def test_tf_model(self):
+        sn_det_extractor = SNParametricModelTFExtractor()
         sn_det_results = sn_det_extractor.compute_features(self.detections)
         self.assertEqual(
             (4, 2 * len(sn_det_extractor.get_features_keys())),

@@ -46,7 +46,7 @@ class SNModel(object):
         self.t_rise_param.assign(5.0)
         self.t_fall_param.assign(20.0)
 
-    def fit(self, times, targets):
+    def fit(self, times, targets, errors):
         self.set_guess(times, targets)
         for iteration in range(250):
             loss_value, gradient_value = self._gradient(times, targets)

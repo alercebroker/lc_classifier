@@ -100,10 +100,17 @@ class BaselineRandomForest(BaseClassifier):
                 self.random_forest_classifier,
                 f,
                 pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(directory, 'feature_list.pkl'), 'wb') as f:
+            pickle.dump(
+                self.feature_list,
+                f,
+                pickle.HIGHEST_PROTOCOL)
 
     def load_model(self, directory: str) -> None:
         rf = pd.read_pickle(os.path.join(directory, self.model_filename))
         self.random_forest_classifier = rf
+        self.feature_list = pd.read_pickle(
+            os.path.join(directory, 'feature_list.pkl'))
 
 
 class HierarchicalRandomForest(BaseClassifier):
@@ -136,6 +143,7 @@ class HierarchicalRandomForest(BaseClassifier):
         self.feature_preprocessor = FeaturePreprocessor()
 
         self.taxonomy_dictionary = taxonomy_dictionary
+        self.feature_list = None
         self.inverted_dictionary = invert_dictionary(self.taxonomy_dictionary)
         self.pickles = [
             "top_rf.pkl",
@@ -164,6 +172,9 @@ class HierarchicalRandomForest(BaseClassifier):
         samples = self.feature_preprocessor.remove_duplicates(samples)
         samples, labels = intersect_oids_in_dataframes(samples, labels)
 
+        # Save list of features to know their order
+        self.feature_list = samples.columns
+
         # Train top classifier
         self.top_classifier.fit(samples.values, labels['top_class'].values)
 
@@ -188,6 +199,7 @@ class HierarchicalRandomForest(BaseClassifier):
 
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         samples = self.feature_preprocessor.preprocess_features(samples)
+        samples = samples[self.feature_list]
 
         top_probs = self.top_classifier.predict_proba(samples.values)
 
@@ -248,6 +260,12 @@ class HierarchicalRandomForest(BaseClassifier):
                 f,
                 pickle.HIGHEST_PROTOCOL)
 
+        with open(os.path.join(directory, 'feature_list.pkl'), 'wb') as f:
+            pickle.dump(
+                self.feature_list,
+                f,
+                pickle.HIGHEST_PROTOCOL)
+
     def load_model(self, directory: str) -> None:
         self.top_classifier = pd.read_pickle(
             os.path.join(directory, 'top_rf.pkl'))
@@ -257,6 +275,8 @@ class HierarchicalRandomForest(BaseClassifier):
             os.path.join(directory, 'periodic_rf.pkl'))
         self.transient_classifier = pd.read_pickle(
             os.path.join(directory, 'transient_rf.pkl'))
+        self.feature_list = pd.read_pickle(
+            os.path.join(directory, 'feature_list.pkl'))
 
     def download_model(self):
         if not os.path.exists(PICKLE_PATH):

@@ -46,6 +46,7 @@ def kaggle_score(prediction_probs, labels):
         scores.append(class_score)
     return np.array(scores).mean()
 
+
 def classification_report(predictions, labels):
     if not predictions.index.equals(labels.index):
         raise Exception('Objects on both dataframes should match')
