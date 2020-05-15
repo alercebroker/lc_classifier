@@ -1,7 +1,7 @@
 from typing import List
 
 from late_classifier.features.core.base import FeatureExtractorSingleBand
-from turbofats import NewFeatureSpace
+from turbofats import FeatureSpace
 import numpy as np
 import pandas as pd
 import logging
@@ -9,7 +9,7 @@ import logging
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
-        self.feature_space = NewFeatureSpace(self._feature_keys_for_new_feature_space())
+        self.feature_space = FeatureSpace(self._feature_keys_for_new_feature_space())
 
     def _feature_keys_for_new_feature_space(self):
         return [
