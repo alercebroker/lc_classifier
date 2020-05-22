@@ -103,10 +103,14 @@ class SNModelScipy(object):
 
 
 def mag_to_flux(mag):
+    """Converts a list of magnitudes into flux."""
     return 10 ** (-(mag + 48.6) / 2.5 + 26.0)
 
 
 class SNParametricModelExtractor(FeatureExtractorSingleBand):
+    """Fits a SNe parametric model to the light curve and provides
+    the fitted parameters as features."""
+
     def __init__(self):
         self.sn_model = SNModelScipy()
 

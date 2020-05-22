@@ -18,9 +18,14 @@ class FeatureExtractor(ABC):
         Method to generate a empty dataframe with NaNs.
 
         Parameters
-        ----------
-        index :class:String
-        Name/id/oid of the observation
+        ---------
+        index : str
+            Name/id/oid of the observation
+
+        Returns
+        ------
+        pd.DataFrame
+            One-row dataframe full of nans.
         """
         return pd.DataFrame(columns=self.get_features_keys(), index=[index])
 
@@ -82,12 +87,19 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
     @abstractmethod
     def compute_feature_in_one_band(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
-        Interface to compute features to single band detections of an object.
+        Computes features of single band detections from one object.
+
         Parameters
-        ----------
-        detections :class:pandas.`DataFrame`
+        ---------
+        detections : pd.DataFrame
+            Detections light curve from one object and one band.
 
         kwargs Possible: Non detections DataFrame.
+
+        Returns
+        ------
+        pd.DataFrame
+            Single-row dataframe with the computed features.
         """
         raise NotImplementedError('compute_feature_in_one_band is an abstract class')
 

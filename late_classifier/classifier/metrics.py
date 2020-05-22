@@ -5,6 +5,22 @@ from sklearn.metrics import classification_report as sklearn_classification_repo
 
 
 def balanced_recall(predictions, labels):
+    """Computes the balanced recall between the predictions from a model
+     and the real labels.
+
+     Parameters
+     ---------
+     predictions : pd.DataFrame
+        Predicted classes for multiple objects.
+        Must contain a 'classALeRCE' column.
+     labels : pd.DataFrame
+        True labels for multiple objects.
+        Must contain a 'classALeRCE' column.
+
+     Returns
+     ------
+     np.float
+     """
     recalls = []
     for classALeRCE in labels.classALeRCE.unique():
         labels_from_class = labels[labels.classALeRCE == classALeRCE]

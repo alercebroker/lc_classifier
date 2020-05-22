@@ -43,18 +43,20 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
-        Compute features for detections
+        Compute features from turbo-fats.
 
         Parameters
         ----------
-        detections :class:pandas.`DataFrame`
-        band :class:int
+        detections : pd.DataFrame
+            Light curve from a single band and a single object.
+        band : int
+            Number of the band of the light curve.
         kwargs
 
-        Returns class:pandas.`DataFrame`
-        Turbo FATS features.
-        -------
-
+        Returns
+        ------
+        pd.DataFrame
+            turbo-fats features (one-row dataframe).
         """
         oids = detections.index.unique()
         features = []
