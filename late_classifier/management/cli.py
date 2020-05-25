@@ -21,11 +21,11 @@ def cli():
 def compute_features(detections_dir, non_detections_dir, output_dir, ex):
     import late_classifier.features.extractors as extractor
     from late_classifier.management.helpers import iodf, iodir
-    from late_classifier.features.preprocess import DetectionsV2PreprocessorZTF
+    from late_classifier.features import DetectionsPreprocessorZTF
 
     detections = iodf.merge_df(detections_dir)
     iodir.exists_dir(output_dir)
-    ztf_v2 = DetectionsV2PreprocessorZTF()
+    ztf_v2 = DetectionsPreprocessorZTF()
     detections_preprocess = ztf_v2.preprocess(detections)
     a = extractor.ColorFeatureExtractor().compute_features(detections_preprocess)
     """for file in detections_files:
@@ -42,19 +42,17 @@ def compute_features(detections_dir, non_detections_dir, output_dir, ex):
 @click.option('-t', '--type-preprocess', default=None, help="Type of preprocess, i.e 'ztf' for preprocess ZTF's data")
 def preprocess(detections_dir, output_dir, type_preprocess):
     from late_classifier.management.helpers import iodf, iodir
-    from late_classifier.features.preprocess import DetectionsPreprocessorZTF, DetectionsV2PreprocessorZTF
+    from late_classifier.features import DetectionsPreprocessorZTF
     detections_files = iodir.list_files(detections_dir)
     iodir.exists_dir(output_dir)
     type_preprocess = type_preprocess.lower() if type_preprocess is not None else "all"
 
     ztf_v1 = DetectionsPreprocessorZTF()
-    ztf_v2 = DetectionsV2PreprocessorZTF()
 
     for file in detections_files:
         filename = iodir.get_filename(file)
         data = iodf.read_file(file, index_col="oid")
         iodf.write_file(ztf_v1.preprocess(data), os.path.join(output_dir, f"{filename}_preprocess_ztf_v1.csv"))
-        iodf.write_file(ztf_v2.preprocess(data), os.path.join(output_dir, f"{filename}_preprocess_ztf_v2.csv"))
 
 
 @cli.command()

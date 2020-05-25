@@ -1,8 +1,12 @@
 import os
 import unittest
+import pandas as pd
 
-from late_classifier.features.extractors import *
-from late_classifier.features.preprocess import *
+from late_classifier.features import DetectionsPreprocessorZTF
+from late_classifier.features import TurboFatsFeatureExtractor, ColorFeatureExtractor, GalacticCoordinatesExtractor
+from late_classifier.features import RealBogusExtractor, SGScoreExtractor, SupernovaeDetectionFeatureExtractor
+from late_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor, WiseStaticExtractor
+
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))

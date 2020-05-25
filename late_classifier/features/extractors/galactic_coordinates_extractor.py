@@ -1,6 +1,6 @@
 from typing import List
 
-from late_classifier.features.core.base import FeatureExtractor
+from ..core.base import FeatureExtractor
 from astropy.coordinates import SkyCoord
 import pandas as pd
 import numpy as np

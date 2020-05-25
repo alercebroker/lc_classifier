@@ -2,7 +2,7 @@ import unittest
 import os
 import pandas as pd
 from late_classifier.features import SupernovaeDetectionFeatureExtractor
-from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from late_classifier.features import DetectionsPreprocessorZTF
 
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))

@@ -1,5 +1,5 @@
 from typing import List
-from late_classifier.features.core.base import FeatureExtractor
+from ..core.base import FeatureExtractor
 
 
 class RealBogusExtractor(FeatureExtractor):

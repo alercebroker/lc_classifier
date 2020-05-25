@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from late_classifier.features import DetectionsPreprocessorZTF
 
 
 detections = pd.read_pickle(sys.argv[1])

@@ -1,5 +1,5 @@
-from late_classifier.features.custom import CustomHierarchicalExtractor
-from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from late_classifier.features import CustomHierarchicalExtractor
+from late_classifier.features import DetectionsPreprocessorZTF
 import os
 import pandas as pd
 import unittest

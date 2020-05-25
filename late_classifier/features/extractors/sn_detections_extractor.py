@@ -1,6 +1,6 @@
 from typing import List
 
-from late_classifier.features.core.base import FeatureExtractorSingleBand
+from ..core.base import FeatureExtractorSingleBand
 import pandas as pd
 import logging
 

@@ -1,7 +1,7 @@
 from typing import List
 
-from late_classifier.features.core.base import FeatureExtractorSingleBand
-from late_classifier.features.extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
+from ..core.base import FeatureExtractorSingleBand
+from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 import pandas as pd
 import numpy as np
 import logging

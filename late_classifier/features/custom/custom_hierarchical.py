@@ -1,19 +1,18 @@
 from typing import List
 
-from late_classifier.features.extractors import SupernovaeDetectionAndNonDetectionFeatureExtractor
-from late_classifier.features.extractors import GalacticCoordinatesExtractor
-from late_classifier.features.extractors import TurboFatsFeatureExtractor
-from late_classifier.features.extractors import ColorFeatureExtractor
-from late_classifier.features.extractors import SGScoreExtractor
-from late_classifier.features.extractors import RealBogusExtractor
-from late_classifier.features.extractors import MHPSExtractor
-from late_classifier.features.extractors import IQRExtractor
-from late_classifier.features.extractors import SNParametricModelExtractor
-from late_classifier.features.extractors import WiseStaticExtractor
+from late_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor
+from late_classifier.features import GalacticCoordinatesExtractor
+from late_classifier.features import TurboFatsFeatureExtractor
+from late_classifier.features import ColorFeatureExtractor
+from late_classifier.features import SGScoreExtractor
+from late_classifier.features import RealBogusExtractor
+from late_classifier.features import MHPSExtractor
+from late_classifier.features import IQRExtractor
+from late_classifier.features import SNParametricModelExtractor
+from late_classifier.features import WiseStaticExtractor
 
-from late_classifier.features.core.base import FeatureExtractor, FeatureExtractorSingleBand
-
-from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
+from ..preprocess import DetectionsPreprocessorZTF
 
 import pandas as pd
 

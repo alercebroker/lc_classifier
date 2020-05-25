@@ -1,6 +1,6 @@
 from typing import List
 
-from late_classifier.features.core.base import FeatureExtractorSingleBand
+from ..core.base import FeatureExtractorSingleBand
 from turbofats import FeatureSpace
 import numpy as np
 import pandas as pd

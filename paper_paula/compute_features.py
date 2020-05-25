@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import pandas as pd
-from late_classifier.features.custom import CustomHierarchicalExtractor
+from late_classifier.features import CustomHierarchicalExtractor
 from joblib import Parallel, delayed
 
 

@@ -2,7 +2,7 @@ import unittest
 import os
 import pandas as pd
 from late_classifier.features import SNParametricModelExtractor
-from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+from late_classifier.features import DetectionsPreprocessorZTF
 from late_classifier.features.extractors.sn_model_tf import SNModel
 
 
