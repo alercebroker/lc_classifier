@@ -116,13 +116,13 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
 
     def get_features_keys(self) -> List[str]:
         return [
-            'sn_model_a',
-            'sn_model_t0',
-            'sn_model_f',
-            'sn_model_gamma',
-            'sn_model_t_rise',
-            'sn_model_t_fall',
-            'sn_model_chi2_per_degree'
+            'SPM_A',
+            'SPM_t0',
+            'SPM_beta',
+            'SPM_gamma',
+            'SPM_tau_rise',
+            'SPM_tau_fall',
+            'SPM_chi'
         ]
 
     def get_required_keys(self) -> List[str]:

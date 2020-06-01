@@ -17,11 +17,11 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
     def get_features_keys(self) -> List[str]:
         return [
-            'mhps_ratio',
-            'mhps_low',
-            'mhps_high',
-            'mhps_non_zero',
-            'mhps_PN_flag']
+            'MHPS_ratio',
+            'MHPS_low',
+            'MHPS_high',
+            'MHPS_non_zero',
+            'MHPS_PN_flag']
 
     def get_required_keys(self) -> List[str]:
         return ["magpsf_corr", "sigmapsf_corr", "mjd"]
