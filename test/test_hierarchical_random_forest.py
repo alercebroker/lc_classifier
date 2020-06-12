@@ -14,9 +14,9 @@ class TestHierarchicalRF(unittest.TestCase):
 
     def test_fit(self):
         taxonomy_dictionary = {
-            'stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
-            'periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
-            'transient': ['SNIa', 'SNII', 'SNIbc']
+            'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
+            'Periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
+            'Transient': ['SNIa', 'SNII', 'SNIbc']
         }
         model = HierarchicalRandomForest(taxonomy_dictionary)
         model.fit(self.train_features, self.train_labels)

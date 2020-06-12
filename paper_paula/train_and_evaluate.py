@@ -35,9 +35,9 @@ training_features.to_pickle('training_features.pkl')
 training_labels.to_pickle('training_labels.pkl')
 
 taxonomy_dictionary = {
-    'stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
-    'periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
-    'transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
+    'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
+    'Periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
+    'Transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
 }
 classifier = HierarchicalRandomForest(taxonomy_dictionary)
 

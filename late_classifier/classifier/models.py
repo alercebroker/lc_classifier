@@ -179,19 +179,19 @@ class HierarchicalRandomForest(BaseClassifier):
         self.top_classifier.fit(samples.values, labels['top_class'].values)
 
         # Train specialized classifiers
-        is_stochastic = labels['top_class'] == 'stochastic'
+        is_stochastic = labels['top_class'] == 'Stochastic'
         self.stochastic_classifier.fit(
             samples[is_stochastic].values,
             labels[is_stochastic]['classALeRCE'].values
         )
 
-        is_periodic = labels['top_class'] == 'periodic'
+        is_periodic = labels['top_class'] == 'Periodic'
         self.periodic_classifier.fit(
             samples[is_periodic].values,
             labels[is_periodic]['classALeRCE'].values
         )
 
-        is_transient = labels['top_class'] == 'transient'
+        is_transient = labels['top_class'] == 'Transient'
         self.transient_classifier.fit(
             samples[is_transient].values,
             labels[is_transient]['classALeRCE'].values
@@ -207,9 +207,9 @@ class HierarchicalRandomForest(BaseClassifier):
         periodic_probs = self.periodic_classifier.predict_proba(samples.values)
         transient_probs = self.transient_classifier.predict_proba(samples.values)
 
-        stochastic_index = self.top_classifier.classes_.tolist().index('stochastic')
-        periodic_index = self.top_classifier.classes_.tolist().index('periodic')
-        transient_index = self.top_classifier.classes_.tolist().index('transient')
+        stochastic_index = self.top_classifier.classes_.tolist().index('Stochastic')
+        periodic_index = self.top_classifier.classes_.tolist().index('Periodic')
+        transient_index = self.top_classifier.classes_.tolist().index('Transient')
 
         stochastic_probs = stochastic_probs * top_probs[:, stochastic_index].reshape([-1, 1])
         periodic_probs = periodic_probs * top_probs[:, periodic_index].reshape([-1, 1])
@@ -288,6 +288,10 @@ class HierarchicalRandomForest(BaseClassifier):
                 os.system(command)
 
     def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
+        if isinstance(input_features, pd.Series):
+            input_features = input_features.to_frame().transpose()
+        if len(input_features) != 1:
+            raise ValueError('predict_in_pipeline receives features one by one')
         input_features = self.feature_preprocessor.preprocess_features(input_features)
         prob_root = pd.DataFrame(
             self.top_classifier.predict_proba(input_features),

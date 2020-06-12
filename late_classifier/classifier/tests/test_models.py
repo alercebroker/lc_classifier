@@ -49,9 +49,9 @@ class TestHierarchicalRF(unittest.TestCase):
                 EXAMPLES_PATH, 'some_labels.pkl')
         )
         self.taxonomy_dictionary = {
-            'stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
-            'periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
-            'transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
+            'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
+            'Periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
+            'Transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
         }
 
     def test_fit(self):
@@ -71,14 +71,14 @@ class TestHierarchicalRF(unittest.TestCase):
 
     def test_smaller_dictionary(self):
         taxonomy_dictionary = self.taxonomy_dictionary
-        taxonomy_dictionary['stochastic'] = taxonomy_dictionary['stochastic'][:-1]
+        taxonomy_dictionary['Stochastic'] = taxonomy_dictionary['Stochastic'][:-1]
         classifier = HierarchicalRandomForest(self.taxonomy_dictionary)
         with self.assertRaises(Exception):
             classifier.fit(self.features, self.labels)
 
     def test_larger_dictionary(self):
         taxonomy_dictionary = self.taxonomy_dictionary
-        taxonomy_dictionary['stochastic'] = taxonomy_dictionary['stochastic']+['new class']
+        taxonomy_dictionary['Stochastic'] = taxonomy_dictionary['Stochastic']+['new class']
         classifier = HierarchicalRandomForest(self.taxonomy_dictionary)
         classifier.fit(self.features, self.labels)
         predicted_probs = classifier.predict_proba(self.features)
@@ -87,15 +87,20 @@ class TestHierarchicalRF(unittest.TestCase):
     def test_predict_in_pipeline(self):
         classifier = HierarchicalRandomForest(self.taxonomy_dictionary)
         classifier.fit(self.features, self.labels)
-        predicted_classes = classifier.predict_in_pipeline(self.features)
-        n_objects = len(self.features)
-        self.is_sum_one(predicted_classes['probabilities'])
-        self.assertEqual(n_objects, len(predicted_classes['probabilities']))
-        self.is_sum_one(predicted_classes['hierarchical']['root'])
-        self.assertEqual(n_objects, len(predicted_classes['hierarchical']['root']))
+        features = self.features.iloc[0]
+        predicted_classes = classifier.predict_in_pipeline(features)
+        n_classes = len(classifier.get_list_of_classes())
+        self.dict_sum_one(predicted_classes['probabilities'])
+        self.assertEqual(n_classes, len(predicted_classes['probabilities']))
+        self.dict_sum_one(predicted_classes['hierarchical']['root'])
+        self.assertEqual(3, len(predicted_classes['hierarchical']['root']))
         for children_probs in predicted_classes['hierarchical']['children'].values():
-            self.is_sum_one(children_probs)
-            self.assertEqual(n_objects, len(children_probs))
+            self.dict_sum_one(children_probs)
+
+    def dict_sum_one(self, d: dict):
+        probs_sum = sum(d.values())
+        errors = np.abs(probs_sum - 1.0)
+        self.assertTrue(errors < 1e-6)
 
     def is_sum_one(self, probs: pd.DataFrame):
         probs_sum = probs.sum(axis=1)
@@ -124,9 +129,9 @@ class TestModelsSaveAndLoad(unittest.TestCase):
                 EXAMPLES_PATH, 'some_labels.pkl')
         )
         self.taxonomy_dictionary = {
-            'stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
-            'periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
-            'transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
+            'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
+            'Periodic': ['RRL', 'EB', 'DSCT', 'Ceph', 'Periodic-Other'],
+            'Transient': ['SNIa', 'SNII', 'SNIbc', 'SLSN']
         }
         self.tmp_dir = os.path.join(EXAMPLES_PATH, 'tmp')
         if not os.path.exists(self.tmp_dir):
