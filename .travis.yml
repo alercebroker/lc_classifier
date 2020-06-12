@@ -1,5 +1,11 @@
 language: python
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_3500de29b3e0_key -iv $encrypted_3500de29b3e0_iv -in turbofats_travis_public.enc -out turbofats_travis_public -d
+  - chmod 600 turbofats_travis_public
+  - eval $(ssh-agent -s)
+  - ssh-add turbofats_travis_public
+  
 install:
   - pip install -r requirements_mhps.txt
   - pip install -r requirements_turbo_fats.txt
