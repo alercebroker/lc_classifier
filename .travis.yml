@@ -1,6 +1,8 @@
 language: python
 
 install:
+  - pip install -r requirements_mhps.txt
+  - pip install -r requirements_turbo_fats.txt
   - pip install -r requirements.txt
   - pip install -e .
 
