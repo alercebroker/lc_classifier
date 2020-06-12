@@ -12,4 +12,4 @@ Jinja2
 tqdm
 matplotlib
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
--e git+https://git@github.com/alercebroker/turbo-fats#egg=turbo-fats
+-e git+https://git@github.com/alercebroker/turbo-fats@paper_paula#egg=turbo-fats
