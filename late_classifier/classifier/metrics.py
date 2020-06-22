@@ -1,9 +1,26 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from sklearn.metrics import classification_report as sklearn_classification_report
 
 
 def balanced_recall(predictions, labels):
+    """Computes the balanced recall between the predictions from a model
+     and the real labels.
+
+     Parameters
+     ---------
+     predictions : pd.DataFrame
+        Predicted classes for multiple objects.
+        Must contain a 'classALeRCE' column.
+     labels : pd.DataFrame
+        True labels for multiple objects.
+        Must contain a 'classALeRCE' column.
+
+     Returns
+     ------
+     np.float
+     """
     recalls = []
     for classALeRCE in labels.classALeRCE.unique():
         labels_from_class = labels[labels.classALeRCE == classALeRCE]
@@ -44,3 +61,10 @@ def kaggle_score(prediction_probs, labels):
         class_score = -np.mean(np.log(class_probs))
         scores.append(class_score)
     return np.array(scores).mean()
+
+
+def classification_report(predictions, labels):
+    if not predictions.index.equals(labels.index):
+        raise Exception('Objects on both dataframes should match')
+    predictions = predictions.loc[labels.index]
+    return sklearn_classification_report(labels.classALeRCE, predictions.classALeRCE)

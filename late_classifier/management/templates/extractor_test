@@ -1,11 +1,43 @@
 import unittest
-from .generic_extractor_test import GenericExtractorTest
 from late_classifier.features.extractors.{{formal_name}}_extractor import {{extractor_name}}
+from late_classifier.features.preprocess import DetectionsPreprocessorZTF
+
+FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 
-class {{extractor_name}}ExtractorTest(GenericExtractorTest, unittest.TestCase):
-    component = {{extractor_name}}
-    params = {
-        "TEST_DETECTION": "path_to_data",
-        "TEST_NON_DETECTION": "path_to_data"
-    }
+class {{extractor_name}}ExtractorTest(unittest.TestCase):
+    def setUp(self) -> None:
+        preprocess_ztf = DetectionsPreprocessorZTF()
+
+        raw_det_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
+        det_ZTF18abakgtm = preprocess_ztf.preprocess(raw_det_ZTF18abakgtm)
+
+        raw_det_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
+        det_ZTF18abvvcko = preprocess_ztf.preprocess(raw_det_ZTF18abvvcko)
+
+        raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
+        det_ZTF17aaaaaxg = preprocess_ztf.preprocess(raw_det_ZTF17aaaaaxg)
+
+        raw_det_ZTF18aaveorp = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18aaveorp_det.csv'), index_col="oid")
+        det_ZTF18aaveorp = preprocess_ztf.preprocess(raw_det_ZTF18aaveorp)
+
+        # TODO fill keys with the required keys
+        keys = ['fid', 'magpsf_corr', 'etc']
+        self.detections = pd.concat(
+            [det_ZTF17aaaaaxg[keys],
+             det_ZTF18abvvcko[keys],
+             det_ZTF18abakgtm[keys],
+             det_ZTF18aaveorp[keys]],
+            axis=0
+        )
+
+    def test_many_objects(self):
+        extractor = {{extractor_name}}()
+        feature_values = extractor.compute_features(self.detections)
+        # TODO add more testing
+
+
+if __name__ == '__main__':
+    unittest.main()
+

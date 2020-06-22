@@ -1,7 +1,5 @@
-from extractors import *
-from preprocess import *
-
+from late_classifier.features.tests import *
 import unittest
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=10)

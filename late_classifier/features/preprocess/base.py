@@ -10,7 +10,7 @@ class GenericPreprocessor:
 
     def verify_dataframe(self, dataframe):
         if type(dataframe) is not pd.DataFrame:
-            raise ValueError("Input isn't  a Pandas DataFrame")
+            raise ValueError("Input isn't a Pandas DataFrame")
         return
 
 

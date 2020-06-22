@@ -1,13 +1,17 @@
+from typing import List
 from late_classifier.features.core.base import FeatureExtractor
 
 
 class {{extractor_name}}(FeatureExtractor):
-    def __init__(self):
-        super().__init__()
-        self.features_keys = []
-        self.required_keys = []
+    def get_features_keys(self) -> List[str]:
+        # Fill the list with the names of the features that will be computed
+        return []
 
-    def compute_features(self, detections, **kwargs):
+    def get_required_keys(self) -> List[str]:
+        # Fill the list with the names of the required columns
+        return []
+
+    def _compute_features(self, detections, **kwargs):
         """
         Parameters
         ----------

@@ -7,7 +7,7 @@ required_packages = [r for r in required_packages if "-e" not in r]
 
 setup(
     name="late_classifier",
-    version="0.0.0",
+    version="0.1",
     description='Scripts for ALeRCE late classifier.',
     author="ALeRCE Team",
     author_email='contact@alerce.online',

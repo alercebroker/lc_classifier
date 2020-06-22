@@ -1,4 +1,4 @@
-# Late Classifier
+# Late Classifier [![Build Status](https://travis-ci.com/alercebroker/late_classifier.svg?token=FuwtsLbsSNgHY1qXBVmB&branch=paper_paula)](https://travis-ci.com/alercebroker/late_classifier)
 
 ## Installing *lateclassifier*
 For development:

@@ -1,38 +1,35 @@
-from .decorators import *
 import pandas as pd
+from abc import ABC, abstractmethod
+from typing import List
+import logging
 
 
-class FeatureExtractor:
-    def __init__(self):
-        self.features_keys = []
-        self.required_keys = []
+class FeatureExtractor(ABC):
+    @abstractmethod
+    def get_features_keys(self) -> List[str]:
+        raise NotImplementedError('get_features_keys is an abstract method')
 
-    def validate_df(self, df):
-        """
-        Method to validate input detections. The required keys must be in df columns.
-
-        Parameters
-        ----------
-        df :class:pandas.`DataFrame`
-        DataFrame with detections of an object.
-        """
-        cols = set(df.columns)
-        required = set(self.required_keys)
-        intersection = required.intersection(cols)
-        return len(intersection) == len(required)
+    @abstractmethod
+    def get_required_keys(self) -> List[str]:
+        raise NotImplementedError('get_required_keys is an abstract method')
 
     def nan_df(self, index):
         """
         Method to generate a empty dataframe with NaNs.
 
         Parameters
-        ----------
-        index :class:String
-        Name/id/oid of the observation
-        """
-        return pd.DataFrame(columns=self.features_keys, index=[index])
+        ---------
+        index : str
+            Name/id/oid of the observation
 
-    def compute_features(self, detections, **kwargs):
+        Returns
+        ------
+        pd.DataFrame
+            One-row dataframe full of nans.
+        """
+        return pd.DataFrame(columns=self.get_features_keys(), index=[index])
+
+    def compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         Interface to implement different features extractors.
 
@@ -43,11 +40,34 @@ class FeatureExtractor:
 
         kwargs Another arguments like Non detections.
         """
-        raise NotImplementedError('FeatureExtractor is an interface')
+        if not self.has_all_columns(detections):
+            oids = detections.index.unique()
+            logging.info(
+                f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
+            return self.nan_df(oids)
+        return self._compute_features(detections, **kwargs)
+
+    @abstractmethod
+    def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        raise NotImplementedError('_compute_features is an abstract method')
+
+    def has_all_columns(self, df):
+        """
+                Method to validate input detections. The required keys must be in df columns.
+
+                Parameters
+                ----------
+                df :class:pandas.`DataFrame`
+                DataFrame with detections of an object.
+                """
+        cols = set(df.columns)
+        required = set(self.get_required_keys())
+        intersection = required.intersection(cols)
+        return len(intersection) == len(required)
 
 
-class FeatureExtractorSingleBand(FeatureExtractor):
-    def compute_features(self, detections, **kwargs):
+class FeatureExtractorSingleBand(FeatureExtractor, ABC):
+    def _compute_features(self, detections, **kwargs):
         """
         Compute features to single band detections of an object. Verify if input has only one band.
 
@@ -64,59 +84,32 @@ class FeatureExtractorSingleBand(FeatureExtractor):
         """
         return self.compute_by_bands(detections, **kwargs)
 
-    def _compute_features(self, detections, **kwargs):
+    @abstractmethod
+    def compute_feature_in_one_band(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
-        Interface to compute features to single band detections of an object.
+        Computes features of single band detections from one object.
+
         Parameters
-        ----------
-        detections :class:pandas.`DataFrame`
+        ---------
+        detections : pd.DataFrame
+            Detections light curve from one object and one band.
 
         kwargs Possible: Non detections DataFrame.
+
+        Returns
+        ------
+        pd.DataFrame
+            Single-row dataframe with the computed features.
         """
-        raise NotImplementedError('SingleBandFeatureExtractor is an abstract class')
+        raise NotImplementedError('compute_feature_in_one_band is an abstract class')
 
     def compute_by_bands(self, detections, bands=None,  **kwargs):
         if bands is None:
             bands = [1, 2]
         features_response = []
         for band in bands:
-            features_response.append(self._compute_features(detections, band=band,  **kwargs))
+            features_response.append(self.compute_feature_in_one_band(detections, band=band, **kwargs))
         return pd.concat(features_response, axis=1)
 
-    def get_features_keys(self, band):
-        return [f'{x}_{band}' for x in self.features_keys]
-
-
-class FeatureExtractorFromFEList(FeatureExtractor):
-    def __init__(self, feature_extractor_list, bands):
-        self.feature_extractor_list = feature_extractor_list
-        self.bands = bands
-
-    def compute_features(self, detections, **kwargs):
-        """
-
-        Parameters
-        ----------
-        detections :class:pandas.`DataFrame`
-        kwargs Possible: Non detections DataFrame.
-
-        Returns :class:pandas.`DataFrame`
-        -------
-
-        """
-        if len(self.feature_extractor_list) == 0 or type(self.feature_extractor_list) is not list:
-            return pd.DataFrame()
-        if kwargs['non_detections'] is None:
-            print("non_detections not given")
-
-        non_detections = kwargs['non_detections']
-        all_features = pd.DataFrame(detections.index.unique('oid'))
-        all_features = all_features.set_index('oid')
-
-        for feature_extractor in self.feature_extractor_list:
-            if FeatureExtractorSingleBand in feature_extractor.__class__.__mro__:
-                features = FeatureExtractorPerBandFromSingleLC(feature_extractor, self.bands).compute_features(detections)
-            else:
-                features = feature_extractor.compute_features(detections, non_detections=non_detections)
-        all_features.join(features)
-        return all_features
+    def get_features_keys_with_band(self, band):
+        return [f'{x}_{band}' for x in self.get_features_keys()]

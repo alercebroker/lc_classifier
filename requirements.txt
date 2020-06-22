@@ -1,3 +1,5 @@
+requests
+alerce
 click
 astropy
 numpy
@@ -9,5 +11,6 @@ imblearn
 Jinja2
 tqdm
 matplotlib
+tensorflow
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
--e git+https://git@github.com/alercebroker/turbo-fats#egg=turbo-fats
+-e git+ssh://git@github.com/alercebroker/turbo-fats@paper_paula#egg=turbo-fats

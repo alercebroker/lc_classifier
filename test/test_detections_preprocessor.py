@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from late_classifier.features.preprocessing import DetectionsPreprocessor
+from late_classifier.features import DetectionsPreprocessorZTF
 
 
 class TestDetectionsPreprocessor(unittest.TestCase):
@@ -14,5 +14,5 @@ class TestDetectionsPreprocessor(unittest.TestCase):
         with self.assertRaises(TypeError):
             _ = self.detections.sigmapsf_corr > 0.0
 
-        preprocessor = DetectionsPreprocessor()
+        preprocessor = DetectionsPreprocessorZTF()
         preprocessed_detections = preprocessor.preprocess_detections(self.detections)
