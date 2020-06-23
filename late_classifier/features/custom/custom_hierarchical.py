@@ -72,12 +72,13 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         ----------
         detections :class:pandas.`DataFrame`
         kwargs Possible non_detections :class:pandas.`DataFrame`
+                        objects :class:pandas.`DataFrame`
 
         Returns DataFrame with all features
         -------
 
         """
-        required = ['non_detections']
+        required = ['non_detections','objects']
         for key in required:
             if key not in kwargs:
                 raise Exception(f'HierarchicalFeaturesComputer requires {key} argument')
@@ -88,13 +89,14 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values('mjd')
         non_detections = kwargs['non_detections']
+        objects = kwargs['objects']
 
         if len(non_detections) == 0:
             non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
 
         features = []
         for ex in self.extractors:
-            df = ex._compute_features(detections, non_detections=non_detections)
+            df = ex._compute_features(detections, non_detections=non_detections, objects=objects)
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')
         df = pd.concat([df, too_short_features], axis=0, join='outer', sort=True)
