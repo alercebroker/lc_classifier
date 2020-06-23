@@ -24,16 +24,47 @@ class MHPSExtractor(FeatureExtractorSingleBand):
             'MHPS_PN_flag']
 
     def get_required_keys(self) -> List[str]:
-        return ["magpsf_corr", "sigmapsf_corr", "mjd"]
+        return ["magpsf_corr", "sigmapsf_corr_ext", "magpsf", "sigmapsf", "mjd"]
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
+        """
+        Compute MHPS features.
+
+        Parameters
+        ----------
+        detections : pd.DataFrame
+            Light curve from a single band and a single object.
+        band : int
+            Number of the band of the light curve.
+
+        kwargs:
+        objects : class:pandas.`DataFrame`
+        Dataframe with the objects table.
+
+        Returns
+        ------
+        pd.DataFrame
+            MHPS features (one-row dataframe).
+        """
+
+        required = ['objects']
+        for key in required:
+            if key not in kwargs:
+                raise Exception(f'MHPSExtractor requires {key} argument')
+
+        objects = kwargs['objects']
+
+
         oids = detections.index.unique()
         mhps_results = []
 
         detections = detections.sort_values('mjd')
         columns = self.get_features_keys_with_band(band)
+
         for oid in oids:
             oid_detections = detections.loc[[oid]]
+            oid_objects = magstats.loc[[oid]]
+
             if band not in oid_detections.fid.values:
                 logging.info(
                     f'extractor=MHPS object={oid} required_cols={self.get_required_keys()} band={band}')
@@ -44,9 +75,18 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
 
-            mag = oid_band_detections.magpsf_corr
-            magerr = oid_band_detections.sigmapsf_corr
-            time = oid_band_detections.mjd
+            objects_corrected = oid_objects.corrected
+
+            if objects_corrected:
+                mag = oid_band_detections.magpsf_corr
+                magerr = oid_band_detections.sigmapsf_corr_ext
+                time = oid_band_detections.mjd
+
+            else:
+                mag = oid_band_detections.magpsf
+                magerr = oid_band_detections.sigmapsf
+                time = oid_band_detections.mjd
+
             ratio, low, high, non_zero, pn_flag = mhps.statistics(mag.values,
                                                                   magerr.values,
                                                                   time.values,
