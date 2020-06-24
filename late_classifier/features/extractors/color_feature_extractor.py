@@ -2,6 +2,7 @@ from typing import List
 
 from ..core.base import FeatureExtractor
 import pandas as pd
+import numpy as np
 import logging
 
 
@@ -39,7 +40,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         colors = []
         for oid in oids:
             oid_detections = detections.loc[[oid]]
-            oid_objects = magstats.loc[[oid]]
+            oid_objects = objects.loc[[oid]]
 
             if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
                 logging.info(
@@ -47,9 +48,7 @@ class ColorFeatureExtractor(FeatureExtractor):
                 colors.append(self.nan_df(oid))
                 continue
 
-            objects_corrected = oid_objects.corrected
-
-
+            objects_corrected = oid_objects.corrected.values[0]
 
             g_band_mag_corr = oid_detections[oid_detections.fid == 1]['magpsf_corr'].values
             r_band_mag_corr = oid_detections[oid_detections.fid == 2]['magpsf_corr'].values

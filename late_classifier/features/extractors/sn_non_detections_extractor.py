@@ -97,12 +97,13 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
         -------
 
         """
-        required = ['non_detections']
+        required = ['non_detections', 'objects']
         for key in required:
             if key not in kwargs:
                 raise Exception(f'SupernovaeDetectionAndNonDetectionFeatureExtractor requires {key} argument')
 
         non_detections = kwargs['non_detections'].sort_values('mjd')
+        objects = kwargs['objects']
 
         non_detection_keys = set(non_detections.columns)
         required_non_detection_keys = set(self.get_non_detections_required_keys())
@@ -141,7 +142,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             non_detections_after = oid_band_non_detections[oid_band_non_detections.mjd >= first_mjd]
 
             det_result = self.supernovae_detection_extractor.compute_feature_in_one_band(
-                oid_band_detections, band=band)
+                oid_band_detections, band=band, objects=objects)
             non_det_before = self.compute_before_features(det_result, non_detections_before, band)
             non_det_after = self.compute_after_features(non_detections_after)
 

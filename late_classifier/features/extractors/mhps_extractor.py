@@ -63,7 +63,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
         for oid in oids:
             oid_detections = detections.loc[[oid]]
-            oid_objects = magstats.loc[[oid]]
+            oid_objects = objects.loc[[oid]]
 
             if band not in oid_detections.fid.values:
                 logging.info(
@@ -75,7 +75,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
 
-            objects_corrected = oid_objects.corrected
+            objects_corrected = oid_objects.corrected.values[0]
 
             if objects_corrected:
                 mag = oid_band_detections.magpsf_corr
