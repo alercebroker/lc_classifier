@@ -27,6 +27,12 @@ class TestObjectsMethods(unittest.TestCase):
     raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
     det_ZTF17aaaaaxg = preprocess_ztf.preprocess(raw_det_ZTF17aaaaaxg)
 
+    fake_objects = pd.DataFrame(
+        index=['ZTF17aaaaaxg', 'ZTF18abvvcko', 'ZTF18abakgtm'],
+        data=[[True], [False], [True]],
+        columns=['corrected']
+    )
+
     def turbofats_features(self):
         turbofats_extractor = TurboFatsFeatureExtractor()
         turbofats_fs = turbofats_extractor.compute_features(self.det_ZTF18abakgtm)
@@ -47,9 +53,9 @@ class TestObjectsMethods(unittest.TestCase):
 
     def test_color_features(self):
         color_extractor = ColorFeatureExtractor()
-        color_fs = color_extractor.compute_features(self.det_ZTF17aaaaaxg)
+        color_fs = color_extractor.compute_features(self.det_ZTF17aaaaaxg, objects=self.fake_objects)
         self.assertEqual(type(color_fs), pd.DataFrame)
-        self.assertEqual(len(color_fs.columns), 2)
+        self.assertEqual(len(color_fs.columns), len(color_extractor.get_features_keys()))
         self.assertListEqual(list(color_fs.columns), color_extractor.get_features_keys())
 
     def test_galactic_coordinates_features(self):
@@ -71,13 +77,13 @@ class TestObjectsMethods(unittest.TestCase):
 
     def test_sn_detections_features(self):
         sn_det_extractor = SupernovaeDetectionFeatureExtractor()
-        sn_fs = sn_det_extractor.compute_features(self.det_ZTF18abakgtm)
+        sn_fs = sn_det_extractor.compute_features(self.det_ZTF18abakgtm, objects=self.fake_objects)
         self.assertEqual(type(sn_fs), pd.DataFrame)
 
     def test_sn_non_detections_features(self):
         sn_non_det_extractor = SupernovaeDetectionAndNonDetectionFeatureExtractor()
         sn_non_det = sn_non_det_extractor.compute_features(
-            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
+            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm, objects=self.fake_objects)
         self.assertEqual(type(sn_non_det), pd.DataFrame)
 
     def test_wise_features_ok(self):
