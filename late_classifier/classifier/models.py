@@ -114,7 +114,7 @@ class BaselineRandomForest(BaseClassifier):
 
 
 class HierarchicalRandomForest(BaseClassifier):
-    def __init__(self, taxonomy_dictionary):
+    def __init__(self, taxonomy_dictionary, non_used_features=None):
         n_trees = 500
         self.top_classifier = RandomForestClassifier(
             n_estimators=n_trees,
@@ -140,7 +140,7 @@ class HierarchicalRandomForest(BaseClassifier):
             max_features='auto'
         )
 
-        self.feature_preprocessor = FeaturePreprocessor()
+        self.feature_preprocessor = FeaturePreprocessor(non_used_features=non_used_features)
 
         self.taxonomy_dictionary = taxonomy_dictionary
         self.feature_list = None
