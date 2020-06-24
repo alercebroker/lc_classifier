@@ -1,8 +1,8 @@
 from typing import List
 
 from ..core.base import FeatureExtractor
-import numpy as np
 import pandas as pd
+import numpy as np
 import logging
 
 
@@ -48,7 +48,7 @@ class ColorFeatureExtractor(FeatureExtractor):
                 colors.append(self.nan_df(oid))
                 continue
 
-            objects_corrected = oid_objects.corrected
+            objects_corrected = oid_objects.corrected.values[0]
 
             g_band_mag_corr = oid_detections[oid_detections.fid == 1]['magpsf_corr'].values
             r_band_mag_corr = oid_detections[oid_detections.fid == 2]['magpsf_corr'].values
@@ -59,7 +59,7 @@ class ColorFeatureExtractor(FeatureExtractor):
             g_r_max = g_band_mag.min() - r_band_mag.min()
             g_r_mean = g_band_mag.mean() - r_band_mag.mean()
 
-            if objects_corrected.values:
+            if objects_corrected:
                 g_r_max_corr = g_band_mag_corr.min() - r_band_mag_corr.min()
                 g_r_mean_corr = g_band_mag_corr.mean() - r_band_mag_corr.mean()
 

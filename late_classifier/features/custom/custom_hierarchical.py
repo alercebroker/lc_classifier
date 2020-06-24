@@ -78,7 +78,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        required = ['non_detections','objects']
+        required = ['non_detections', 'objects']
         for key in required:
             if key not in kwargs:
                 raise Exception(f'HierarchicalFeaturesComputer requires {key} argument')
@@ -96,6 +96,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
 
         features = []
         for ex in self.extractors:
+            print(ex)
             df = ex._compute_features(detections, non_detections=non_detections, objects=objects)
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')

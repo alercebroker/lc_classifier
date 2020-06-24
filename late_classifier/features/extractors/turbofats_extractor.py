@@ -58,6 +58,14 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         pd.DataFrame
             turbo-fats features (one-row dataframe).
         """
+
+        required = ['objects']
+        for key in required:
+            if key not in kwargs:
+                raise Exception(f'TurboFats requires {key} argument')
+
+        objects = kwargs['objects']
+
         oids = detections.index.unique()
         features = []
 
@@ -66,6 +74,8 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
         for oid in oids:
             oid_detections = detections.loc[[oid]]
+            oid_objects = objects.loc[[oid]]
+
             if band not in oid_detections.fid.values:
                 logging.info(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
@@ -74,7 +84,12 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
                 features.append(nan_df)
                 continue
 
+            objects_corrected = oid_objects.corrected.values[0]
             oid_band_detections = oid_detections[oid_detections.fid == band]
+            if objects_corrected:
+                self.feature_space.data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
+            else:
+                self.feature_space.data_column_names = ['magpsf', 'mjd', 'sigmapsfs']
 
             object_features = self.feature_space.calculate_features(oid_band_detections)
             object_features = pd.DataFrame(
