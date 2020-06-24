@@ -30,7 +30,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         required = ['objects']
         for key in required:
             if key not in kwargs:
-                raise Exception(f'MHPSExtractor requires {key} argument')
+                raise Exception(f'ColorFeatureExtractor requires {key} argument')
 
         objects = kwargs['objects']
 
