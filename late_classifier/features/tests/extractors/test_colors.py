@@ -25,7 +25,7 @@ class TestColors(unittest.TestCase):
         raw_det_ZTF18aaveorp = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18aaveorp_det.csv'), index_col="oid")
         det_ZTF18aaveorp = preprocess_ztf.preprocess(raw_det_ZTF18aaveorp)
 
-        keys = ['fid', 'magpsf_corr']
+        keys = ['fid', 'magpsf_corr', 'magpsf']
         self.detections = pd.concat(
             [det_ZTF17aaaaaxg[keys],
              det_ZTF18abvvcko[keys],
@@ -33,14 +33,24 @@ class TestColors(unittest.TestCase):
              det_ZTF18aaveorp[keys]],
             axis=0
         )
+        fake_objects = pd.DataFrame(
+            index=['ZTF17aaaaaxg', 'ZTF18abvvcko', 'ZTF18abakgtm', 'ZTF18aaveorp'],
+            data=[[True], [False], [True], [False]],
+            columns=['corrected']
+        )
+        self.objects = fake_objects
 
     def test_many_objects(self):
         color_extractor = ColorFeatureExtractor()
-        colors = color_extractor.compute_features(self.detections)
-        self.assertEqual(colors.shape, (4, 2))
-        objects_with_colors = colors.isna().any(axis=1).values.flatten()
+        colors = color_extractor.compute_features(self.detections, objects=self.objects)
+        self.assertEqual(colors.shape, (4, 4))
+        objects_without_colors = colors[['g-r_max', 'g-r_mean']].isna().any(axis=1).values.flatten()
         self.assertTrue(
-            (objects_with_colors == [False, True, True, False]).all()
+            (objects_without_colors == [False, True, True, False]).all()
+        )
+        objects_without_colors = colors[['g-r_max_corr', 'g-r_mean_corr']].isna().any(axis=1).values.flatten()
+        self.assertTrue(
+            (objects_without_colors == [False, True, True, True]).all()
         )
 
 

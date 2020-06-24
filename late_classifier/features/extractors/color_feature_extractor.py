@@ -1,6 +1,7 @@
 from typing import List
 
 from ..core.base import FeatureExtractor
+import numpy as np
 import pandas as pd
 import logging
 
@@ -33,23 +34,21 @@ class ColorFeatureExtractor(FeatureExtractor):
 
         objects = kwargs['objects']
 
-
         # pd.options.display.precision = 10
         oids = detections.index.unique()
         colors = []
         for oid in oids:
             oid_detections = detections.loc[[oid]]
-            oid_objects = magstats.loc[[oid]]
+            oid_objects = objects.loc[[oid]]
 
             if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
                 logging.info(
-                    f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
+                    f'extractor=COLOR  object={oid}  '
+                    f'required_cols={self.get_required_keys()}  filters_qty=2')
                 colors.append(self.nan_df(oid))
                 continue
 
             objects_corrected = oid_objects.corrected
-
-
 
             g_band_mag_corr = oid_detections[oid_detections.fid == 1]['magpsf_corr'].values
             r_band_mag_corr = oid_detections[oid_detections.fid == 2]['magpsf_corr'].values
@@ -60,7 +59,7 @@ class ColorFeatureExtractor(FeatureExtractor):
             g_r_max = g_band_mag.min() - r_band_mag.min()
             g_r_mean = g_band_mag.mean() - r_band_mag.mean()
 
-            if objects_corrected:
+            if objects_corrected.values:
                 g_r_max_corr = g_band_mag_corr.min() - r_band_mag_corr.min()
                 g_r_mean_corr = g_band_mag_corr.mean() - r_band_mag_corr.mean()
 
