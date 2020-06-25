@@ -1,8 +1,8 @@
 from typing import List
+import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from P4J import MultiBandPeriodogram
-import logging
 
 
 class PeriodExtractor(FeatureExtractor):
@@ -10,7 +10,7 @@ class PeriodExtractor(FeatureExtractor):
         self.periodogram_computer = MultiBandPeriodogram(method='MHAOV')
 
     def get_features_keys(self) -> List[str]:
-        return ['Multiband_period']
+        return ['Multiband_period', 'Period_fit']
 
     def get_required_keys(self) -> List[str]:
         return [
@@ -38,19 +38,42 @@ class PeriodExtractor(FeatureExtractor):
             oid_detections = detections.loc[[oid]]
             oid_objects = objects.loc[[oid]]
 
-            # TODO: short light curves
+            oid_detections = oid_detections.groupby('fid').filter(
+                lambda x: len(x) > 5)
 
             objects_corrected = oid_objects.corrected.values[0]
             if objects_corrected:
-                self.feature_space.data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
+                data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
             else:
-                self.feature_space.data_column_names = ['magpsf', 'mjd', 'sigmapsf']
+                data_column_names = ['magpsf', 'mjd', 'sigmapsf']
 
-            object_features = self.feature_space.calculate_features(oid_band_detections)
+            self.periodogram_computer.set_data(
+                mjds=oid_detections[[data_column_names[1]]].values,
+                mags=oid_detections[[data_column_names[0]]].values,
+                errs=oid_detections[[data_column_names[2]]].values,
+                fids=oid_detections[['fid']].values)
+
+            self.periodogram_computer.frequency_grid_evaluation(
+                fmin=1e-3, fmax=20.0, fresolution=1e-3)
+            self.frequencies = self.periodogram_computer.finetune_best_frequencies(
+                n_local_optima=10, fresolution=1e-4)
+            best_freq, best_per = self.periodogram_computer.get_best_frequencies()
+
+            wk1, wk2 = self.periodogram_computer.get_periodogram()
+            period_candidate = 1.0 / best_freq[0]
+
+            # Significance estimation
+            entropy_best_n = 100
+            top_values = np.sort(wk2)[-entropy_best_n:]
+            normalized_top_values = top_values + 1e-2
+            normalized_top_values = normalized_top_values / np.sum(normalized_top_values)
+            entropy = (-normalized_top_values * np.log(normalized_top_values)).sum()
+            significance = 1 - entropy / np.log(entropy_best_n)
+
             object_features = pd.DataFrame(
-                data=object_features.values,
-                columns=[f'{c}_{band}' for c in object_features.columns],
-                index=object_features.index
+                data=[[period_candidate, significance]],
+                columns=self.get_features_keys(),
+                index=[oid]
             )
             features.append(object_features)
         features = pd.concat(features, axis=0, sort=True)

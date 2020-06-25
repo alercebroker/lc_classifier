@@ -9,6 +9,7 @@ from .extractors.sn_non_detections_extractor import SupernovaeDetectionAndNonDet
 from .extractors.sn_parametric_model_computer import SNParametricModelExtractor
 from .extractors.turbofats_extractor import TurboFatsFeatureExtractor
 from .extractors.wise_static_extractor import WiseStaticExtractor
+from .extractors.period_extractor import PeriodExtractor
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor
 
@@ -26,7 +27,8 @@ __all__ = [
     'SupernovaeDetectionAndNonDetectionFeatureExtractor',
     'SNParametricModelExtractor',
     'TurboFatsFeatureExtractor',
-    'WiseStaticExtractor',
+    'WiseStaticExtractor'
+    'PeriodExtractor',
     'CustomHierarchicalExtractor',
     'DetectionsPreprocessorZTF'
 ]
