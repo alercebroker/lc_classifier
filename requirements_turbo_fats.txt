@@ -1,4 +1,3 @@
-P4J
 scipy
 matplotlib
 GPy

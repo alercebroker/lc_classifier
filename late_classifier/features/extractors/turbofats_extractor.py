@@ -2,7 +2,6 @@ from typing import List
 
 from ..core.base import FeatureExtractorSingleBand
 from turbofats import FeatureSpace
-import numpy as np
 import pandas as pd
 import logging
 
@@ -39,7 +38,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         return features_keys
 
     def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf_corr', 'fid', 'sigmapsf_corr']
+        return ['mjd', 'magpsf', 'magpsf_corr', 'fid', 'sigmapsf_corr_ext', 'sigmapsf']
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
@@ -89,7 +88,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             if objects_corrected:
                 self.feature_space.data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
             else:
-                self.feature_space.data_column_names = ['magpsf', 'mjd', 'sigmapsfs']
+                self.feature_space.data_column_names = ['magpsf', 'mjd', 'sigmapsf']
 
             object_features = self.feature_space.calculate_features(oid_band_detections)
             object_features = pd.DataFrame(
