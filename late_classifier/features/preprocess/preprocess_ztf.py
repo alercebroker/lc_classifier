@@ -59,9 +59,11 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         :param detections:
         :return:
         """
-        detections = detections[
-            (detections['sigmapsf_corr_ext'] > 0.0)
-            & (detections['sigmapsf_corr_ext'] < self.max_sigma)]
+        detections = detections[((detections['sigmapsf_corr_ext'] > 0.0) &
+                                 (detections['sigmapsf_corr_ext'] < self.max_sigma)) &
+                                ((detections['sigmapsf'] > 0.0) &
+                                 (detections['sigmapsf'] < self.max_sigma))
+                                ]
         return detections
 
     def discard_bogus(self, detections):
@@ -72,6 +74,14 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         """
         detections = detections[detections['rb'] >= self.rb_threshold]
         return detections
+
+    def enough_alerts(self, detections, min_dets=5):
+        objects = detections.groupby("oid")
+        indexes = []
+        for oid, group in objects:
+            if len(group.fid == 1) > min_dets or len(group.fid == 2) > min_dets:
+                indexes.append(oid)
+        return detections.loc[indexes]
 
     def preprocess(self, dataframe):
         """
@@ -86,4 +96,5 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         dataframe = self.discard_invalid_value_detections(dataframe)
         dataframe = self.discard_noisy_detections(dataframe)
         dataframe = self.discard_bogus(dataframe)
+        dataframe = self.enough_alerts(dataframe)
         return dataframe

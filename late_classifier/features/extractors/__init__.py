@@ -9,4 +9,4 @@ from .mhps_extractor import MHPSExtractor
 from .iqr_extractor import IQRExtractor
 from .wise_static_extractor import WiseStaticExtractor
 from .sn_parametric_model_computer import SNParametricModelExtractor
-from .period_extractor import PeriodExtractor
+#from .period_extractor import PeriodExtractor

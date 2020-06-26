@@ -15,7 +15,7 @@ from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF
 
 import pandas as pd
-
+import logging
 
 class CustomHierarchicalExtractor(FeatureExtractor):
     def __init__(self, bands=None):
@@ -29,7 +29,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            TurboFatsFeatureExtractor(),
                            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor(),
-                           WiseStaticExtractor()
+                           #WiseStaticExtractor()
                            ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
@@ -96,8 +96,8 @@ class CustomHierarchicalExtractor(FeatureExtractor):
 
         features = []
         for ex in self.extractors:
-            print(ex)
             df = ex._compute_features(detections, non_detections=non_detections, objects=objects)
+            logging.info(f'FLAG={ex}')
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')
         df = pd.concat([df, too_short_features], axis=0, join='outer', sort=True)
