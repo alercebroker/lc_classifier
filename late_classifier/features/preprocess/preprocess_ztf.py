@@ -13,7 +13,7 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
             'magpsf',
             'sigmapsf',
             'magpsf_corr',
-            'sigmapsf_corr',
+            'sigmapsf_corr_ext',
             'ra',
             'dec',
             'rb',
@@ -60,8 +60,8 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         :return:
         """
         detections = detections[
-            (detections['sigmapsf_corr'] > 0.0)
-            & (detections['sigmapsf_corr'] < self.max_sigma)]
+            (detections['sigmapsf_corr_ext'] > 0.0)
+            & (detections['sigmapsf_corr_ext'] < self.max_sigma)]
         return detections
 
     def discard_bogus(self, detections):
