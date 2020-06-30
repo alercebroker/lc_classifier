@@ -2,6 +2,7 @@ from typing import List
 
 from ..core.base import FeatureExtractorSingleBand
 from turbofats import FeatureSpace
+import numpy as np
 import pandas as pd
 import logging
 
@@ -9,6 +10,7 @@ import logging
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         self.feature_space = FeatureSpace(self._feature_keys_for_new_feature_space())
+        self.feature_space.data_column_names = ['magpsf_ml', 'mjd', 'sigmapsf_ml']
 
     def _feature_keys_for_new_feature_space(self):
         return [
@@ -38,12 +40,11 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         return features_keys
 
     def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf', 'magpsf_corr', 'fid', 'sigmapsf_corr_ext', 'sigmapsf']
+        return ['mjd', 'magpsf_ml', 'fid', 'sigmapsf_ml']
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
         Compute features from turbo-fats.
-
         Parameters
         ----------
         detections : pd.DataFrame
@@ -51,20 +52,11 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         band : int
             Number of the band of the light curve.
         kwargs
-
         Returns
         ------
         pd.DataFrame
             turbo-fats features (one-row dataframe).
         """
-
-        required = ['objects']
-        for key in required:
-            if key not in kwargs:
-                raise Exception(f'TurboFats requires {key} argument')
-
-        objects = kwargs['objects']
-
         oids = detections.index.unique()
         features = []
 
@@ -73,8 +65,6 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
         for oid in oids:
             oid_detections = detections.loc[[oid]]
-            oid_objects = objects.loc[[oid]]
-
             if band not in oid_detections.fid.values:
                 logging.info(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
@@ -83,12 +73,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
                 features.append(nan_df)
                 continue
 
-            objects_corrected = oid_objects.corrected.values[0]
             oid_band_detections = oid_detections[oid_detections.fid == band]
-            if objects_corrected:
-                self.feature_space.data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
-            else:
-                self.feature_space.data_column_names = ['magpsf', 'mjd', 'sigmapsf']
 
             object_features = self.feature_space.calculate_features(oid_band_detections)
             object_features = pd.DataFrame(

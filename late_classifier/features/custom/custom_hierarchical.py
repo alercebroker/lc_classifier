@@ -82,21 +82,21 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         for key in required:
             if key not in kwargs:
                 raise Exception(f'HierarchicalFeaturesComputer requires {key} argument')
-        detections = self.preprocessor.preprocess(detections)
+        objects = kwargs['objects']
+        detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values('mjd')
         non_detections = kwargs['non_detections']
-        objects = kwargs['objects']
 
         if len(non_detections) == 0:
             non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
 
         features = []
         for ex in self.extractors:
-            df = ex._compute_features(detections, non_detections=non_detections, objects=objects)
+            df = ex._compute_features(detections, non_detections=non_detections)
             logging.info(f'FLAG={ex}')
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')

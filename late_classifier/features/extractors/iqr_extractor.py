@@ -11,7 +11,7 @@ class IQRExtractor(FeatureExtractorSingleBand):
         return ['iqr']
 
     def get_required_keys(self) -> List[str]:
-        return ['fid', 'magpsf_corr']
+        return ['fid', 'magpsf_ml']
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         oids = detections.index.unique()
@@ -28,7 +28,7 @@ class IQRExtractor(FeatureExtractorSingleBand):
                 continue
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
-            mag_dets = oid_band_detections["magpsf_corr"]
+            mag_dets = oid_band_detections["magpsf_ml"]
             iqr = sstats.iqr(mag_dets.values)
             iqr_df = pd.DataFrame([iqr], columns=columns, index=[oid])
             iqrs.append(iqr_df)
