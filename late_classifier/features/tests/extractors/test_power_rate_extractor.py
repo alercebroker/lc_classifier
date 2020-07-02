@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from late_classifier.features import PowerRateExtractor
 from late_classifier.features import PeriodExtractor
+from late_classifier.features import DetectionsPreprocessorZTF
 import logging
 import io
 
@@ -23,6 +24,10 @@ class TestPowerRateExtractor(unittest.TestCase):
             index=self.labels.index,
             columns=['corrected'],
             data=np.random.choice(a=[False, True], size=(len(self.labels),)))
+        self.detections = DetectionsPreprocessorZTF().get_magpsf_ml(
+            self.detections,
+            objects=self.fake_objects
+        )
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.INFO)
 
@@ -32,8 +37,7 @@ class TestPowerRateExtractor(unittest.TestCase):
         self.logger.addHandler(stream_handler)
         extractor = PowerRateExtractor()
         power_rates = extractor.compute_features(
-            self.detections,
-            objects=self.fake_objects)
+            self.detections)
         self.assertTrue(
             'PowerRateExtractor was not provided with periodogram '
             'data, so a periodogram is being computed' in output.getvalue())
@@ -49,12 +53,10 @@ class TestPowerRateExtractor(unittest.TestCase):
         shared_data = dict()
         _ = period_extractor.compute_features(
             detections=self.detections,
-            objects=self.fake_objects,
             shared_data=shared_data)
         extractor = PowerRateExtractor()
         power_rates = extractor.compute_features(
             self.detections,
-            objects=self.fake_objects,
             shared_data=shared_data)
         self.assertTrue(
             'PowerRateExtractor was not provided with periodogram '

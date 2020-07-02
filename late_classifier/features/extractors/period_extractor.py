@@ -15,20 +15,12 @@ class PeriodExtractor(FeatureExtractor):
     def get_required_keys(self) -> List[str]:
         return [
             'mjd',
-            'magpsf',
-            'magpsf_corr',
-            'fid',
-            'sigmapsf_corr_ext',
-            'sigmapsf']
+            'magpsf_ml',
+            'sigmapsf_ml',
+            'fid'
+        ]
 
     def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        required = ['objects']
-        for key in required:
-            if key not in kwargs:
-                raise Exception(f'Period extractor requires {key} argument')
-
-        objects = kwargs['objects']
-
         oids = detections.index.unique()
         features = []
 
@@ -37,21 +29,14 @@ class PeriodExtractor(FeatureExtractor):
         periodograms = {}
         for oid in oids:
             oid_detections = detections.loc[[oid]]
-            oid_objects = objects.loc[[oid]]
 
             oid_detections = oid_detections.groupby('fid').filter(
                 lambda x: len(x) > 5)
 
-            objects_corrected = oid_objects.corrected.values[0]
-            if objects_corrected:
-                data_column_names = ['magpsf_corr', 'mjd', 'sigmapsf_corr_ext']
-            else:
-                data_column_names = ['magpsf', 'mjd', 'sigmapsf']
-
             self.periodogram_computer.set_data(
-                mjds=oid_detections[[data_column_names[1]]].values,
-                mags=oid_detections[[data_column_names[0]]].values,
-                errs=oid_detections[[data_column_names[2]]].values,
+                mjds=oid_detections[['mjd']].values,
+                mags=oid_detections[['magpsf_ml']].values,
+                errs=oid_detections[['sigmapsf_ml']].values,
                 fids=oid_detections[['fid']].values)
 
             self.periodogram_computer.frequency_grid_evaluation(

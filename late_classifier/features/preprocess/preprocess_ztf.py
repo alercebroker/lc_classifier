@@ -101,6 +101,8 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         :param objects:
         :return:
         """
+        if objects is None:
+            raise Exception('ZTF Preprocessor requires objects dataframe')
         self.verify_dataframe(dataframe)
         dataframe = self.get_magpsf_ml(dataframe, objects)
         if not self.has_necessary_columns(dataframe):

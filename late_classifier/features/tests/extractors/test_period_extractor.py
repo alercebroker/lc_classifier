@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from late_classifier.features import PeriodExtractor
+from late_classifier.features import DetectionsPreprocessorZTF
 
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -20,11 +21,15 @@ class TestPeriodExtractor(unittest.TestCase):
             index=self.labels.index,
             columns=['corrected'],
             data=np.random.choice(a=[False, True], size=(len(self.labels),)))
+        self.detections = DetectionsPreprocessorZTF().get_magpsf_ml(
+            self.detections,
+            objects=self.fake_objects
+        )
 
     def test_periods(self):
         period_extractor = PeriodExtractor()
         periods = period_extractor.compute_features(
-            detections=self.detections, objects=self.fake_objects)
+            detections=self.detections)
         periods['catalog_period'] = self.labels.loc[periods.index].period
         print(periods)
 
@@ -33,7 +38,6 @@ class TestPeriodExtractor(unittest.TestCase):
         period_extractor = PeriodExtractor()
         _ = period_extractor.compute_features(
             detections=self.detections,
-            objects=self.fake_objects,
             shared_data=shared_data
         )
         self.assertTrue(len(shared_data.keys()) > 0)

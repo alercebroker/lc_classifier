@@ -39,13 +39,6 @@ class PowerRateExtractor(FeatureExtractor):
             'sigmapsf']
 
     def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        required = ['objects']
-        for key in required:
-            if key not in kwargs:
-                raise Exception(f'PowerRateExtractor requires {key} argument')
-
-        objects = kwargs['objects']
-
         if ('shared_data' in kwargs.keys() and
                 'periodogram' in kwargs['shared_data'].keys()):
             periodograms = kwargs['shared_data']['periodogram']
@@ -56,7 +49,6 @@ class PowerRateExtractor(FeatureExtractor):
             period_extractor = PeriodExtractor()
             _ = period_extractor.compute_features(
                 detections,
-                objects=objects,
                 shared_data=shared_data)
             periodograms = shared_data['periodogram']
 

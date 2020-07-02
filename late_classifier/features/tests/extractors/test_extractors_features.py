@@ -13,25 +13,26 @@ EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 
 class TestObjectsMethods(unittest.TestCase):
-    preprocess_ztf = DetectionsPreprocessorZTF()
+    def setUp(self) -> None:
+        self.preprocess_ztf = DetectionsPreprocessorZTF()
 
-    raw_det_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
-    raw_nondet_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
-    det_ZTF18abakgtm = preprocess_ztf.preprocess(raw_det_ZTF18abakgtm)
+        self.raw_det_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
+        self.raw_nondet_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
+        self.det_ZTF18abakgtm = self.preprocess_ztf.preprocess(self.raw_det_ZTF18abakgtm)
 
-    raw_det_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
-    raw_nondet_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
-    det_ZTF18abvvcko = preprocess_ztf.preprocess(raw_det_ZTF18abvvcko)
+        self.raw_det_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
+        self.raw_nondet_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
+        self.det_ZTF18abvvcko = self.preprocess_ztf.preprocess(self.raw_det_ZTF18abvvcko)
 
-    raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
-    raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
-    det_ZTF17aaaaaxg = preprocess_ztf.preprocess(raw_det_ZTF17aaaaaxg)
+        self.raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
+        self.raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
+        self.det_ZTF17aaaaaxg = self.preprocess_ztf.preprocess(self.raw_det_ZTF17aaaaaxg)
 
-    fake_objects = pd.DataFrame(
-        index=['ZTF17aaaaaxg', 'ZTF18abvvcko', 'ZTF18abakgtm'],
-        data=[[True], [False], [True]],
-        columns=['corrected']
-    )
+        self.fake_objects = pd.DataFrame(
+            index=['ZTF17aaaaaxg', 'ZTF18abvvcko', 'ZTF18abakgtm'],
+            data=[[True], [False], [True]],
+            columns=['corrected']
+        )
 
     def turbofats_features(self):
         turbofats_extractor = TurboFatsFeatureExtractor()

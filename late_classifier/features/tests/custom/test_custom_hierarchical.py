@@ -1,6 +1,6 @@
 from late_classifier.features import CustomHierarchicalExtractor
-from late_classifier.features import DetectionsPreprocessorZTF
 import os
+import numpy as np
 import pandas as pd
 import unittest
 
@@ -11,28 +11,49 @@ EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 class CustomHierarchicalExtractorTest(unittest.TestCase):
     def setUp(self) -> None:
-        preprocess_ztf = DetectionsPreprocessorZTF()
+        np.random.seed(0)
 
-        raw_det_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
-        det_ZTF18abakgtm = preprocess_ztf.preprocess(raw_det_ZTF18abakgtm)
-        raw_nondet_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
+        self.objects = pd.DataFrame(
+            index=[
+                'ZTF18abakgtm',
+                'ZTF18abvvcko',
+                'ZTF17aaaaaxg',
+                'ZTF18aaveorp'
+            ],
+            columns=['corrected'],
+            data=np.random.choice(
+                a=[False, True],
+                size=(4,)
+            )
+        )
 
-        raw_det_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
-        det_ZTF18abvvcko = preprocess_ztf.preprocess(raw_det_ZTF18abvvcko)
-        raw_nondet_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
+        raw_det_ZTF18abakgtm = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
+        raw_det_ZTF18abakgtm['sigmapsf_corr_ext'] = raw_det_ZTF18abakgtm['sigmapsf_corr']
+        raw_nondet_ZTF18abakgtm = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
 
-        raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
-        det_ZTF17aaaaaxg = preprocess_ztf.preprocess(raw_det_ZTF17aaaaaxg)
-        raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
+        raw_det_ZTF18abvvcko = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
+        raw_det_ZTF18abvvcko['sigmapsf_corr_ext'] = raw_det_ZTF18abvvcko['sigmapsf_corr']
+        raw_nondet_ZTF18abvvcko = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
 
-        raw_det_ZTF18aaveorp = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18aaveorp_det.csv'), index_col="oid")
-        det_ZTF18aaveorp = preprocess_ztf.preprocess(raw_det_ZTF18aaveorp)
+        raw_det_ZTF17aaaaaxg = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
+        raw_det_ZTF17aaaaaxg['sigmapsf_corr_ext'] = raw_det_ZTF17aaaaaxg['sigmapsf_corr']
+        raw_nondet_ZTF17aaaaaxg = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
+
+        raw_det_ZTF18aaveorp = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18aaveorp_det.csv'), index_col="oid")
+        raw_det_ZTF18aaveorp['sigmapsf_corr_ext'] = raw_det_ZTF18aaveorp['sigmapsf_corr']
 
         keys = [
             'mjd',
             'fid',
             'magpsf_corr',
-            'sigmapsf_corr',
+            'sigmapsf_corr_ext',
             'isdiffpos',
             'magpsf',
             'sigmapsf',
@@ -42,10 +63,10 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             'rb'
         ]
         self.detections = pd.concat(
-            [det_ZTF17aaaaaxg[keys],
-             det_ZTF18abvvcko[keys],
-             det_ZTF18abakgtm[keys],
-             det_ZTF18aaveorp[keys]],
+            [raw_det_ZTF17aaaaaxg[keys],
+             raw_det_ZTF18abvvcko[keys],
+             raw_det_ZTF18abakgtm[keys],
+             raw_det_ZTF18aaveorp[keys]],
             axis=0
         )
 
@@ -64,7 +85,8 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
         features_df = custom_hierarchical_extractor.compute_features(
             detections=self.detections,
-            non_detections=self.non_detections
+            non_detections=self.non_detections,
+            objects=self.objects
         )
         print(features_df)
 
@@ -72,7 +94,8 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
         features_df = custom_hierarchical_extractor.compute_features(
             detections=self.detections.loc['ZTF17aaaaaxg'],
-            non_detections=self.non_detections.loc['ZTF17aaaaaxg']
+            non_detections=self.non_detections.loc['ZTF17aaaaaxg'],
+            objects=self.objects
         )
         print(features_df)
 
@@ -80,7 +103,9 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         extractor = CustomHierarchicalExtractor(bands=[1, 2])
         results = extractor.compute_features(
             self.detections,
-            non_detections=self.just_one_non_detection)
+            non_detections=self.just_one_non_detection,
+            objects=self.objects
+        )
 
     def test_object_with_few_alerts(self):
         custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
@@ -92,7 +117,8 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         detections = pd.concat([detections, last_curve_short], axis=0)
         features_df = custom_hierarchical_extractor.compute_features(
             detections=detections,
-            non_detections=self.non_detections
+            non_detections=self.non_detections,
+            objects=self.objects
         )
         print(features_df)
 
