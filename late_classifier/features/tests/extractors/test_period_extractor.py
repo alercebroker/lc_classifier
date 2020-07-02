@@ -28,6 +28,16 @@ class TestPeriodExtractor(unittest.TestCase):
         periods['catalog_period'] = self.labels.loc[periods.index].period
         print(periods)
 
+    def test_shared_data(self):
+        shared_data = dict()
+        period_extractor = PeriodExtractor()
+        _ = period_extractor.compute_features(
+            detections=self.detections,
+            objects=self.fake_objects,
+            shared_data=shared_data
+        )
+        self.assertTrue(len(shared_data.keys()) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()

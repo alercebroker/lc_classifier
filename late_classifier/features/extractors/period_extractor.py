@@ -34,6 +34,7 @@ class PeriodExtractor(FeatureExtractor):
 
         detections = detections.sort_values('mjd')
 
+        periodograms = {}
         for oid in oids:
             oid_detections = detections.loc[[oid]]
             oid_objects = objects.loc[[oid]]
@@ -59,12 +60,12 @@ class PeriodExtractor(FeatureExtractor):
                 n_local_optima=10, fresolution=1e-4)
             best_freq, best_per = self.periodogram_computer.get_best_frequencies()
 
-            wk1, wk2 = self.periodogram_computer.get_periodogram()
+            freq, per = self.periodogram_computer.get_periodogram()
             period_candidate = 1.0 / best_freq[0]
 
             # Significance estimation
             entropy_best_n = 100
-            top_values = np.sort(wk2)[-entropy_best_n:]
+            top_values = np.sort(per)[-entropy_best_n:]
             normalized_top_values = top_values + 1e-2
             normalized_top_values = normalized_top_values / np.sum(normalized_top_values)
             entropy = (-normalized_top_values * np.log(normalized_top_values)).sum()
@@ -76,6 +77,14 @@ class PeriodExtractor(FeatureExtractor):
                 index=[oid]
             )
             features.append(object_features)
+            periodograms[oid] = {
+                'freq': freq,
+                'per': per
+            }
+
         features = pd.concat(features, axis=0, sort=True)
         features.index.name = 'oid'
+        if 'shared_data' in kwargs.keys():
+            kwargs['shared_data']['period'] = features
+            kwargs['shared_data']['periodogram'] = periodograms
         return features
