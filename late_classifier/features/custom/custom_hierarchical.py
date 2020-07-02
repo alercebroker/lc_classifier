@@ -12,6 +12,7 @@ from late_classifier.features import SNParametricModelExtractor
 from late_classifier.features import WiseStaticExtractor
 from late_classifier.features import PeriodExtractor
 from late_classifier.features import PowerRateExtractor
+from late_classifier.features import FoldedKimExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF
@@ -34,7 +35,8 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            SNParametricModelExtractor(),
                            WiseStaticExtractor(),
                            PeriodExtractor(),
-                           PowerRateExtractor()
+                           PowerRateExtractor(),
+                           FoldedKimExtractor()
                            ]
         self.preprocessor = DetectionsPreprocessorZTF()
 

@@ -2,7 +2,6 @@ from typing import List
 
 from ..core.base import FeatureExtractorSingleBand
 from turbofats import FeatureSpace
-import numpy as np
 import pandas as pd
 import logging
 
@@ -20,15 +19,13 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'Gskew',
             'MaxSlope', 'Mean', 'Meanvariance', 'MedianAbsDev',
             'MedianBRP', 'PairSlopeTrend', 'PercentAmplitude', 'Q31',
-            'PeriodLS_v2',
-            'Period_fit_v2', 'Psi_CS_v2', 'Psi_eta_v2', 'Rcs',
+            'Rcs',
             'Skew', 'SmallKurtosis', 'Std',
             'StetsonK', 'Harmonics',
             'Pvar', 'ExcessVar',
             'GP_DRW_sigma', 'GP_DRW_tau', 'SF_ML_amplitude', 'SF_ML_gamma',
             'IAR_phi',
             'LinearTrend',
-            'PeriodPowerRate'
         ]
 
     def get_features_keys(self) -> List[str]:

@@ -11,6 +11,7 @@ from .extractors.turbofats_extractor import TurboFatsFeatureExtractor
 from .extractors.wise_static_extractor import WiseStaticExtractor
 from .extractors.period_extractor import PeriodExtractor
 from .extractors.power_rate_extractor import PowerRateExtractor
+from .extractors.folded_kim_extractor import FoldedKimExtractor
 
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor
@@ -32,6 +33,7 @@ __all__ = [
     'WiseStaticExtractor',
     'PeriodExtractor',
     'PowerRateExtractor',
+    'FoldedKimExtractor',
     'CustomHierarchicalExtractor',
     'DetectionsPreprocessorZTF'
 ]

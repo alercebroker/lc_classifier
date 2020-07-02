@@ -11,3 +11,4 @@ from .wise_static_extractor import WiseStaticExtractor
 from .sn_parametric_model_computer import SNParametricModelExtractor
 from .period_extractor import PeriodExtractor
 from .power_rate_extractor import PowerRateExtractor
+from .folded_kim_extractor import FoldedKimExtractor

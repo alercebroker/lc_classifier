@@ -15,32 +15,42 @@ EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 class TestObjectsMethods(unittest.TestCase):
     def setUp(self) -> None:
         self.preprocess_ztf = DetectionsPreprocessorZTF()
-
-        self.raw_det_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
-        self.raw_nondet_ZTF18abakgtm = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
-        self.det_ZTF18abakgtm = self.preprocess_ztf.preprocess(self.raw_det_ZTF18abakgtm)
-
-        self.raw_det_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
-        self.raw_nondet_ZTF18abvvcko = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
-        self.det_ZTF18abvvcko = self.preprocess_ztf.preprocess(self.raw_det_ZTF18abvvcko)
-
-        self.raw_det_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
-        self.raw_nondet_ZTF17aaaaaxg = pd.read_csv(os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
-        self.det_ZTF17aaaaaxg = self.preprocess_ztf.preprocess(self.raw_det_ZTF17aaaaaxg)
-
         self.fake_objects = pd.DataFrame(
             index=['ZTF17aaaaaxg', 'ZTF18abvvcko', 'ZTF18abakgtm'],
             data=[[True], [False], [True]],
             columns=['corrected']
         )
+        self.raw_det_ZTF18abakgtm = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_det.csv'), index_col="oid")
+        self.raw_det_ZTF18abakgtm['sigmapsf_corr_ext'] = self.raw_det_ZTF18abakgtm['sigmapsf_corr']
+        self.raw_nondet_ZTF18abakgtm = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abakgtm_nondet.csv'), index_col="oid")
+        self.det_ZTF18abakgtm = self.preprocess_ztf.preprocess(
+            self.raw_det_ZTF18abakgtm, objects=self.fake_objects)
+
+        self.raw_det_ZTF18abvvcko = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_det.csv'), index_col="oid")
+        self.raw_det_ZTF18abvvcko['sigmapsf_corr_ext'] = self.raw_det_ZTF18abvvcko['sigmapsf_corr']
+        self.raw_nondet_ZTF18abvvcko = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF18abvvcko_nondet.csv'), index_col="oid")
+        self.det_ZTF18abvvcko = self.preprocess_ztf.preprocess(
+            self.raw_det_ZTF18abvvcko, objects=self.fake_objects)
+
+        self.raw_det_ZTF17aaaaaxg = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_det.csv'), index_col="oid")
+        self.raw_det_ZTF17aaaaaxg['sigmapsf_corr_ext'] = self.raw_det_ZTF17aaaaaxg['sigmapsf_corr']
+        self.raw_nondet_ZTF17aaaaaxg = pd.read_csv(
+            os.path.join(EXAMPLES_PATH, 'ZTF17aaaaaxg_nondet.csv'), index_col="oid")
+        self.det_ZTF17aaaaaxg = self.preprocess_ztf.preprocess(
+            self.raw_det_ZTF17aaaaaxg, objects=self.fake_objects)
 
     def turbofats_features(self):
         turbofats_extractor = TurboFatsFeatureExtractor()
         turbofats_fs = turbofats_extractor.compute_features(self.det_ZTF18abakgtm)
         expected_cols = ['Amplitude', 'AndersonDarling', 'Autocor_length', 'Beyond1Std', 'Con',
                          'Eta_e', 'Gskew', 'MaxSlope', 'Mean', 'Meanvariance', 'MedianAbsDev',
-                         'MedianBRP', 'PairSlopeTrend', 'PercentAmplitude', 'Q31', 'PeriodLS_v2',
-                         'Period_fit_v2', 'Psi_CS_v2', 'Psi_eta_v2', 'Rcs', 'Skew',
+                         'MedianBRP', 'PairSlopeTrend', 'PercentAmplitude', 'Q31',
+                         'Rcs', 'Skew',
                          'SmallKurtosis', 'Std', 'StetsonK', 'Harmonics_mag_1',
                          'Harmonics_mag_2', 'Harmonics_mag_3', 'Harmonics_mag_4',
                          'Harmonics_mag_5', 'Harmonics_mag_6', 'Harmonics_mag_7',
@@ -49,12 +59,12 @@ class TestObjectsMethods(unittest.TestCase):
                          'Harmonics_mse', 'Pvar', 'ExcessVar', 'GP_DRW_sigma', 'GP_DRW_tau',
                          'SF_ML_amplitude', 'SF_ML_gamma', 'IAR_phi', 'LinearTrend']
         self.assertEqual(type(turbofats_fs), pd.DataFrame)
-        self.assertEqual(len(turbofats_fs), 46)
+        self.assertEqual(len(turbofats_fs), len(expected_cols))
         self.assertListEqual(turbofats_fs.columns, expected_cols)
 
     def test_color_features(self):
         color_extractor = ColorFeatureExtractor()
-        color_fs = color_extractor.compute_features(self.det_ZTF17aaaaaxg, objects=self.fake_objects)
+        color_fs = color_extractor.compute_features(self.det_ZTF17aaaaaxg)
         self.assertEqual(type(color_fs), pd.DataFrame)
         self.assertEqual(len(color_fs.columns), len(color_extractor.get_features_keys()))
         self.assertListEqual(list(color_fs.columns), color_extractor.get_features_keys())
@@ -78,13 +88,13 @@ class TestObjectsMethods(unittest.TestCase):
 
     def test_sn_detections_features(self):
         sn_det_extractor = SupernovaeDetectionFeatureExtractor()
-        sn_fs = sn_det_extractor.compute_features(self.det_ZTF18abakgtm, objects=self.fake_objects)
+        sn_fs = sn_det_extractor.compute_features(self.det_ZTF18abakgtm)
         self.assertEqual(type(sn_fs), pd.DataFrame)
 
     def test_sn_non_detections_features(self):
         sn_non_det_extractor = SupernovaeDetectionAndNonDetectionFeatureExtractor()
         sn_non_det = sn_non_det_extractor.compute_features(
-            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm, objects=self.fake_objects)
+            self.det_ZTF18abakgtm, non_detections=self.raw_nondet_ZTF18abakgtm)
         self.assertEqual(type(sn_non_det), pd.DataFrame)
 
     def test_wise_features_ok(self):

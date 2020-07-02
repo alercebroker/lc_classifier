@@ -12,6 +12,7 @@ EXAMPLES_PATH = os.path.abspath(os.path.join(FILE_PATH, "../data"))
 
 class TestPeriodExtractor(unittest.TestCase):
     def setUp(self) -> None:
+        np.random.seed(0)
         self.detections = pd.read_pickle(
             os.path.join(EXAMPLES_PATH, 'periodic_light_curves.pkl'))
         self.labels = pd.read_pickle(
