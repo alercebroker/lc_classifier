@@ -10,11 +10,14 @@ from late_classifier.features import MHPSExtractor
 from late_classifier.features import IQRExtractor
 from late_classifier.features import SNParametricModelExtractor
 from late_classifier.features import WiseStaticExtractor
+from late_classifier.features import PeriodExtractor
+from late_classifier.features import PowerRateExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF
 
 import pandas as pd
+import logging
 
 
 class CustomHierarchicalExtractor(FeatureExtractor):
@@ -29,7 +32,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            TurboFatsFeatureExtractor(),
                            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor(),
-                           WiseStaticExtractor()
+                           WiseStaticExtractor(),
+                           PeriodExtractor(),
+                           PowerRateExtractor()
                            ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
@@ -82,14 +87,14 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         for key in required:
             if key not in kwargs:
                 raise Exception(f'HierarchicalFeaturesComputer requires {key} argument')
-        detections = self.preprocessor.preprocess(detections)
+        objects = kwargs['objects']
+        detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values('mjd')
         non_detections = kwargs['non_detections']
-        objects = kwargs['objects']
 
         if len(non_detections) == 0:
             non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
@@ -100,9 +105,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             df = ex.compute_features(
                 detections,
                 non_detections=non_detections,
-                objects=objects,
                 shared_data=shared_data
             )
+            logging.info(f'FLAG={ex}')
             features.append(df)
         df = pd.concat(features, axis=1, join='inner')
         df = pd.concat([df, too_short_features], axis=0, join='outer', sort=True)

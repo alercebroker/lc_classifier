@@ -12,6 +12,7 @@ from .extractors.wise_static_extractor import WiseStaticExtractor
 from .extractors.period_extractor import PeriodExtractor
 from .extractors.power_rate_extractor import PowerRateExtractor
 
+
 from .custom.custom_hierarchical import CustomHierarchicalExtractor
 
 from .preprocess.preprocess_ztf import DetectionsPreprocessorZTF
