@@ -34,7 +34,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            TurboFatsFeatureExtractor(),
                            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor(),
-                           #WiseStaticExtractor(),
+                           # WiseStaticExtractor(),
                            PeriodExtractor(),
                            PowerRateExtractor(),
                            FoldedKimExtractor(),
