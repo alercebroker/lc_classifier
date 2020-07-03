@@ -56,12 +56,14 @@ class PowerRateExtractor(FeatureExtractor):
         power_rates = []
         for oid in oids:
             power_rate_values = []
-            if oid in periodograms.keys():
+            if oid in periodograms.keys() and periodograms[oid]['freq'] is not None:
                 for factor in self.factors:
                     power_rate_values.append(
                         self._get_power_ratio(periodograms[oid], factor))
                 power_rates.append(power_rate_values)
             else:
+                logging.error(f'PeriodPowerRateExtractor: period is not '
+                              f'available for {oid}')
                 power_rates.append(
                     [np.nan]*len(self.factors)
                 )

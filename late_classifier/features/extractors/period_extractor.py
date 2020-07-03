@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from P4J import MultiBandPeriodogram
+import logging
 
 
 class PeriodExtractor(FeatureExtractor):
@@ -39,10 +40,25 @@ class PeriodExtractor(FeatureExtractor):
                 errs=oid_detections[['sigmapsf_ml']].values,
                 fids=oid_detections[['fid']].values)
 
-            self.periodogram_computer.frequency_grid_evaluation(
-                fmin=1e-3, fmax=20.0, fresolution=1e-3)
-            self.frequencies = self.periodogram_computer.finetune_best_frequencies(
-                n_local_optima=10, fresolution=1e-4)
+            try:
+                self.periodogram_computer.frequency_grid_evaluation(
+                    fmin=1e-3, fmax=20.0, fresolution=1e-3)
+                self.frequencies = self.periodogram_computer.finetune_best_frequencies(
+                    n_local_optima=10, fresolution=1e-4)
+            except TypeError as e:
+                logging.error(f'TypeError exception in PeriodExtractor: '
+                              f'oid {oid}\n{e}')
+                object_features = pd.DataFrame(
+                    data=[[np.nan] * len(self.get_features_keys())],
+                    columns=self.get_features_keys(),
+                    index=[oid]
+                )
+                features.append(object_features)
+                periodograms[oid] = {
+                    'freq': None,
+                    'per': None
+                }
+                continue
             best_freq, best_per = self.periodogram_computer.get_best_frequencies()
 
             freq, per = self.periodogram_computer.get_periodogram()

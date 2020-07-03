@@ -39,7 +39,13 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
             time = oid_band_detections['mjd'].values
             error = oid_band_detections['sigmapsf_ml'].values + 10 ** -2
 
-            period = periods[['Multiband_period']].loc[[oid]].values.flatten()
+            try:
+                period = periods[['Multiband_period']].loc[[oid]].values.flatten()
+            except KeyError as e:
+                logging.error(f'KeyError in HarmonicsExtractor, period is not '
+                              f'available: oid {oid}\n{e}')
+                features.append([np.nan]*len(self.get_features_keys()))
+                continue
             best_freq = 1 / period
 
             omega = [np.array([[1.] * len(time)])]

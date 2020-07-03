@@ -45,7 +45,13 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
             time = oid_band_detections['mjd'].values
-            oid_period = periods[['Multiband_period']].loc[[oid]].values.flatten()
+            try:
+                oid_period = periods[['Multiband_period']].loc[[oid]].values.flatten()
+            except KeyError as e:
+                logging.error(f'KeyError in FoldedKimExtractor, period is not '
+                              f'available: oid {oid}\n{e}')
+                features.append([np.nan]*len(self.get_features_keys()))
+                continue
             folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
             magnitude = oid_band_detections['magpsf_ml'].values
             sorted_mags = magnitude[np.argsort(folded_time)]
