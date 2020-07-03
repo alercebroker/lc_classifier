@@ -9,7 +9,7 @@ from late_classifier.features import RealBogusExtractor
 from late_classifier.features import MHPSExtractor
 from late_classifier.features import IQRExtractor
 from late_classifier.features import SNParametricModelExtractor
-from late_classifier.features import WiseStaticExtractor
+#from late_classifier.features import WiseStaticExtractor
 from late_classifier.features import PeriodExtractor
 from late_classifier.features import PowerRateExtractor
 from late_classifier.features import FoldedKimExtractor
@@ -34,7 +34,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                            TurboFatsFeatureExtractor(),
                            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
                            SNParametricModelExtractor(),
-                           WiseStaticExtractor(),
+                           #WiseStaticExtractor(),
                            PeriodExtractor(),
                            PowerRateExtractor(),
                            FoldedKimExtractor(),
