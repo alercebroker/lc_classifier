@@ -1,4 +1,8 @@
-# Late Classifier [![Build Status](https://travis-ci.com/alercebroker/late_classifier.svg?token=FuwtsLbsSNgHY1qXBVmB&branch=paper_paula)](https://travis-ci.com/alercebroker/late_classifier)
+[![Build Status](https://travis-ci.com/alercebroker/late_classifier.svg?token=FuwtsLbsSNgHY1qXBVmB&branch=paper_paula)](https://travis-ci.com/alercebroker/late_classifier)
+[![codecov](https://codecov.io/gh/alercebroker/late_classifier/branch/paper_paula/graph/badge.svg?token=5VNGJTSOCK)](https://codecov.io/gh/alercebroker/late_classifier)
+
+
+# Late Classifier
 
 ## Installing *lateclassifier*
 For development:
