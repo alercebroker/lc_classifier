@@ -82,18 +82,21 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         return detections.loc[indexes]
 
     def get_magpsf_ml(self, detections, objects):
-        def magpsf_ml(detection, objects_table):
-            oid = detection.name
+        def magpsf_ml(detections, objects_table):
+            detections = detections.copy()
+            oid = detections.index.values[0]
             is_corrected = objects_table.loc[[oid]].corrected.values[0]
             if is_corrected:
-                detection["magpsf_ml"] = detection["magpsf_corr"]
-                detection["sigmapsf_ml"] = detection["sigmapsf_corr_ext"]
+                detections["magpsf_ml"] = detections["magpsf_corr"]
+                detections["sigmapsf_ml"] = detections["sigmapsf_corr_ext"]
             else:
-                detection["magpsf_ml"] = detection["magpsf"]
-                detection["sigmapsf_ml"] = detection["sigmapsf"]
-            return detection
+                detections["magpsf_ml"] = detections["magpsf"]
+                detections["sigmapsf_ml"] = detections["sigmapsf"]
+            return detections
 
-        return detections.apply(magpsf_ml, axis=1, objects_table=objects)
+        detections = detections.groupby(level=0, sort=False)\
+            .apply(magpsf_ml, objects_table=objects).droplevel(level=1)
+        return detections
 
     def preprocess(self, dataframe, objects=None):
         """
