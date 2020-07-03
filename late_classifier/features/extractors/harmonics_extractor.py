@@ -41,37 +41,38 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
 
             try:
                 period = periods[['Multiband_period']].loc[[oid]].values.flatten()
-            except KeyError as e:
+                best_freq = 1 / period
+
+                omega = [np.array([[1.] * len(time)])]
+                timefreq = (2.0 * np.pi * best_freq * np.arange(1, self.n_harmonics + 1)).reshape(1, -1).T * time
+                omega.append(np.cos(timefreq))
+                omega.append(np.sin(timefreq))
+                omega = np.concatenate(omega, axis=0).T  # Omega.shape == (lc_length, 1+2*self.n_harmonics)
+                inverr = 1.0 / error
+
+                # weighted regularized linear regression
+                w_a = inverr.reshape(-1, 1) * omega
+                w_b = (magnitude * inverr).reshape(-1, 1)
+                coeffs = np.matmul(np.linalg.pinv(w_a), w_b).flatten()
+                fitted_magnitude = np.dot(omega, coeffs)
+                coef_cos = coeffs[1:self.n_harmonics + 1]
+                coef_sin = coeffs[self.n_harmonics + 1:]
+                coef_mag = np.sqrt(coef_cos ** 2 + coef_sin ** 2)
+                coef_phi = np.arctan2(coef_sin, coef_cos)
+
+                # Relative phase
+                coef_phi = coef_phi - coef_phi[0] * np.arange(1, self.n_harmonics + 1)
+                coef_phi = coef_phi[1:] % (2 * np.pi)
+
+                mse = np.mean((fitted_magnitude - magnitude) ** 2)
+                features.append(
+                    np.concatenate([coef_mag, coef_phi, np.array([mse])]).tolist())
+            except Exception as e:
                 logging.error(f'KeyError in HarmonicsExtractor, period is not '
                               f'available: oid {oid}\n{e}')
                 features.append([np.nan]*len(self.get_features_keys()))
                 continue
-            best_freq = 1 / period
 
-            omega = [np.array([[1.] * len(time)])]
-            timefreq = (2.0 * np.pi * best_freq * np.arange(1, self.n_harmonics + 1)).reshape(1, -1).T * time
-            omega.append(np.cos(timefreq))
-            omega.append(np.sin(timefreq))
-            omega = np.concatenate(omega, axis=0).T  # Omega.shape == (lc_length, 1+2*self.n_harmonics)
-            inverr = 1.0 / error
-
-            # weighted regularized linear regression
-            w_a = inverr.reshape(-1, 1) * omega
-            w_b = (magnitude * inverr).reshape(-1, 1)
-            coeffs = np.matmul(np.linalg.pinv(w_a), w_b).flatten()
-            fitted_magnitude = np.dot(omega, coeffs)
-            coef_cos = coeffs[1:self.n_harmonics + 1]
-            coef_sin = coeffs[self.n_harmonics + 1:]
-            coef_mag = np.sqrt(coef_cos ** 2 + coef_sin ** 2)
-            coef_phi = np.arctan2(coef_sin, coef_cos)
-
-            # Relative phase
-            coef_phi = coef_phi - coef_phi[0] * np.arange(1, self.n_harmonics + 1)
-            coef_phi = coef_phi[1:] % (2 * np.pi)
-
-            mse = np.mean((fitted_magnitude - magnitude) ** 2)
-            features.append(
-                np.concatenate([coef_mag, coef_phi, np.array([mse])]).tolist())
         features = pd.DataFrame(
             data=np.array(features),
             columns=self.get_features_keys_with_band(band),
