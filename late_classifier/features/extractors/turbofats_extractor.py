@@ -21,7 +21,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'MedianBRP', 'PairSlopeTrend', 'PercentAmplitude', 'Q31',
             'Rcs',
             'Skew', 'SmallKurtosis', 'Std',
-            'StetsonK', 'Harmonics',
+            'StetsonK',
             'Pvar', 'ExcessVar',
             'GP_DRW_sigma', 'GP_DRW_tau', 'SF_ML_amplitude', 'SF_ML_gamma',
             'IAR_phi',
@@ -30,10 +30,6 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
     def get_features_keys(self) -> List[str]:
         features_keys = self._feature_keys_for_new_feature_space()
-        features_keys += [f"Harmonics_mag_{i}" for i in range(1, 8)]
-        features_keys += [f"Harmonics_phase_{i}" for i in range(2, 8)]
-        features_keys += [f"Harmonics_mse"]
-        features_keys.remove('Harmonics')
         return features_keys
 
     def get_required_keys(self) -> List[str]:

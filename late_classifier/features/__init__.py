@@ -12,6 +12,7 @@ from .extractors.wise_static_extractor import WiseStaticExtractor
 from .extractors.period_extractor import PeriodExtractor
 from .extractors.power_rate_extractor import PowerRateExtractor
 from .extractors.folded_kim_extractor import FoldedKimExtractor
+from .extractors.harmonics_extractor import HarmonicsExtractor
 
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor
@@ -34,6 +35,7 @@ __all__ = [
     'PeriodExtractor',
     'PowerRateExtractor',
     'FoldedKimExtractor',
+    'HarmonicsExtractor',
     'CustomHierarchicalExtractor',
     'DetectionsPreprocessorZTF'
 ]

@@ -33,7 +33,6 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             period_extractor = PeriodExtractor()
             periods = period_extractor.compute_features(detections)
         oids = detections.index.unique()
-        columns = self.get_features_keys_with_band(band)
         features = []
         for oid in oids:
             oid_detections = detections.loc[[oid]]
@@ -50,8 +49,6 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
             magnitude = oid_band_detections['magpsf_ml'].values
             sorted_mags = magnitude[np.argsort(folded_time)]
-            if any([type(s) == str for s in sorted_mags]):
-                print(sorted_mags)
             sigma = np.std(sorted_mags)
             m = np.mean(sorted_mags)
             lc_len = len(sorted_mags)

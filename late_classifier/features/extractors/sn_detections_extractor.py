@@ -18,7 +18,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
                 'positive_fraction']
 
     def get_required_keys(self) -> List[str]:
-        return ["isdiffpos", "magpsf_corr", "mjd"]
+        return ["isdiffpos", "magpsf_ml", "mjd"]
 
     def compute_feature_in_one_band(self, detections, band=None, **kwargs):
         """
