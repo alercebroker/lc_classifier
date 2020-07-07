@@ -7,11 +7,18 @@ import logging
 
 
 class PeriodExtractor(FeatureExtractor):
-    def __init__(self):
+    def __init__(self, bands=None):
         self.periodogram_computer = MultiBandPeriodogram(method='MHAOV')
+        if bands is None:
+            self.bands = [1, 2]
+        else:
+            self.bands = bands
 
     def get_features_keys(self) -> List[str]:
-        return ['Multiband_period', 'Period_fit']
+        features = ['Multiband_period', 'Period_fit']
+        for band in self.bands:
+            features.append(f'Period_band_{band}')
+        return features
 
     def get_required_keys(self) -> List[str]:
         return [
@@ -33,6 +40,8 @@ class PeriodExtractor(FeatureExtractor):
 
             oid_detections = oid_detections.groupby('fid').filter(
                 lambda x: len(x) > 5)
+
+            available_bands = oid_detections.fid.unique()
 
             self.periodogram_computer.set_data(
                 mjds=oid_detections[['mjd']].values,
@@ -64,6 +73,14 @@ class PeriodExtractor(FeatureExtractor):
             freq, per = self.periodogram_computer.get_periodogram()
             period_candidate = 1.0 / best_freq[0]
 
+            period_candidates_per_band = []
+            for band in self.bands:
+                if band not in available_bands:
+                    period_candidates_per_band.append(np.nan)
+                    continue
+                best_freq_band = self.periodogram_computer.get_best_frequency(band)
+                period_candidates_per_band.append(1.0 / best_freq_band)
+
             # Significance estimation
             entropy_best_n = 100
             top_values = np.sort(per)[-entropy_best_n:]
@@ -73,7 +90,7 @@ class PeriodExtractor(FeatureExtractor):
             significance = 1 - entropy / np.log(entropy_best_n)
 
             object_features = pd.DataFrame(
-                data=[[period_candidate, significance]],
+                data=[[period_candidate, significance] + period_candidates_per_band],
                 columns=self.get_features_keys(),
                 index=[oid]
             )
