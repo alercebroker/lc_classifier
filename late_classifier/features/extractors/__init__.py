@@ -4,7 +4,7 @@ from .color_feature_extractor import ColorFeatureExtractor
 from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 from .galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .real_bogus_extractor import RealBogusExtractor
-from .sg_score_extractor import SGScoreExtractor
+from .sg_score_extractor import SGScoreExtractor, StreamSGScoreExtractor
 from .mhps_extractor import MHPSExtractor
 from .iqr_extractor import IQRExtractor
 from .wise_static_extractor import WiseStaticExtractor
