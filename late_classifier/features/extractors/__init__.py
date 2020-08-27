@@ -8,6 +8,7 @@ from .sg_score_extractor import SGScoreExtractor
 from .mhps_extractor import MHPSExtractor
 from .iqr_extractor import IQRExtractor
 from .wise_static_extractor import WiseStaticExtractor
+from .wise_stream_extractor import WiseStreamExtractor
 from .sn_parametric_model_computer import SNParametricModelExtractor
 from .period_extractor import PeriodExtractor
 from .power_rate_extractor import PowerRateExtractor
