@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 import pickle
+import wget
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from late_classifier.classifier.preprocessing import FeaturePreprocessor
 from late_classifier.classifier.preprocessing import intersect_oids_in_dataframes
@@ -114,6 +115,10 @@ class BaselineRandomForest(BaseClassifier):
 
 
 class HierarchicalRandomForest(BaseClassifier):
+    MODEL_VERSION = 1.0
+    MODEL_PICKLE_PATH =  os.path.join(PICKLE_PATH, f"{__name__}_{MODEL_VERSION}")
+
+
     def __init__(self, taxonomy_dictionary, non_used_features=None):
         n_trees = 500
         self.top_classifier = RandomForestClassifier(
@@ -145,13 +150,14 @@ class HierarchicalRandomForest(BaseClassifier):
         self.taxonomy_dictionary = taxonomy_dictionary
         self.feature_list = None
         self.inverted_dictionary = invert_dictionary(self.taxonomy_dictionary)
-        self.pickles = [
-            "top_rf.pkl",
-            "stochastic_rf.pkl",
-            "periodic_rf.pkl",
-            "transient_rf.pkl"
-        ]
-        self.url_model = "https://assets.alerce.online/pipeline/hierarchical_rf_paper/"
+        self.pickles = {
+            "features_list":"features_RF_model.pkl",
+            "top_rf":"hierarchical_level_RF_model.pkl",
+            "periodic_rf":"periodic_level_RF_model.pkl",
+            "stochastic_rf":"stochastic_level_RF_model.pkl",
+            "transient_rf":"transient_level_RF_model.pkl"
+        }
+        self.url_model = f"https://assets.alerce.online/pipeline/hierarchical_rf_{self.MODEL_VERSION}/"
 
     def fit(self, samples: pd.DataFrame, labels: pd.DataFrame) -> None:
         labels = labels.copy()
@@ -197,9 +203,17 @@ class HierarchicalRandomForest(BaseClassifier):
             labels[is_transient]['classALeRCE'].values
         )
 
+    def check_missing_features(self,columns, feature_list):
+        missing = set(feature_list).difference(set(columns))
+        return missing
+
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
-        samples = self.feature_preprocessor.preprocess_features(samples)
+        missing = self.check_missing_features(samples.columns, self.feature_list)
+        if len(missing) > 0:
+            raise Exception(f"Missing features: {missing}")
+
         samples = samples[self.feature_list]
+        samples = self.feature_preprocessor.preprocess_features(samples)
 
         top_probs = self.top_classifier.predict_proba(samples.values)
 
@@ -236,31 +250,31 @@ class HierarchicalRandomForest(BaseClassifier):
         return final_columns
 
     def save_model(self, directory: str) -> None:
-        with open(os.path.join(directory, 'top_rf.pkl'), 'wb') as f:
+        with open(os.path.join(directory, self.pickles['top_rf']), 'wb') as f:
             pickle.dump(
                 self.top_classifier,
                 f,
                 pickle.HIGHEST_PROTOCOL)
 
-        with open(os.path.join(directory, 'stochastic_rf.pkl'), 'wb') as f:
+        with open(os.path.join(directory, self.pickles['stochastic_rf']), 'wb') as f:
             pickle.dump(
                 self.stochastic_classifier,
                 f,
                 pickle.HIGHEST_PROTOCOL)
 
-        with open(os.path.join(directory, 'periodic_rf.pkl'), 'wb') as f:
+        with open(os.path.join(directory, self.pickles['periodic_rf']), 'wb') as f:
             pickle.dump(
                 self.periodic_classifier,
                 f,
                 pickle.HIGHEST_PROTOCOL)
 
-        with open(os.path.join(directory, 'transient_rf.pkl'), 'wb') as f:
+        with open(os.path.join(directory, self.pickles['transient_rf']), 'wb') as f:
             pickle.dump(
                 self.transient_classifier,
                 f,
                 pickle.HIGHEST_PROTOCOL)
 
-        with open(os.path.join(directory, 'feature_list.pkl'), 'wb') as f:
+        with open(os.path.join(directory, self.pickles['features_list']), 'wb') as f:
             pickle.dump(
                 self.feature_list,
                 f,
@@ -268,30 +282,37 @@ class HierarchicalRandomForest(BaseClassifier):
 
     def load_model(self, directory: str) -> None:
         self.top_classifier = pd.read_pickle(
-            os.path.join(directory, 'top_rf.pkl'))
+            os.path.join(directory, self.pickles['top_rf'] ))
         self.stochastic_classifier = pd.read_pickle(
-            os.path.join(directory, 'stochastic_rf.pkl'))
+            os.path.join(directory,  self.pickles['top_rf']))
         self.periodic_classifier = pd.read_pickle(
-            os.path.join(directory, 'periodic_rf.pkl'))
+            os.path.join(directory, self.pickles['periodic_rf']))
         self.transient_classifier = pd.read_pickle(
-            os.path.join(directory, 'transient_rf.pkl'))
+            os.path.join(directory, self.pickles['transient_rf']))
         self.feature_list = pd.read_pickle(
-            os.path.join(directory, 'feature_list.pkl'))
+            os.path.join(directory, self.pickles['features_list']))
 
     def download_model(self):
-        if not os.path.exists(PICKLE_PATH):
-            os.mkdir(PICKLE_PATH)
-        for pkl in self.pickles:
-            tmp_path = os.path.join(PICKLE_PATH, pkl)
+        if not os.path.exists(self.MODEL_PICKLE_PATH):
+            os.mkdir(self.MODEL_PICKLE_PATH)
+        for pkl in self.pickles.values():
+            tmp_path = os.path.join(self.MODEL_PICKLE_PATH, pkl)
             if not os.path.exists(tmp_path):
                 command = f"wget {self.url_model}{pkl} -O {tmp_path}"
-                os.system(command)
+                wget.download(os.path.join(self.url_model, pkl), tmp_path)
 
     def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
         if isinstance(input_features, pd.Series):
             input_features = input_features.to_frame().transpose()
         if len(input_features) != 1:
             raise ValueError('predict_in_pipeline receives features one by one')
+
+        missing = self.check_missing_features(input_features.columns, self.feature_list)
+        if len(missing) > 0:
+            raise Exception(f"Missing features: {missing}")
+
+        input_features = input_features[self.feature_list]
+
         input_features = self.feature_preprocessor.preprocess_features(input_features)
         prob_root = pd.DataFrame(
             self.top_classifier.predict_proba(input_features),
