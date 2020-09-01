@@ -4,19 +4,20 @@ from late_classifier.features import SupernovaeDetectionAndNonDetectionFeatureEx
 from late_classifier.features import GalacticCoordinatesExtractor
 from late_classifier.features import TurboFatsFeatureExtractor
 from late_classifier.features import ColorFeatureExtractor
-from late_classifier.features import SGScoreExtractor
+from late_classifier.features import SGScoreExtractor, StreamSGScoreExtractor
 from late_classifier.features import RealBogusExtractor
 from late_classifier.features import MHPSExtractor
 from late_classifier.features import IQRExtractor
 from late_classifier.features import SNParametricModelExtractor
 from late_classifier.features import WiseStaticExtractor
+from late_classifier.features import WiseStreamExtractor
 from late_classifier.features import PeriodExtractor
 from late_classifier.features import PowerRateExtractor
 from late_classifier.features import FoldedKimExtractor
 from late_classifier.features import HarmonicsExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
-from ..preprocess import DetectionsPreprocessorZTF
+from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
 
 import pandas as pd
 import logging
@@ -122,7 +123,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [
             GalacticCoordinatesExtractor(),
-            SGScoreExtractor(),
+            StreamSGScoreExtractor(),
             ColorFeatureExtractor(),
             RealBogusExtractor(),
             MHPSExtractor(),
@@ -130,13 +131,13 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             TurboFatsFeatureExtractor(),
             SupernovaeDetectionAndNonDetectionFeatureExtractor(),
             SNParametricModelExtractor(),
-            WiseStaticExtractor(),
+            WiseStreamExtractor(),
             PeriodExtractor(bands=bands),
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
         ]
-        self.preprocessor = DetectionsPreprocessorZTF()
+        self.preprocessor = StreamDetectionsPreprocessorZTF()
 
     def get_features_keys(self) -> List[str]:
         features_keys = []
@@ -183,19 +184,21 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        required = ["non_detections", "objects"]
+        required = ["non_detections", "xmatches", "metadata"]
         for key in required:
             if key not in kwargs:
                 raise Exception(f"HierarchicalFeaturesComputer requires {key} argument")
-        objects = kwargs["objects"]
-        detections = self.preprocessor.preprocess(detections, objects=objects)
+        detections = self.preprocessor.preprocess(detections)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values("mjd")
+        if len(detections) == 0:
+            return pd.DataFrame()
         non_detections = kwargs["non_detections"]
         xmatches = kwargs["xmatches"]
+        metadata = kwargs["metadata"]
 
         if len(non_detections) == 0:
             non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
@@ -207,6 +210,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
                 detections,
                 non_detections=non_detections,
                 shared_data=shared_data,
+                metadata=metadata,
                 xmatches=xmatches,
             )
             logging.info(f"FLAG={ex}")
