@@ -115,9 +115,10 @@ class BaselineRandomForest(BaseClassifier):
 
 
 class HierarchicalRandomForest(BaseClassifier):
-    MODEL_VERSION = 1.0
-    MODEL_PICKLE_PATH =  os.path.join(PICKLE_PATH, f"{__name__}_{MODEL_VERSION}")
-
+    MODEL_NAME = "hierarchical_random_forest"
+    MODEL_VERSION = "1.0.0"
+    MODEL_VERSION_NAME = f"{MODEL_NAME}_{MODEL_VERSION}"
+    MODEL_PICKLE_PATH =  os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
 
     def __init__(self, taxonomy_dictionary, non_used_features=None):
         n_trees = 500
@@ -284,7 +285,7 @@ class HierarchicalRandomForest(BaseClassifier):
         self.top_classifier = pd.read_pickle(
             os.path.join(directory, self.pickles['top_rf'] ))
         self.stochastic_classifier = pd.read_pickle(
-            os.path.join(directory,  self.pickles['top_rf']))
+            os.path.join(directory,  self.pickles['stochastic_rf']))
         self.periodic_classifier = pd.read_pickle(
             os.path.join(directory, self.pickles['periodic_rf']))
         self.transient_classifier = pd.read_pickle(
@@ -347,7 +348,7 @@ class HierarchicalRandomForest(BaseClassifier):
 
         return {
             "hierarchical": {
-                "root": prob_root.iloc[0].to_dict(),
+                "top": prob_root.iloc[0].to_dict(),
                 "children": resp_children},
             "probabilities": prob_all.iloc[0].to_dict(),
             "class": prob_all.idxmax(axis=1).iloc[0]
