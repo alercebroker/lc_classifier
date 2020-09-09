@@ -77,7 +77,7 @@ class PeriodExtractor(FeatureExtractor):
             period_candidates_per_band = []
             for band in self.bands:
                 if band not in available_bands:
-                    period_candidates_per_band.append(np.nan)
+                    period_candidates_per_band.extend([np.nan, np.nan])
                     continue
                 best_freq_band = self.periodogram_computer.get_best_frequency(band)
                 #Getting best period
@@ -93,7 +93,6 @@ class PeriodExtractor(FeatureExtractor):
             normalized_top_values = normalized_top_values / np.sum(normalized_top_values)
             entropy = (-normalized_top_values * np.log(normalized_top_values)).sum()
             significance = 1 - entropy / np.log(entropy_best_n)
-
             object_features = pd.DataFrame(
                 data=[[period_candidate, significance] + period_candidates_per_band],
                 columns=self.get_features_keys(),
