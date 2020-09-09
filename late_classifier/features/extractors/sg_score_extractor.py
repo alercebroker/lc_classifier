@@ -32,10 +32,10 @@ class SGScoreExtractor(FeatureExtractor):
 
 class StreamSGScoreExtractor(FeatureExtractor):
     def get_features_keys(self) -> List[str]:
-        return ['sgscore1']
+        return []
 
     def get_required_keys(self) -> List[str]:
-        return ['sgscore1']
+        return []
 
     def _compute_features(self, detections, **kwargs):
         """
@@ -52,6 +52,8 @@ class StreamSGScoreExtractor(FeatureExtractor):
         -------
 
         """
+        oid = detections.index.values[0]
         sgscore = kwargs["metadata"]["ps1"]["sgscore1"]
-        df_sgscore = DataFrame({"sgscore1": [sgscore]})
+        df_sgscore = DataFrame({"sgscore1": [sgscore], "oid": [oid]})
+        df_sgscore.set_index("oid", inplace=True)
         return df_sgscore
