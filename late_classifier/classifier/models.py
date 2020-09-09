@@ -295,7 +295,7 @@ class HierarchicalRandomForest(BaseClassifier):
 
     def download_model(self):
         if not os.path.exists(self.MODEL_PICKLE_PATH):
-            os.mkdir(self.MODEL_PICKLE_PATH)
+            os.makedirs(self.MODEL_PICKLE_PATH)
         for pkl in self.pickles.values():
             tmp_path = os.path.join(self.MODEL_PICKLE_PATH, pkl)
             if not os.path.exists(tmp_path):
