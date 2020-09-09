@@ -18,6 +18,7 @@ class PeriodExtractor(FeatureExtractor):
         features = ['Multiband_period', 'Period_fit']
         for band in self.bands:
             features.append(f'Period_band_{band}')
+            features.append(f'delta_period_{band}')
         return features
 
     def get_required_keys(self) -> List[str]:
@@ -79,7 +80,11 @@ class PeriodExtractor(FeatureExtractor):
                     period_candidates_per_band.append(np.nan)
                     continue
                 best_freq_band = self.periodogram_computer.get_best_frequency(band)
-                period_candidates_per_band.append(1.0 / best_freq_band)
+                #Getting best period
+                best_period_band = 1.0 / best_freq_band
+                #Calculating delta period
+                delta_period_band = np.abs(period_candidate - best_period_band)
+                period_candidates_per_band.extend([best_period_band, delta_period_band])
 
             # Significance estimation
             entropy_best_n = 100
