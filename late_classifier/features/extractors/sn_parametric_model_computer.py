@@ -13,7 +13,8 @@ class SNModelScipy(object):
     def __init__(self):
         self.beta = 1.0 / 3.0
         self.parameters = None
-
+    
+    #f in this function is SPM_beta
     def model(self, times, A, t0, gamma, f, t_rise, t_fall):
         t1 = t0 + gamma
 
@@ -118,8 +119,8 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         return [
             'SPM_A',
             'SPM_t0',
-            'SPM_beta',
             'SPM_gamma',
+            'SPM_beta',
             'SPM_tau_rise',
             'SPM_tau_fall',
             'SPM_chi'
