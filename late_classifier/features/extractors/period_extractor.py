@@ -15,7 +15,7 @@ class PeriodExtractor(FeatureExtractor):
             self.bands = bands
 
     def get_features_keys(self) -> List[str]:
-        features = ['Multiband_period', 'Period_fit']
+        features = ['Multiband_period', 'PPE']
         for band in self.bands:
             features.append(f'Period_band_{band}')
             features.append(f'delta_period_{band}')
