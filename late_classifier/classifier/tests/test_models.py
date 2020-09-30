@@ -92,8 +92,8 @@ class TestHierarchicalRF(unittest.TestCase):
         n_classes = len(classifier.get_list_of_classes())
         self.dict_sum_one(predicted_classes['probabilities'])
         self.assertEqual(n_classes, len(predicted_classes['probabilities']))
-        self.dict_sum_one(predicted_classes['hierarchical']['root'])
-        self.assertEqual(3, len(predicted_classes['hierarchical']['root']))
+        self.dict_sum_one(predicted_classes['hierarchical']['top'])
+        self.assertEqual(3, len(predicted_classes['hierarchical']['top']))
         for children_probs in predicted_classes['hierarchical']['children'].values():
             self.dict_sum_one(children_probs)
 

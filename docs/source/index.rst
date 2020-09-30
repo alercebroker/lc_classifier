@@ -10,6 +10,10 @@ Welcome to Light Curve Classifier's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   late_classifier.classifier
+   late_classifier.features.extractors
+   late_classifier.features.preprocess
+
 
 
 Indices and tables

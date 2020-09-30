@@ -15,8 +15,8 @@ class TestStreamSGScore(unittest.TestCase):
         self.extractor = StreamSGScoreExtractor()
 
     def test_compute_features(self):
-        metadata = {"ps1": {"sgscore": 1.0}}
-        sgscore = self.extractor.compute_features(pd.DataFrame(), metadata=metadata)
+        metadata = {"ps1": {"sgscore1": 1.0}}
+        sgscore = self.extractor.compute_features(pd.DataFrame({"dummy_data":[0.5]}, index=["dummy_index"]), metadata=metadata)
         self.assertIsInstance(sgscore, pd.DataFrame)
 
 

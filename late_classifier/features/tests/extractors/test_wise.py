@@ -24,7 +24,7 @@ class WiseStreamExtractorTest(unittest.TestCase):
         self.assertEqual(r, 3)
 
     def test_compute_features_xmatch(self):
-        colors = self.extractor.compute_features(self.detections, xmatch=self.xmatch)
+        colors = self.extractor.compute_features(self.detections, xmatches=self.xmatch)
         self.assertIsInstance(colors, pd.DataFrame)
 
 
