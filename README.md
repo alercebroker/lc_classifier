@@ -4,6 +4,7 @@
 
 # Late Classifier
 
+# Late Classifier
 ## Installing *lateclassifier*
 For development:
 
