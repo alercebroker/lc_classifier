@@ -3,7 +3,7 @@ import os
 
 CLI_PATH = os.path.dirname(os.path.abspath(__file__))
 FEATURES_PATH = os.path.abspath(os.path.join(CLI_PATH, "../features/"))
-TEST_PATH = os.path.abspath(os.path.join(CLI_PATH, "../../test/"))
+TEST_PATH = os.path.abspath(os.path.join(CLI_PATH, "../../tests/"))
 TEMPLATE_PATH = os.path.abspath(os.path.join(CLI_PATH, "templates/"))
 
 

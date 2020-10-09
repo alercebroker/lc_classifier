@@ -8,7 +8,7 @@ FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(
     os.path.join(
         FILE_PATH,
-        "../late_classifier/features/tests/data"))
+        "../tests/features/data"))
 
 detections = pd.read_csv(
     os.path.join(EXAMPLES_PATH, 'ZTF18aazsabq_det.csv'),
