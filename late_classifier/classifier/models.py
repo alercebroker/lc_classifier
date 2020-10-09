@@ -118,7 +118,7 @@ class HierarchicalRandomForest(BaseClassifier):
     MODEL_NAME = "hierarchical_random_forest"
     MODEL_VERSION = "1.0.0"
     MODEL_VERSION_NAME = f"{MODEL_NAME}_{MODEL_VERSION}"
-    MODEL_PICKLE_PATH =  os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
+    MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
 
     def __init__(self, taxonomy_dictionary, non_used_features=None):
         n_trees = 500

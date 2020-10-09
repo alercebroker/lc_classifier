@@ -1,8 +1,7 @@
 import pandas as pd
 
 
-def augment_just_training_set_features(
-        train_features, train_labels, aug_features, aug_labels):
+def augment_just_training_set_features(train_features, train_labels, aug_features, aug_labels):
     augmented_oids = aug_features.index.values
     aug_original_oids = [oid.split('_')[0] for oid in augmented_oids]
     aug_original_oids_set = set(aug_original_oids)
