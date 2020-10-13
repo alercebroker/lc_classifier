@@ -117,6 +117,7 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         dataframe = self.enough_alerts(dataframe)
         return dataframe
 
+
 class StreamDetectionsPreprocessorZTF(GenericPreprocessor):
     def __init__(self):
         super().__init__()

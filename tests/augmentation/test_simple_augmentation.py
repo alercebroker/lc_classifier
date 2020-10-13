@@ -7,12 +7,12 @@ from late_classifier.augmentation.simple_augmentation import ShortTransientAugme
 
 class TestShortTransientAugmenter(unittest.TestCase):
     def setUp(self) -> None:
-        self.detections = pd.read_csv('data_examples/100_objects_detections_corr.csv', index_col="objectId")
-        self.non_detections = pd.read_csv('data_examples/100_objects_non_detections.csv', index_col="objectId")
-        self.labels = pd.read_csv('data_examples/100_objects_labels.csv', index_col="objectId")
+        self.detections = pd.read_csv('data_examples/30_sne_detections_corr.csv', index_col="objectId")
+        self.non_detections = pd.read_csv('data_examples/30_sne_non_detections.csv', index_col="objectId")
+        self.non_detections["mjd"] = self.non_detections['jd'] - 2400000.5
+        self.labels = pd.read_csv('data_examples/30_sne_labels.csv', index_col="objectId")
 
-
-    def test_(self):
+    def test_short_transient_augmenter(self):
         augmenter = ShortTransientAugmenter()
         new_detections, new_non_detections, new_labels = augmenter.augment(
             self.detections, self.non_detections, self.labels, multiplier=5

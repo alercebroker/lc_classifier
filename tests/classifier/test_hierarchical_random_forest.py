@@ -18,7 +18,7 @@ class TestHierarchicalRF(unittest.TestCase):
 
         self.test_features = pd.read_csv('data_examples/100_objects_features.csv')
         self.test_labels = pd.read_csv('data_examples/100_objects_labels.csv')
-        del self.test_labels["oid"]
+        del self.test_labels["objectId"]
 
         self.model_trained = HierarchicalRandomForest(TAXONOMY)
         self.model_trained.download_model()
