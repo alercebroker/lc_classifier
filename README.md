@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/alercebroker/late_classifier.svg?token=FuwtsLbsSNgHY1qXBVmB&branch=paper_paula)](https://travis-ci.com/alercebroker/late_classifier)
-[![codecov](https://codecov.io/gh/alercebroker/late_classifier/branch/paper_paula/graph/badge.svg?token=5VNGJTSOCK)](https://codecov.io/gh/alercebroker/late_classifier)
+![unittest](https://github.com/alercebroker/late_classifier/workflows/unittest/badge.svg?branch=main&event=push)
+[![codecov](https://codecov.io/gh/alercebroker/late_classifier/branch/main/graph/badge.svg?token=5VNGJTSOCK)](undefined)
 
 
 # Late Classifier Library
