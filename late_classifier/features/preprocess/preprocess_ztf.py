@@ -140,7 +140,7 @@ class StreamDetectionsPreprocessorZTF(GenericPreprocessor):
         :param dataframe:
         :return:
         """
-        missing =  set(self.not_null_columns).difference(set(dataframe.columns))
+        missing = set(self.not_null_columns).difference(set(dataframe.columns))
         return missing
 
     def discard_invalid_value_detections(self, detections):

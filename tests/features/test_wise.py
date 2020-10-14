@@ -1,6 +1,7 @@
 import unittest
-import late_classifier.features.extractors as extractors
 import pandas as pd
+import late_classifier.features.extractors as extractors
+from late_classifier.features import DetectionsPreprocessorZTF
 
 
 class WiseStreamExtractorTest(unittest.TestCase):
@@ -23,3 +24,25 @@ class WiseStreamExtractorTest(unittest.TestCase):
     def test_compute_features_xmatch(self):
         colors = self.extractor.compute_features(self.detections, xmatches=self.xmatch)
         self.assertIsInstance(colors, pd.DataFrame)
+
+
+class WiseExtractorTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.extractor = extractors.WiseStaticExtractor()
+
+        self.detections = pd.read_csv("data_examples/100_objects_detections_corr.csv", index_col="objectId")
+        self.detections.index.name = 'oid'
+
+        self.objects = pd.read_csv("data_examples/100_objects.csv", index_col="objectId")
+        self.objects.index.name = 'oid'
+
+        self.detections = DetectionsPreprocessorZTF().get_magpsf_ml(
+            detections=self.detections,
+            objects=self.objects
+        )
+
+    def test_many_objects(self):
+        wise_colors = self.extractor.compute_features(self.detections)
+        self.assertEqual(
+            wise_colors.shape,
+            (98, len(self.extractor.get_features_keys())))

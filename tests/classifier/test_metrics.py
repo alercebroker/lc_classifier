@@ -37,7 +37,7 @@ class HRFMetricsTest(unittest.TestCase):
 
         self.train_features = pd.read_csv('data_examples/2000_features.csv')
         self.train_labels = pd.read_csv('data_examples/2000_labels.csv')
-        del self.train_features["oid"]
+        del self.train_features["objectId"]
 
         self.predicted = self.model_trained.predict(self.train_features)
         self.probabilities = self.model_trained.predict_proba(self.train_features)

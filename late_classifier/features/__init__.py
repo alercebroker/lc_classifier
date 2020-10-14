@@ -16,7 +16,7 @@ from .extractors.folded_kim_extractor import FoldedKimExtractor
 from .extractors.harmonics_extractor import HarmonicsExtractor
 
 
-from .custom.custom_hierarchical import CustomHierarchicalExtractor
+from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
 
 from .preprocess.preprocess_ztf import DetectionsPreprocessorZTF
 

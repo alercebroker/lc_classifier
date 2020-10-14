@@ -12,7 +12,6 @@ setup(
     author="ALeRCE Team",
     author_email='contact@alerce.online',
     packages=['late_classifier'],
-    scripts=["scripts/lateclassifier"],
     install_requires=required_packages,
     build_requires=required_packages
 )
