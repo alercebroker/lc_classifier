@@ -1,49 +1,37 @@
 from late_classifier.features import CustomHierarchicalExtractor
 import os
 import pandas as pd
-import cProfile
-
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES_PATH = os.path.abspath(
     os.path.join(
         FILE_PATH,
-        "../tests/features/data"))
+        "../data_examples/"))
 
 detections = pd.read_csv(
-    os.path.join(EXAMPLES_PATH, 'ZTF18aazsabq_det.csv'),
-    index_col='oid'
+    os.path.join(EXAMPLES_PATH, '100_objects_detections_corr.csv'),
+    index_col='objectId'
 )
-detections['sigmapsf_corr_ext'] = detections['sigmapsf_corr']
 
 non_detections = pd.read_csv(
-    os.path.join(EXAMPLES_PATH, 'ZTF18aazsabq_nondet.csv'),
-    index_col='oid'
+    os.path.join(EXAMPLES_PATH, '100_objects_non_detections.csv'),
+    index_col='objectId'
 )
-objects = pd.DataFrame(
-    index=['ZTF18aazsabq'],
-    columns=['corrected'],
-    data=[[True]])
+non_detections["mjd"] = non_detections.jd - 2400000.5
+
+objects = pd.read_csv(
+    os.path.join(EXAMPLES_PATH, '100_objects.csv'),
+    index_col='objectId'
+)
+
+detections.index.name = "oid"
+non_detections.index.name = "oid"
+objects.index.name = "oid"
+
 custom_hierarchical_extractor = CustomHierarchicalExtractor(bands=[1, 2])
 
-# Run once to avoid measuring jit-compilation cost
-_ = custom_hierarchical_extractor.compute_features(
-    detections=detections,
-    non_detections=non_detections,
-    objects=objects
-)
-
-profiler = cProfile.Profile()
-profiler.enable()
 features_df = custom_hierarchical_extractor.compute_features(
     detections=detections,
     non_detections=non_detections,
     objects=objects
-)
-profiler.disable()
-profiler.dump_stats(
-    os.path.join(
-        FILE_PATH,
-        'hierarchical_features.profile'
-    )
 )
