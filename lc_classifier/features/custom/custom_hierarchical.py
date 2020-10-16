@@ -1,20 +1,20 @@
 from typing import List
 
-from late_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor
-from late_classifier.features import GalacticCoordinatesExtractor
-from late_classifier.features import TurboFatsFeatureExtractor
-from late_classifier.features import ColorFeatureExtractor
-from late_classifier.features import SGScoreExtractor, StreamSGScoreExtractor
-from late_classifier.features import RealBogusExtractor
-from late_classifier.features import MHPSExtractor
-from late_classifier.features import IQRExtractor
-from late_classifier.features import SNParametricModelExtractor
-from late_classifier.features import WiseStaticExtractor
-from late_classifier.features import WiseStreamExtractor
-from late_classifier.features import PeriodExtractor
-from late_classifier.features import PowerRateExtractor
-from late_classifier.features import FoldedKimExtractor
-from late_classifier.features import HarmonicsExtractor
+from lc_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor
+from lc_classifier.features import GalacticCoordinatesExtractor
+from lc_classifier.features import TurboFatsFeatureExtractor
+from lc_classifier.features import ColorFeatureExtractor
+from lc_classifier.features import SGScoreExtractor, StreamSGScoreExtractor
+from lc_classifier.features import RealBogusExtractor
+from lc_classifier.features import MHPSExtractor
+from lc_classifier.features import IQRExtractor
+from lc_classifier.features import SNParametricModelExtractor
+from lc_classifier.features import WiseStaticExtractor
+from lc_classifier.features import WiseStreamExtractor
+from lc_classifier.features import PeriodExtractor
+from lc_classifier.features import PowerRateExtractor
+from lc_classifier.features import FoldedKimExtractor
+from lc_classifier.features import HarmonicsExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF

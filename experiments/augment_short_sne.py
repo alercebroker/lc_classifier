@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from late_classifier.augmentation.simple_augmentation import ShortTransientAugmenter
+from lc_classifier.augmentation.simple_augmentation import ShortTransientAugmenter
 
 
 detections = pd.read_pickle(sys.argv[1])

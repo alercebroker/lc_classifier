@@ -4,8 +4,8 @@ import os
 import pickle
 import wget
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
-from late_classifier.classifier.preprocessing import FeaturePreprocessor
-from late_classifier.classifier.preprocessing import intersect_oids_in_dataframes
+from lc_classifier.classifier.preprocessing import FeaturePreprocessor
+from lc_classifier.classifier.preprocessing import intersect_oids_in_dataframes
 from abc import ABC, abstractmethod
 
 

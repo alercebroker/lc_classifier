@@ -1,11 +1,11 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from late_classifier.augmentation.utils import augment_just_training_set_features
-from late_classifier.classifier.preprocessing import FeaturePreprocessor
-from late_classifier.classifier.preprocessing import intersect_oids_in_dataframes
-from late_classifier.classifier.models import HierarchicalRandomForest
-from late_classifier.classifier.metrics import confusion_matrix
-from late_classifier.classifier.metrics import kaggle_score, classification_report
+from lc_classifier.augmentation.utils import augment_just_training_set_features
+from lc_classifier.classifier.preprocessing import FeaturePreprocessor
+from lc_classifier.classifier.preprocessing import intersect_oids_in_dataframes
+from lc_classifier.classifier.models import HierarchicalRandomForest
+from lc_classifier.classifier.metrics import confusion_matrix
+from lc_classifier.classifier.metrics import kaggle_score, classification_report
 
 
 features = pd.read_pickle('dataset_features_with_wise.pkl')

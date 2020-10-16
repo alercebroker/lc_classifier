@@ -108,7 +108,7 @@ venv.bak/
 .mypy_cache/
 .idea
 
-late_classifier/features/extractors/data
+lc_classifier/features/extractors/data
 
 *.profile
 src/

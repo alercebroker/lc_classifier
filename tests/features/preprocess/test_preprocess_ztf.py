@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from late_classifier.features.preprocess import StreamDetectionsPreprocessorZTF
+from lc_classifier.features.preprocess import StreamDetectionsPreprocessorZTF
 
 
 class TestStreamDetectionsPreprocessorZTF(unittest.TestCase):

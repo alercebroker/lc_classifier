@@ -1,4 +1,4 @@
-from late_classifier.features import CustomHierarchicalExtractor
+from lc_classifier.features import CustomHierarchicalExtractor
 import os
 import pandas as pd
 

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from late_classifier.features import DetectionsPreprocessorZTF
+from lc_classifier.features import DetectionsPreprocessorZTF
 
 
 # Loading data

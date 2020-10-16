@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from late_classifier.classifier.models import BaselineRandomForest
+from lc_classifier.classifier.models import BaselineRandomForest
 
 
 class TestBaselineRF(unittest.TestCase):

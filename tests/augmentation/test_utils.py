@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from late_classifier.augmentation import utils
+from lc_classifier.augmentation import utils
 
 
 class TestUtils(unittest.TestCase):

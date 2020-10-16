@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from late_classifier.features.extractors import StreamSGScoreExtractor
+from lc_classifier.features.extractors import StreamSGScoreExtractor
 
 
 class TestStreamSGScore(unittest.TestCase):

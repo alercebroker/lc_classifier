@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from late_classifier.features import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
+from lc_classifier.features import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
 
 
 class CustomHierarchicalExtractorTest(unittest.TestCase):

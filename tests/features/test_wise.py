@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
-import late_classifier.features.extractors as extractors
-from late_classifier.features import DetectionsPreprocessorZTF
+import lc_classifier.features.extractors as extractors
+from lc_classifier.features import DetectionsPreprocessorZTF
 
 
 class WiseStreamExtractorTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from late_classifier.classifier.models import HierarchicalRandomForest
+from lc_classifier.classifier.models import HierarchicalRandomForest
 
 TAXONOMY = {
     'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],

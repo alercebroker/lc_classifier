@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from late_classifier.augmentation.simple_augmentation import ShortTransientAugmenter
+from lc_classifier.augmentation.simple_augmentation import ShortTransientAugmenter
 
 
 class TestShortTransientAugmenter(unittest.TestCase):

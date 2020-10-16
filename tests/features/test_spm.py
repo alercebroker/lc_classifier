@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from late_classifier.features.extractors.sn_model_tf import SNModel
+from lc_classifier.features.extractors.sn_model_tf import SNModel
 
 
 class TestSPM(unittest.TestCase):

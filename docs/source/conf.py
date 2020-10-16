@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../late_classifier/'))
+sys.path.insert(0, os.path.abspath('../../lc_classifier/'))
 
 
 # -- Project information -----------------------------------------------------

@@ -69,13 +69,13 @@ pip install coverage pytest
 All scripts of tests must be in `tests` folder. For run all tests:
 
 ```bash
-coverage run --source late_classifier -m pytest -x -s tests/
+coverage run --source lc_classifier -m pytest -x -s tests/
 ```
 
 If you want run a specify functionality you can run:
 
 ```bash
-coverage run --source late_classifier -m pytest -x -s tests/<functionality>
+coverage run --source lc_classifier -m pytest -x -s tests/<functionality>
 ```
 
 After that you can see a report of tests:

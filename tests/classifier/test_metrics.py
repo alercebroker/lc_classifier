@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from late_classifier.classifier.metrics import kaggle_score, balanced_recall, confusion_matrix, classification_report
-from late_classifier.classifier.models import HierarchicalRandomForest
+from lc_classifier.classifier.metrics import kaggle_score, balanced_recall, confusion_matrix, classification_report
+from lc_classifier.classifier.models import HierarchicalRandomForest
 
 TAXONOMY = {
     'Stochastic': ['LPV', 'QSO', 'YSO', 'CV/Nova', 'Blazar', 'AGN'],
