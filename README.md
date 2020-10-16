@@ -21,6 +21,7 @@ pip install -e .
 # Functionalities
 
 ## Augmentation
+If you want more samples you can use our implementation of data augmentation. For now you can use ShortTransientAugmenter for some transients. 
 
 ## Classifier
 The classifier code contains BaseClassifier (a simple random forest) and HierarchicalRandomForest (a random forest with internal hierarchy), both with methods for fit and predict.
