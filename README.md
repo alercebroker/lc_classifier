@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/alercebroker/late_classifier/branch/main/graph/badge.svg?token=5VNGJTSOCK)](undefined)
 
 
-# Late Classifier Library
+# Light Curve Classifier Library
 
 ## Installing late_classifier
 
