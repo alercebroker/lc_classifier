@@ -9,7 +9,7 @@
 From PyPI stable version:
 
 ```
-pip install 
+pip install lc-classifier
 ```
 
 For development:
