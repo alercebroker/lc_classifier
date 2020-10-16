@@ -33,7 +33,7 @@ For train the models, we use features of astronomical time series. The features 
 Before to get features, we preprocess the time series with filters and boundary conditions:
 - Drop duplicates.
 - Discard noisy detections.
-- Discord bogus.
+- Discard bogus.
 - Filter time series with more than 5 detections.
 - Discard invalid values (like nans and infinite).  
 
