@@ -1,6 +1,5 @@
 ![unittest](https://github.com/alercebroker/late_classifier/workflows/unittest/badge.svg?branch=main&event=push)
-[![codecov](https://codecov.io/gh/alercebroker/late_classifier/branch/main/graph/badge.svg?token=5VNGJTSOCK)](undefined)
-
+[![codecov](https://codecov.io/gh/alercebroker/lc_classifier/branch/main/graph/badge.svg?token=5VNGJTSOCK)](undefined)
 
 # Light Curve Classifier Library
 
