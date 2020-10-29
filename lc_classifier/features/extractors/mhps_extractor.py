@@ -44,12 +44,12 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
 
-            mag = oid_band_detections.magpsf_ml
-            magerr = oid_band_detections.sigmapsf_ml
-            time = oid_band_detections.mjd
-            ratio, low, high, non_zero, pn_flag = mhps.statistics(mag.values,
-                                                                  magerr.values,
-                                                                  time.values,
+            mag = oid_band_detections.magpsf_ml.values.astype(np.double)
+            magerr = oid_band_detections.sigmapsf_ml.values.astype(np.double)
+            time = oid_band_detections.mjd.values.astype(np.double)
+            ratio, low, high, non_zero, pn_flag = mhps.statistics(mag,
+                                                                  magerr,
+                                                                  time,
                                                                   self.t1,
                                                                   self.t2)
             values = np.array([[ratio, low, high, non_zero, pn_flag]])
