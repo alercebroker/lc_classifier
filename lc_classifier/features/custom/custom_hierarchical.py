@@ -109,8 +109,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         shared_data = dict()
         for ex in self.extractors:
             df = ex.compute_features(
-                detections, non_detections=non_detections, shared_data=shared_data
-            )
+                detections.groupby(level=0),
+                non_detections=non_detections,
+                shared_data=shared_data)
             logging.info(f"FLAG={ex}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")

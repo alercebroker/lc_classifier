@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
@@ -30,36 +31,61 @@ class FeatureExtractor(ABC):
         """
         return pd.DataFrame(columns=self.get_features_keys(), index=[index])
 
-    def compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+    def nan_series(self):
+        return pd.Series(
+            data=[np.nan]*len(self.get_features_keys()),
+            index=self.get_features_keys())
+
+    def compute_features(self, detections, **kwargs) -> pd.DataFrame:
         """
         Interface to implement different features extractors.
 
         Parameters
         ----------
-        detections :class:pandas.`DataFrame`
+        detections :
         DataFrame with detections of an object.
 
         kwargs Another arguments like Non detections.
         """
+        logging.debug('base.py compute_features extractor %s type(detections) %s' % (
+            self.__class__.__name__,
+            type(detections)
+        ))
+        
         if len(detections) == 0:
             return pd.DataFrame(columns=self.get_features_keys(), index=[])
-        
-        if not self.has_all_columns(detections):
-            oids = detections.index.unique()
-            logging.info(
-                f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
-            return self.nan_df(oids)
-        t0 = time.time()
-        features = self._compute_features(detections, **kwargs)
-        time_elapsed = time.time() - t0
-        lc_len = len(detections)
-        oid = detections.index.values[0]
-        logging.debug(f"profiling:{self.__class__.__name__},{oid},{lc_len},{time_elapsed}")
-        return features
+
+        if type(detections) == pd.core.groupby.generic.DataFrameGroupBy:
+            aux_df = pd.DataFrame(columns=detections.obj.columns)
+            if not self.has_all_columns(aux_df):
+                oids = detections.obj.index.unique()
+                logging.info(
+                    f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
+                return self.nan_df(oids)
+            features = self._compute_features_from_df_groupby(detections, **kwargs)
+            return features
+
+        elif type(detections) == pd.core.frame.DataFrame:
+            if not self.has_all_columns(detections):
+                oids = detections.index.unique()
+                logging.info(
+                    f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
+                return self.nan_df(oids)
+            t0 = time.time()
+            features = self._compute_features(detections, **kwargs)
+            time_elapsed = time.time() - t0
+            lc_len = len(detections)
+            oid = detections.index.values[0]
+            logging.debug(f"profiling:{self.__class__.__name__},{oid},{lc_len},{time_elapsed}")
+            return features
 
     @abstractmethod
     def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         raise NotImplementedError('_compute_features is an abstract method')
+
+    def _compute_features_from_df_groupby(self, detections, **kwargs):
+        detections_ungrouped = detections.filter(lambda x: True)
+        return self._compute_features(detections_ungrouped, **kwargs)
 
     def has_all_columns(self, df):
         """

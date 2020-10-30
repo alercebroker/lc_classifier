@@ -12,9 +12,10 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         self.n_harmonics = 7
 
-    def compute_feature_in_one_band(self, detections: pd.DataFrame, band=None, **kwargs) -> pd.DataFrame:
+    def compute_feature_in_one_band(
+            self, detections: pd.DataFrame, band=None, **kwargs) -> pd.DataFrame:
         if ('shared_data' in kwargs.keys() and
-                'period' in kwargs['shared_data'].keys()):
+            'period' in kwargs['shared_data'].keys()):
             periods = kwargs['shared_data']['period']
         else:
             logging.info('Harmonics extractor was not provided with period '

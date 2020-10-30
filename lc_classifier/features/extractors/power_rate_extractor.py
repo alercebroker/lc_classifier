@@ -40,7 +40,7 @@ class PowerRateExtractor(FeatureExtractor):
 
     def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         if ('shared_data' in kwargs.keys() and
-                'periodogram' in kwargs['shared_data'].keys()):
+            'periodogram' in kwargs['shared_data'].keys()):
             periodograms = kwargs['shared_data']['periodogram']
         else:
             logging.info('PowerRateExtractor was not provided with periodogram '

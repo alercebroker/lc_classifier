@@ -54,8 +54,10 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
             n_neg = len(oid_band_detections[oid_band_detections.isdiffpos < 0])
             min_mag = oid_band_detections['magpsf_ml'].values.min()
             first_mag = oid_band_detections['magpsf_ml'].values[0]
-            delta_mjd_fid = oid_band_detections['mjd'].values[-1] - oid_band_detections['mjd'].values[0]
-            delta_mag_fid = oid_band_detections['magpsf_ml'].values.max() - min_mag
+            delta_mjd_fid = oid_band_detections['mjd'].values[-1] - \
+                oid_band_detections['mjd'].values[0]
+            delta_mag_fid = oid_band_detections['magpsf_ml'].values.max(
+            ) - min_mag
             positive_fraction = n_pos/(n_pos + n_neg)
             mean_mag = oid_band_detections['magpsf_ml'].values.mean()
 
@@ -68,7 +70,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
                     n_neg,
                     n_pos,
                     positive_fraction]
-            sn_det_df = pd.DataFrame.from_records([data], columns=columns, index=[oid])
+            sn_det_df = pd.DataFrame(data=[data], columns=columns, index=[oid])
             sn_det_results.append(sn_det_df)
         sn_det_results = pd.concat(sn_det_results, axis=0)
         sn_det_results.index.name = 'oid'
