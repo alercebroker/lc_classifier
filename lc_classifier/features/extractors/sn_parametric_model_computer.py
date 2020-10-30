@@ -13,7 +13,7 @@ class SNModelScipy(object):
     def __init__(self):
         self.beta = 1.0 / 3.0
         self.parameters = None
-    
+
     #f in this function is SPM_beta
     def model(self, times, A, t0, gamma, f, t_rise, t_fall):
         t1 = t0 + gamma
@@ -139,7 +139,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         for oid in oids:
             oid_detections = detections.loc[[oid]]
             if band not in oid_detections.fid.values:
-                logging.info(
+                logging.debug(
                     f'extractor=SN parametric model object={oid} required_cols={self.get_required_keys()} band={band}')
                 nan_df = self.nan_df(oid)
                 nan_df.columns = columns
