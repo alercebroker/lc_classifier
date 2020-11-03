@@ -51,7 +51,7 @@ class FeatureExtractor(ABC):
             self.__class__.__name__,
             type(detections)
         ))
-        
+
         if len(detections) == 0:
             return pd.DataFrame(columns=self.get_features_keys(), index=[])
 
@@ -62,7 +62,8 @@ class FeatureExtractor(ABC):
                 logging.info(
                     f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
                 return self.nan_df(oids)
-            features = self._compute_features_from_df_groupby(detections, **kwargs)
+            features = self._compute_features_from_df_groupby(
+                detections, **kwargs)
             return features
 
         elif type(detections) == pd.core.frame.DataFrame:
@@ -76,7 +77,8 @@ class FeatureExtractor(ABC):
             time_elapsed = time.time() - t0
             lc_len = len(detections)
             oid = detections.index.values[0]
-            logging.debug(f"profiling:{self.__class__.__name__},{oid},{lc_len},{time_elapsed}")
+            logging.debug(
+                f"profiling:{self.__class__.__name__},{oid},{lc_len},{time_elapsed}")
             return features
 
     @abstractmethod
@@ -120,6 +122,20 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         """
         return self.compute_by_bands(detections, **kwargs)
 
+    def _compute_features_from_df_groupby(self, detections, **kwargs) -> pd.DataFrame:
+        if bands is None:
+            bands = [1, 2]
+        features_response = []
+        for band in bands:
+            features_response.append(
+                self.compute_feature_in_one_band_from_group(detections, band=band, **kwargs))
+        return pd.concat(features_response, axis=1)
+
+    def compute_feature_in_one_band_from_group(detections, **kwargs):
+        # Override this method to implement group processing.
+        detections_ungrouped = detections.filter(lambda x: True)
+        return self.compute_feature_in_one_band(detections, **kwargs)
+
     @abstractmethod
     def compute_feature_in_one_band(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
@@ -137,14 +153,16 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         pd.DataFrame
             Single-row dataframe with the computed features.
         """
-        raise NotImplementedError('compute_feature_in_one_band is an abstract class')
+        raise NotImplementedError(
+            'compute_feature_in_one_band is an abstract class')
 
     def compute_by_bands(self, detections, bands=None,  **kwargs):
         if bands is None:
             bands = [1, 2]
         features_response = []
         for band in bands:
-            features_response.append(self.compute_feature_in_one_band(detections, band=band, **kwargs))
+            features_response.append(
+                self.compute_feature_in_one_band(detections, band=band, **kwargs))
         return pd.concat(features_response, axis=1)
 
     def get_features_keys_with_band(self, band):
