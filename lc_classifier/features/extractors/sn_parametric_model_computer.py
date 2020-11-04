@@ -134,11 +134,11 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
     def get_required_keys(self) -> List[str]:
         return ['mjd', 'magpsf', 'sigmapsf', 'fid']
 
-    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
-        return self.compute_feature_in_one_band_from_group(grouped_detections, **kwargs)
+        return self.compute_feature_in_one_band_from_group(grouped_detections, band=band, **kwargs)
 
-    def compute_feature_in_one_band_from_group(self, detections, band=None, **kwargs):
+    def compute_feature_in_one_band_from_group(self, detections, band, **kwargs):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
@@ -146,7 +146,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
                 oid = oid_detections.index.values[0]
                 logging.info(
                     f'extractor=SN parametric model object={oid} required_cols={self.get_required_keys()} band={band}')
-                return self.nan_series()
+                return self.nan_series_in_band(band)
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
 

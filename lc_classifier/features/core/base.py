@@ -122,22 +122,22 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         """
         return self.compute_by_bands(detections, **kwargs)
 
-    def _compute_features_from_df_groupby(self, detections, **kwargs) -> pd.DataFrame:
+    def _compute_features_from_df_groupby(self, detections, bands=None, **kwargs) -> pd.DataFrame:
         if bands is None:
             bands = [1, 2]
         features_response = []
         for band in bands:
             features_response.append(
-                self.compute_feature_in_one_band_from_group(detections, band=band, **kwargs))
+                self.compute_feature_in_one_band_from_group(detections, band, **kwargs))
         return pd.concat(features_response, axis=1)
 
-    def compute_feature_in_one_band_from_group(detections, **kwargs):
+    def compute_feature_in_one_band_from_group(self, detections, band, **kwargs):
         # Override this method to implement group processing.
         detections_ungrouped = detections.filter(lambda x: True)
-        return self.compute_feature_in_one_band(detections, **kwargs)
+        return self.compute_feature_in_one_band(detections_ungrouped, band, **kwargs)
 
     @abstractmethod
-    def compute_feature_in_one_band(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+    def compute_feature_in_one_band(self, detections: pd.DataFrame, band, **kwargs) -> pd.DataFrame:
         """
         Computes features of single band detections from one object.
 
@@ -167,3 +167,9 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
 
     def get_features_keys_with_band(self, band):
         return [f'{x}_{band}' for x in self.get_features_keys()]
+
+    def nan_series_in_band(self, band):
+        columns = self.get_features_keys_with_band(band)
+        return pd.Series(
+            data=[np.nan]*len(columns),
+            index=columns)
