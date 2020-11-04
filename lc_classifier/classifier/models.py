@@ -303,11 +303,6 @@ class HierarchicalRandomForest(BaseClassifier):
                 wget.download(os.path.join(self.url_model, pkl), tmp_path)
 
     def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
-        if isinstance(input_features, pd.Series):
-            input_features = input_features.to_frame().transpose()
-        if len(input_features) != 1:
-            raise ValueError('predict_in_pipeline receives features one by one')
-
         missing = self.check_missing_features(input_features.columns, self.feature_list)
         if len(missing) > 0:
             raise Exception(f"Missing features: {missing}")
@@ -341,15 +336,15 @@ class HierarchicalRandomForest(BaseClassifier):
                 index=input_features.index
             )
 
-            resp_children[name] = prob_child.iloc[0].to_dict()
+            resp_children[name] = prob_child
             prob_child = prob_child.mul(prob_root[name].values, axis="rows")
             prob_children.append(prob_child)
         prob_all = pd.concat(prob_children, axis=1, sort=False)
 
         return {
             "hierarchical": {
-                "top": prob_root.iloc[0].to_dict(),
+                "top": prob_root,
                 "children": resp_children},
-            "probabilities": prob_all.iloc[0].to_dict(),
-            "class": prob_all.idxmax(axis=1).iloc[0]
+            "probabilities": prob_all,
+            "class": prob_all.idxmax(axis=1)
         }
