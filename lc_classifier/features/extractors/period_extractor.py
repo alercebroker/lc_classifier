@@ -57,10 +57,7 @@ class PeriodExtractor(FeatureExtractor):
             except TypeError as e:
                 logging.error(f'TypeError exception in PeriodExtractor: '
                               f'oid {oid}\n{e}')
-                object_features = pd.Series(
-                    data=[np.nan] * len(self.get_features_keys()),
-                    index=self.get_features_keys()
-                )
+                object_features = self.nan_series()
                 kwargs['periodograms'][oid] = {
                     'freq': None,
                     'per': None

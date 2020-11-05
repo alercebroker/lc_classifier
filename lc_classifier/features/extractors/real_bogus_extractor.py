@@ -10,11 +10,16 @@ class RealBogusExtractor(FeatureExtractor):
         return ['rb']
 
     def _compute_features(self, detections, **kwargs):
+        return self._compute_features_from_df_groupby(
+            detections.groupby(level=0),
+            **kwargs)
+    
+    def _compute_features_from_df_groupby(self, detections, **kwargs):
         """
 
         Parameters
         ----------
-        detections :class:pandas.`DataFrame`
+        detections
         kwargs
 
         Returns class:pandas.`DataFrame`
@@ -22,5 +27,4 @@ class RealBogusExtractor(FeatureExtractor):
         -------
 
         """
-        rb_medians = detections[['rb']].groupby(level=0).median()
-        return rb_medians
+        return detections[['rb']].median()

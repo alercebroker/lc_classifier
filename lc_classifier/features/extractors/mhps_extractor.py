@@ -26,35 +26,37 @@ class MHPSExtractor(FeatureExtractorSingleBand):
     def get_required_keys(self) -> List[str]:
         return ["magpsf_ml", "sigmapsf_ml", "mjd"]
 
-    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
-        oids = detections.index.unique()
-        mhps_results = []
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
+        grouped_detections = detections.groupby(level=0)
+        return self.compute_feature_in_one_band_from_group(grouped_detections, band, **kwargs)
 
-        detections = detections.sort_values('mjd')
+    def compute_feature_in_one_band_from_group(
+            self, detections, band, **kwargs):
         columns = self.get_features_keys_with_band(band)
-        for oid in oids:
-            oid_detections = detections.loc[[oid]]
+
+        def aux_function(oid_detections, **kwargs):
             if band not in oid_detections.fid.values:
+                oid = oid_detections.index.values[0]
                 logging.info(
                     f'extractor=MHPS object={oid} required_cols={self.get_required_keys()} band={band}')
-                nan_df = self.nan_df(oid)
-                nan_df.columns = columns
-                mhps_results.append(nan_df)
-                continue
-
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+                return self.nan_series_in_band(band)
+            
+            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
             mag = oid_band_detections.magpsf_ml.values.astype(np.double)
             magerr = oid_band_detections.sigmapsf_ml.values.astype(np.double)
             time = oid_band_detections.mjd.values.astype(np.double)
-            ratio, low, high, non_zero, pn_flag = mhps.statistics(mag,
-                                                                  magerr,
-                                                                  time,
-                                                                  self.t1,
-                                                                  self.t2)
+            ratio, low, high, non_zero, pn_flag = mhps.statistics(
+                mag,
+                magerr,
+                time,
+                self.t1,
+                self.t2)
             values = np.array([[ratio, low, high, non_zero, pn_flag]])
-            mhps_df = pd.DataFrame(values, columns=columns, index=[oid])
-            mhps_results.append(mhps_df)
-        mhps_results = pd.concat(mhps_results, axis=0)
+            return pd.Series(
+                data=[ratio, low, high, non_zero, pn_flag],
+                index=columns)
+        
+        mhps_results = detections.apply(aux_function)
         mhps_results.index.name = 'oid'
         return mhps_results

@@ -12,11 +12,16 @@ class SGScoreExtractor(FeatureExtractor):
         return ['sgscore1']
 
     def _compute_features(self, detections, **kwargs):
+        return self._compute_features_from_df_groupby(
+            detections.groupby(level=0),
+            **kwargs)
+
+    def _compute_features_from_df_groupby(self, detections, **kwargs):
         """
 
         Parameters
         ----------
-        detections :class:pandas.`DataFrame`
+        detections
         DataFrame with detections of an object.
 
 
@@ -26,7 +31,7 @@ class SGScoreExtractor(FeatureExtractor):
         -------
 
         """
-        sgscore_medians = detections[['sgscore1']].groupby(level=0).median()
+        sgscore_medians = detections[['sgscore1']].median()
         return sgscore_medians
 
 

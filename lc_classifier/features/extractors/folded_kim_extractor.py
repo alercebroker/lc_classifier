@@ -23,7 +23,13 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             'magpsf_ml'
         ]
 
-    def compute_feature_in_one_band(self, detections: pd.DataFrame, band=None, **kwargs) -> pd.DataFrame:
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
+        grouped_detections = detections.groupby(level=0)
+        return self.compute_feature_in_one_band_from_group(grouped_detections, band, **kwargs)
+    
+    def compute_feature_in_one_band_from_group(
+            self, detections, band, **kwargs) -> pd.DataFrame:
+        
         if ('shared_data' in kwargs.keys() and
                 'period' in kwargs['shared_data'].keys()):
             periods = kwargs['shared_data']['period']
@@ -32,16 +38,15 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                          'data, so a periodogram is being computed')
             period_extractor = PeriodExtractor()
             periods = period_extractor.compute_features(detections)
-        oids = detections.index.unique()
-        features = []
-        for oid in oids:
-            oid_detections = detections.loc[[oid]]
+
+        columns = self.get_features_keys_with_band(band)
+        def aux_function(oid_detections, **kwargs):
+            oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
                 logging.info(
                     f'extractor=Folded Kim extractor object={oid} '
                     f'required_cols={self.get_required_keys()}  band={band}')
-                features.append([np.nan] * len(self.get_features_keys()))
-                continue
+                return self.nan_series_in_band(band)
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
             time = oid_band_detections['mjd'].values
@@ -50,8 +55,7 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             except KeyError as e:
                 logging.error(f'KeyError in FoldedKimExtractor, period is not '
                               f'available: oid {oid}\n{e}')
-                features.append([np.nan]*len(self.get_features_keys()))
-                continue
+                return self.nan_series_in_band(band)
             folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
             magnitude = oid_band_detections['magpsf_ml'].values
             sorted_mags = magnitude[np.argsort(folded_time)]
@@ -63,9 +67,11 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             sigma_squared = sigma ** 2
             psi_eta = (1.0 / ((lc_len - 1) * sigma_squared) *
                        np.sum(np.power(sorted_mags[1:] - sorted_mags[:-1], 2)))
-            features.append([psi_cumsum, psi_eta])
-        features = pd.DataFrame(
-            data=np.array(features),
-            columns=self.get_features_keys_with_band(band),
-            index=oids)
+            out = pd.Series(
+                data=[psi_cumsum, psi_eta],
+                index=columns)
+            return out
+        
+        features = detections.apply(aux_function)
+        features.index.name = 'oid'
         return features
