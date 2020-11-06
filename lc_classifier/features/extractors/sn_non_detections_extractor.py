@@ -111,12 +111,16 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             'median_diffmaglim_after_fid': np.nan if count == 0 else non_detections['diffmaglim'].median()
         }
 
-    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
+        grouped_detections = detections.groupby(level=0)
+        return self.compute_feature_in_one_band_from_group(grouped_detections, band, **kwargs)
+
+    def compute_feature_in_one_band_from_group(self, detections, band, **kwargs):
         """
 
         Parameters
         ----------
-        detections class:pandas.`DataFrame`
+        detections
         kwargs Required non_detections class:pandas.`DataFrame`
 
         Returns class:pandas.`DataFrame`
@@ -142,23 +146,16 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
 
         non_det_unique_oids = non_detections.index.unique()
 
-        oids = detections.index.unique()
-        sn_features = []
-
-        detections = detections.sort_values('mjd')
         columns = self.get_features_keys_with_band(band)
 
-        for oid in oids:
-            oid_detections = detections.loc[[oid]]
+        def aux_function(oid_detections, **kwargs):
+            oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
                 logging.info(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
-                nan_df = self.nan_df(oid)
-                nan_df.columns = columns
-                sn_features.append(nan_df)
-                continue
-
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+                return self.nan_series_in_band(band)
+            
+            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
             first_mjd = oid_band_detections["mjd"].iloc[0]
 
@@ -190,7 +187,8 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             df = pd.DataFrame.from_dict(features)
             df.index = [oid]
             df.columns = columns
-            sn_features.append(df)
-        sn_features = pd.concat(sn_features, axis=0)
+            return df.iloc[0]
+
+        sn_features = detections.apply(aux_function)
         sn_features.index.name = 'oid'
         return sn_features

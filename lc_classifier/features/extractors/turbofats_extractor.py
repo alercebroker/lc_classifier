@@ -35,12 +35,16 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def get_required_keys(self) -> List[str]:
         return ['mjd', 'magpsf_ml', 'fid', 'sigmapsf_ml']
 
-    def compute_feature_in_one_band(self, detections, band=None, **kwargs):
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
+        grouped_detections = detections.groupby(level=0)
+        return self.compute_feature_in_one_band_from_group(grouped_detections, band, **kwargs)
+
+    def compute_feature_in_one_band_from_group(self, detections, band, **kwargs):
         """
         Compute features from turbo-fats.
         Parameters
         ----------
-        detections : pd.DataFrame
+        detections : 
             Light curve from a single band and a single object.
         band : int
             Number of the band of the light curve.
@@ -50,31 +54,25 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         pd.DataFrame
             turbo-fats features (one-row dataframe).
         """
-        oids = detections.index.unique()
-        features = []
-
-        detections = detections.sort_values('mjd')
-
         columns = self.get_features_keys_with_band(band)
-        for oid in oids:
-            oid_detections = detections.loc[[oid]]
+
+        def aux_function(oid_detections, **kwargs):
             if band not in oid_detections.fid.values:
+                oid = oid_detections.index.values[0]
                 logging.info(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
-                nan_df = self.nan_df(oid)
-                nan_df.columns = columns
-                features.append(nan_df)
-                continue
-
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+                return self.nan_series_in_band(band)
+            
+            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
             object_features = self.feature_space.calculate_features(oid_band_detections)
-            object_features = pd.DataFrame(
-                data=object_features.values,
-                columns=[f'{c}_{band}' for c in object_features.columns],
-                index=object_features.index
-            )
-            features.append(object_features)
-        features = pd.concat(features, axis=0, sort=True)
+            if len(object_features) == 0:
+                return self.nan_series_in_band(band)
+            out = pd.Series(
+                data=object_features.values.flatten(),
+                index=columns)
+            return out
+
+        features = detections.apply(aux_function)
         features.index.name = 'oid'
         return features
