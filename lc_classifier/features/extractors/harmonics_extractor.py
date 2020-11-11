@@ -12,7 +12,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         self.n_harmonics = 7
 
-    def compute_feature_in_one_band(self, detections, band, **kwags):
+    def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
         return self.compute_feature_in_one_band_from_group(grouped_detections, band, **kwargs)
 

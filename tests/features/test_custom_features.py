@@ -25,7 +25,9 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             objects=self.objects
         )
         self.assertEqual(features_df.shape[0], 98)
-        self.assertEqual(features_df.shape[1], 172)
+        self.assertEqual(features_df.shape[1], 176)
+        gp_cols = [c for c in features_df.columns if 'GP_DRW' in c]
+        print(features_df[gp_cols])
 
     def test_custom_hierarchical_features_stream(self):
         oid = "ZTF17aaaorfd"
@@ -43,5 +45,5 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
     def test_get_features_keys(self):
         keys = self.custom_hierarchical_features.get_features_keys()
         keys_stream = self.custom_hierarchical_features_stream.get_features_keys()
-        self.assertEqual(len(keys), 20)
-        self.assertEqual(len(keys_stream), 21)
+        self.assertEqual(len(keys), 22)
+        self.assertEqual(len(keys_stream), 23)

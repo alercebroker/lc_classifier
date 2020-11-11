@@ -15,6 +15,7 @@ from lc_classifier.features import PeriodExtractor
 from lc_classifier.features import PowerRateExtractor
 from lc_classifier.features import FoldedKimExtractor
 from lc_classifier.features import HarmonicsExtractor
+from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
@@ -41,6 +42,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
+            GPDRWExtractor()
         ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
@@ -137,6 +139,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
+            GPDRWExtractor()
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
 

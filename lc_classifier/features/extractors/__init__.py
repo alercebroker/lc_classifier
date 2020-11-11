@@ -14,3 +14,4 @@ from .period_extractor import PeriodExtractor
 from .power_rate_extractor import PowerRateExtractor
 from .folded_kim_extractor import FoldedKimExtractor
 from .harmonics_extractor import HarmonicsExtractor
+from .gp_drw_extractor import GPDRWExtractor
