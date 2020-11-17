@@ -20,7 +20,7 @@ pip install -e .
 # Functionalities
 
 ## Augmentation
-If you want more samples you can use our implementation of data augmentation. For now you can use ShortTransientAugmenter for some transients. 
+If you want more samples you can use our implementation of data augmentation. For now you can use ShortTransientAugmenter for some transients.
 
 ## Classifier
 The classifier code contains BaseClassifier (a simple random forest) and HierarchicalRandomForest (a random forest with internal hierarchy), both with methods for fit and predict.
@@ -39,7 +39,7 @@ Before to get features, we preprocess the time series with filters and boundary 
 ### Extractors:
 The extractors are the portion of code with the logic to extract features from time series. Each extractor do only one task, after that our CustomHierarchicalExtractor merge all extractors for get features to train the model.
 
-##### How can I add extractors to library? 
+##### How can I add extractors to library?
 You can use inheritance from `base extractors` and use it for create your own extractor. For now you can inherit:
 - `FeatureExtractor` is a generic extractor only fill methods.
 - `FeatureExtractorSingleBand` is a extractor that compute features by band.
@@ -82,6 +82,20 @@ After that you can see a report of tests:
 ```bash
 coverage report
 ```
+
+# Run a container
+
+This repository comes with a Dockerfile to test the model.
+
+To build the image run
+```
+docker build -t alerce/lc_classifier
+```
+Then run the container
+```
+docker run --rm -p 8888:8888 alerce/lc_classifier
+```
+The container comes with a jupyter notebook and some examples in `http://localhost:8888`
 
 # Reference
 
