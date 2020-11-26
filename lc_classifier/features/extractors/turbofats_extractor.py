@@ -8,8 +8,10 @@ import logging
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
     def __init__(self):
-        self.feature_space = FeatureSpace(self._feature_keys_for_new_feature_space())
-        self.feature_space.data_column_names = ['magpsf_ml', 'mjd', 'sigmapsf_ml']
+        self.feature_space = FeatureSpace(
+            self._feature_keys_for_new_feature_space())
+        self.feature_space.data_column_names = [
+            'magpsf_ml', 'mjd', 'sigmapsf_ml']
 
     def _feature_keys_for_new_feature_space(self):
         return [
@@ -23,7 +25,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'Skew', 'SmallKurtosis', 'Std',
             'StetsonK',
             'Pvar', 'ExcessVar',
-            'GP_DRW_sigma', 'GP_DRW_tau', 'SF_ML_amplitude', 'SF_ML_gamma',
+            'SF_ML_amplitude', 'SF_ML_gamma',
             'IAR_phi',
             'LinearTrend',
         ]
@@ -62,10 +64,12 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
                 logging.info(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
-            
-            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
-            object_features = self.feature_space.calculate_features(oid_band_detections)
+            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values(
+                'mjd')
+
+            object_features = self.feature_space.calculate_features(
+                oid_band_detections)
             if len(object_features) == 0:
                 return self.nan_series_in_band(band)
             out = pd.Series(

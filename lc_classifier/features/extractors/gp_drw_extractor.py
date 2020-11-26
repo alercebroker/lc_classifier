@@ -29,7 +29,8 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                 return self.nan_series_in_band(band)
 
             oid_band_detections = oid_detections[oid_detections.fid == band]
-            lc = oid_band_detections[['mjd', 'magpsf_ml', 'sigmapsf_ml']].values
+            lc = oid_band_detections[[
+                'mjd', 'magpsf_ml', 'sigmapsf_ml']].values
             time = lc[:, 0]
             mag = lc[:, 1]
             err = lc[:, 2]
@@ -40,7 +41,7 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
 
             kernel = terms.RealTerm(a=1.0, c=10.0)
             gp = celerite2.GaussianProcess(kernel, mean=0.0)
-            
+
             def set_params(params, gp, time, sq_error):
                 gp.mean = 0.0
                 theta = np.exp(params)
@@ -64,17 +65,18 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                 optimal_params[0],
                 1.0 / optimal_params[1]
             ]
-            out = pd.Series(data=out_data, index=self.get_features_keys_with_band(band))
+            out = pd.Series(
+                data=out_data, index=self.get_features_keys_with_band(band))
             return out
-        
+
         features = detections.apply(aux_function)
         features.index.name = 'oid'
         return features
 
     def get_features_keys(self) -> List[str]:
         feature_names = [
-            'GP_DRW_sigma_celerite',
-            'GP_DRW_tau_celerite'
+            'GP_DRW_sigma',
+            'GP_DRW_tau'
         ]
         return feature_names
 
