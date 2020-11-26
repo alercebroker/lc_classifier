@@ -50,12 +50,10 @@ class WiseStaticExtractor(FeatureExtractor):
             if oid in self.wise_colors.index:
                 colors.append(self.wise_colors.loc[[oid]])
             else:
-                logging.info(f"extractor=WISE object={oid} no xmatch")
+                logging.debug(f"extractor=WISE object={oid} no xmatch")
                 nan_df = self.nan_df(oid)
                 nan_df.columns = self.get_features_keys()
                 colors.append(nan_df)
         colors = pd.concat(colors, axis=0, sort=True)
         colors.index.name = "oid"
         return colors
-
-

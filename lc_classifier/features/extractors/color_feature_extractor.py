@@ -32,7 +32,7 @@ class ColorFeatureExtractor(FeatureExtractor):
         def aux_function(oid_detections):
             oid = oid_detections.index.values[0]
             if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
-                logging.info(
+                logging.debug(
                     f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
                 return self.nan_series()
 

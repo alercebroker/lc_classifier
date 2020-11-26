@@ -151,7 +151,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
-                logging.info(
+                logging.debug(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
             

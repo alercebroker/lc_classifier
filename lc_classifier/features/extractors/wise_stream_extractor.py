@@ -1,6 +1,8 @@
 from typing import List, Tuple
 import pandas as pd
+import numpy as np
 from ..core.base import FeatureExtractor
+import logging
 
 
 class WiseStreamExtractor(FeatureExtractor):
@@ -25,45 +27,58 @@ class WiseStreamExtractor(FeatureExtractor):
 
         Returns g, r
         """
-        g = detections[detections["fid"] == 1]["sigmapsf_corr"].mean(axis=0)
-        r = detections[detections["fid"] == 2]["sigmapsf_corr"].mean(axis=0)
+        detections_g = detections[detections["fid"] == 1]
+        detections_r = detections[detections["fid"] == 2]
+        g = detections_g["magpsf_corr"].groupby(detections_g.index).mean()
+        g.name = "g"
+        r = detections_r["magpsf_corr"].groupby(detections_r.index).mean()
+        r.name = "r"
         return g, r
 
     def check_keys_xmatch(self, xmatch):
-        if not xmatch:
-            return True
-        missing = set(xmatch.keys()).difference(self.get_required_keys())
+        missing = []
+        for key in self.xmatch_keys:
+            if key not in xmatch.columns:
+                missing.append(key)
+        if len(missing) > 0:
+            logging.info(f"Missing keys: {missing}")
         return len(missing) > 0
 
     def colors_set_null(self, colors, oid):
-        colors["oid"] = [oid]
-        colors["W1-W2"] = [None]
-        colors["W2-W3"] = [None]
-        colors["g-W2"] = [None]
-        colors["g-W3"] = [None]
-        colors["r-W2"] = [None]
-        colors["r-W3"] = [None]
+        colors["oid"] = oid
+        colors["W1-W2"] = np.nan
+        colors["W2-W3"] = np.nan
+        colors["g-W2"] = np.nan
+        colors["g-W3"] = np.nan
+        colors["r-W2"] = np.nan
+        colors["r-W3"] = np.nan
 
-    def colors_set_values(self, colors, xmatch, g, r, oid):
-        colors["oid"] = [oid]
-        colors["W1-W2"] = [xmatch["W1mag"] - xmatch["W2mag"]]
-        colors["W2-W3"] = [xmatch["W2mag"] - xmatch["W3mag"]]
-        colors["g-W2"] = [g - xmatch["W2mag"]]
-        colors["g-W3"] = [g - xmatch["W3mag"]]
-        colors["r-W2"] = [r - xmatch["W2mag"]]
-        colors["r-W3"] = [r - xmatch["W3mag"]]
+    def colors_set_values(self, xmatch, g, r):
+        g_r_wise = xmatch.join(g).join(r)
+        g_r_wise["W1-W2"] = g_r_wise["W1mag"] - g_r_wise["W2mag"]
+        g_r_wise["W2-W3"] = g_r_wise["W2mag"] - g_r_wise["W3mag"]
+        g_r_wise["g-W2"] = g_r_wise["g"] - g_r_wise["W2mag"]
+        g_r_wise["g-W3"] = g_r_wise["g"] - g_r_wise["W3mag"]
+        g_r_wise["r-W2"] = g_r_wise["r"] - g_r_wise["W2mag"]
+        g_r_wise["r-W3"] = g_r_wise["r"] - g_r_wise["W3mag"]
+        return g_r_wise
 
     def _compute_features(self, detections, **kwargs):
         xmatch = kwargs["xmatches"]
-        oid = detections.index.values[0]
+        oids = detections.index.unique()
         g, r = self.calculate_bands(detections)
         columns = self.get_features_keys()
         columns.append("oid")
-        colors = pd.DataFrame(columns=columns)
         missing_xmatch = self.check_keys_xmatch(xmatch)
+        xmatch.set_index("oid", inplace=True)
+
         if missing_xmatch:
-            self.colors_set_null(colors, oid)
+            logging.info("Missing xmatch features")
+            colors = pd.DataFrame(columns=columns)
+            self.colors_set_null(colors, oids)
+            colors.set_index("oid", inplace=True)
         else:
-            self.colors_set_values(colors, xmatch, g, r, oid)
-        colors.set_index("oid", inplace=True)
+            colors = self.colors_set_values(xmatch, g, r)
+            colors = colors.loc[~colors.index.duplicated()]
+            colors = colors.loc[oids, self.get_features_keys()]
         return colors
