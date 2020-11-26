@@ -122,8 +122,9 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
     def __init__(self, bands=None):
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [
-            GalacticCoordinatesExtractor(),
+            WiseStreamExtractor(),
             StreamSGScoreExtractor(),
+            GalacticCoordinatesExtractor(),
             ColorFeatureExtractor(),
             RealBogusExtractor(),
             MHPSExtractor(),
@@ -131,7 +132,6 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             TurboFatsFeatureExtractor(),
             SupernovaeDetectionAndNonDetectionFeatureExtractor(),
             SNParametricModelExtractor(),
-            WiseStreamExtractor(),
             PeriodExtractor(bands=bands),
             PowerRateExtractor(),
             FoldedKimExtractor(),
@@ -213,7 +213,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
                 metadata=metadata,
                 xmatches=xmatches,
             )
-            logging.info(f"FLAG={ex}")
+            logging.info(f"EXTRACTOR={ex}, FEATURE_SHAPE={df.shape}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")
         df = pd.concat([df, too_short_features], axis=0, join="outer", sort=True)

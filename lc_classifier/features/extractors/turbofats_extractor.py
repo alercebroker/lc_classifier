@@ -59,7 +59,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         for oid in oids:
             oid_detections = detections.loc[[oid]]
             if band not in oid_detections.fid.values:
-                logging.info(
+                logging.debug(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
                 nan_df = self.nan_df(oid)
                 nan_df.columns = columns
@@ -76,5 +76,5 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             )
             features.append(object_features)
         features = pd.concat(features, axis=0, sort=True)
-        features.index.name = 'oid'
+        features.index.rename("oid", inplace=True)
         return features

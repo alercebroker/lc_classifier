@@ -27,7 +27,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         for oid in oids:
             oid_detections = detections.loc[[oid]]
             if band not in oid_detections.fid.values:
-                logging.info(
+                logging.debug(
                     f'extractor=Harmonics extractor object={oid} '
                     f'required_cols={self.get_required_keys()}  band={band}')
                 features.append([np.nan] * len(self.get_features_keys()))

@@ -109,7 +109,7 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         features_response = []
         for band in bands:
             features_response.append(self.compute_feature_in_one_band(detections, band=band, **kwargs))
-        return pd.concat(features_response, axis=1)
+        return pd.concat(features_response, axis=1, join="outer")
 
     def get_features_keys_with_band(self, band):
         return [f'{x}_{band}' for x in self.get_features_keys()]
