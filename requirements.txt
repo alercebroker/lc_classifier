@@ -15,6 +15,7 @@ tqdm~=4.50.2
 tensorflow~=2.3.1
 pandas~=1.1.3
 wget~=3.2
+celerite2
 
 -e git+https://git@github.com/alercebroker/P4J#egg=P4J
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
