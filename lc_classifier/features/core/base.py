@@ -3,7 +3,6 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
 import logging
-import time
 
 
 class FeatureExtractor(ABC):
@@ -72,13 +71,7 @@ class FeatureExtractor(ABC):
                 logging.info(
                     f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
                 return self.nan_df(oids)
-            t0 = time.time()
             features = self._compute_features(detections, **kwargs)
-            time_elapsed = time.time() - t0
-            lc_len = len(detections)
-            oid = detections.index.values[0]
-            logging.debug(
-                f"profiling:{self.__class__.__name__},{oid},{lc_len},{time_elapsed}")
             return features
 
     @abstractmethod
