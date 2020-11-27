@@ -27,11 +27,13 @@ class WiseStreamExtractor(FeatureExtractor):
 
         Returns g, r
         """
+        assert 'magpsf_ml' in detections.columns
+        
         detections_g = detections[detections["fid"] == 1]
         detections_r = detections[detections["fid"] == 2]
-        g = detections_g["magpsf_corr"].groupby(detections_g.index).mean()
+        g = detections_g["magpsf_ml"].groupby(detections_g.index).mean()
         g.name = "g"
-        r = detections_r["magpsf_corr"].groupby(detections_r.index).mean()
+        r = detections_r["magpsf_ml"].groupby(detections_r.index).mean()
         r.name = "r"
         return g, r
 

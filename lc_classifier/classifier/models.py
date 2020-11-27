@@ -303,6 +303,9 @@ class HierarchicalRandomForest(BaseClassifier):
                 wget.download(os.path.join(self.url_model, pkl), tmp_path)
 
     def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
+        if not isinstance(input_features, pd.core.frame.DataFrame):
+            raise TypeError('predict_in_pipeline expects a DataFrame.')
+            
         missing = self.check_missing_features(input_features.columns, self.feature_list)
         if len(missing) > 0:
             raise Exception(f"Missing features: {missing}")

@@ -33,9 +33,10 @@ class TestHierarchicalRF(unittest.TestCase):
                              )
 
     def test_predict_in_pipeline(self):
-        prediction = self.model_trained.predict_in_pipeline(self.test_features.iloc[0])
+        prediction = self.model_trained.predict_in_pipeline(self.test_features.iloc[[0]])
+        print('prediction', prediction)
         self.assertIsInstance(prediction, dict)
-        self.assertEqual(prediction["class"], "E")
+        self.assertEqual(prediction["class"].iloc[0], "E")
 
     def test_fit(self):
         self.model_silly.fit(self.train_features, self.train_labels)

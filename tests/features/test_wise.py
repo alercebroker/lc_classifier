@@ -8,9 +8,12 @@ class WiseStreamExtractorTest(unittest.TestCase):
     def setUp(self):
         self.extractor = extractors.WiseStreamExtractor()
         self.detections = pd.DataFrame(
-            {"fid": [1, 1, 2, 2], "sigmapsf_corr": [2, 2, 3, 3]}
+            {"fid": [1, 1, 2, 2], "magpsf_ml": [2, 2, 3, 3]},
+            index=['ZTF00test']*4
         )
-        self.xmatch = {"W1mag": 1.0, "W2mag": 1.0, "W3mag": 1.0}
+        self.xmatch = pd.DataFrame(
+            data=[[1.0, 1.0, 1.0, 'ZTF00test']],
+            columns=['W1mag', 'W2mag', 'W3mag', 'oid'])
 
     def test_get_features_keys(self):
         features = self.extractor.get_features_keys()
@@ -18,8 +21,8 @@ class WiseStreamExtractorTest(unittest.TestCase):
 
     def test_calculate_bands(self):
         g, r = self.extractor.calculate_bands(self.detections)
-        self.assertEqual(g, 2)
-        self.assertEqual(r, 3)
+        self.assertEqual(g.iloc[0], 2)
+        self.assertEqual(r.iloc[0], 3)
 
     def test_compute_features_xmatch(self):
         colors = self.extractor.compute_features(self.detections, xmatches=self.xmatch)

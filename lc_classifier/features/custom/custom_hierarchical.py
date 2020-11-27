@@ -188,6 +188,9 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
+        if not isinstance(detections, pd.core.frame.DataFrame):
+            raise TypeError('detections has to be a DataFrame')
+        
         required = ["non_detections", "xmatches", "metadata"]
         for key in required:
             if key not in kwargs:

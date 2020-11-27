@@ -8,10 +8,12 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
         self.custom_hierarchical_features = CustomHierarchicalExtractor()
         self.custom_hierarchical_features_stream = CustomStreamHierarchicalExtractor()
 
-        self.detections = pd.read_csv("data_examples/100_objects_detections_corr.csv", index_col="objectId")
+        self.detections = pd.read_csv(
+            "data_examples/100_objects_detections_corr.csv", index_col="objectId")
         self.detections.index.name = 'oid'
 
-        self.non_detections = pd.read_csv("data_examples/100_objects_non_detections.csv", index_col="objectId")
+        self.non_detections = pd.read_csv(
+            "data_examples/100_objects_non_detections.csv", index_col="objectId")
         self.non_detections.index.name = 'oid'
         self.non_detections["mjd"] = self.non_detections.jd - 2400000.5
 
@@ -25,16 +27,20 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             objects=self.objects
         )
         self.assertEqual(features_df.shape[0], 98)
-        self.assertEqual(features_df.shape[1], 176)
-        gp_cols = [c for c in features_df.columns if 'GP_DRW' in c]
-        print(features_df[gp_cols])
+        self.assertEqual(features_df.shape[1], 172)
 
     def test_custom_hierarchical_features_stream(self):
         oid = "ZTF17aaaorfd"
-        detections = self.detections.loc[oid]
-        non_detections = self.non_detections.loc[oid]
-        xmatches = {"W1mag": 1.0, "W2mag": 1.0, "W3mag": 1.0}
-        metadata = {"ps1": {"sgscore1": 1.0}}
+        detections = self.detections.loc[[oid]]
+        non_detections = self.non_detections.loc[[oid]]
+        xmatches = pd.DataFrame(
+            data=[[1.0, 1.0, 1.0, 'ZTF17aaaorfd']],
+            columns=['W1mag', 'W2mag', 'W3mag', 'oid'])
+        
+        metadata = pd.DataFrame(
+            data=[['ZTF17aaaorfd', 'fake_candid', 1.0]],
+            columns=['oid', 'candid', 'sgscore1'])
+        
         features_df = self.custom_hierarchical_features_stream.compute_features(
             detections=detections,
             non_detections=non_detections,
