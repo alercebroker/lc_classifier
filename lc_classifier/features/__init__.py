@@ -14,6 +14,7 @@ from .extractors.period_extractor import PeriodExtractor
 from .extractors.power_rate_extractor import PowerRateExtractor
 from .extractors.folded_kim_extractor import FoldedKimExtractor
 from .extractors.harmonics_extractor import HarmonicsExtractor
+from .extractors.gp_drw_extractor import GPDRWExtractor
 
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
@@ -40,5 +41,6 @@ __all__ = [
     'FoldedKimExtractor',
     'HarmonicsExtractor',
     'CustomHierarchicalExtractor',
+    'GPDRWExtractor',
     'DetectionsPreprocessorZTF'
 ]

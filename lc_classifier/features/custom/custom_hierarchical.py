@@ -15,6 +15,7 @@ from lc_classifier.features import PeriodExtractor
 from lc_classifier.features import PowerRateExtractor
 from lc_classifier.features import FoldedKimExtractor
 from lc_classifier.features import HarmonicsExtractor
+from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
 from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
@@ -41,6 +42,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
+            GPDRWExtractor()
         ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
@@ -109,8 +111,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         shared_data = dict()
         for ex in self.extractors:
             df = ex.compute_features(
-                detections, non_detections=non_detections, shared_data=shared_data
-            )
+                detections.groupby(level=0),
+                non_detections=non_detections,
+                shared_data=shared_data)
             logging.info(f"FLAG={ex}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")
@@ -136,6 +139,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
+            GPDRWExtractor()
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
 
@@ -184,6 +188,9 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
+        if not isinstance(detections, pd.core.frame.DataFrame):
+            raise TypeError('detections has to be a DataFrame')
+        
         required = ["non_detections", "xmatches", "metadata"]
         for key in required:
             if key not in kwargs:

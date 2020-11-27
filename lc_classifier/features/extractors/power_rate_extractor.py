@@ -38,9 +38,14 @@ class PowerRateExtractor(FeatureExtractor):
             'sigmapsf_corr_ext',
             'sigmapsf']
 
-    def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+    def _compute_features(self, detections, **kwargs):
+        return self._compute_features_from_df_groupby(
+            detections.groupby(level=0),
+            **kwargs)
+    
+    def _compute_features_from_df_groupby(self, detections, **kwargs) -> pd.DataFrame:
         if ('shared_data' in kwargs.keys() and
-                'periodogram' in kwargs['shared_data'].keys()):
+            'periodogram' in kwargs['shared_data'].keys()):
             periodograms = kwargs['shared_data']['periodogram']
         else:
             logging.info('PowerRateExtractor was not provided with periodogram '
@@ -52,25 +57,23 @@ class PowerRateExtractor(FeatureExtractor):
                 shared_data=shared_data)
             periodograms = shared_data['periodogram']
 
-        oids = detections.index.unique()
-        power_rates = []
-        for oid in oids:
-            power_rate_values = []
+        def aux_function(oid_detections, **kwargs):
+            oid = oid_detections.index.values[0]
             if oid in periodograms.keys() and periodograms[oid]['freq'] is not None:
+                power_rate_values = []
                 for factor in self.factors:
                     power_rate_values.append(
                         self._get_power_ratio(periodograms[oid], factor))
-                power_rates.append(power_rate_values)
+                return pd.Series(
+                    data=power_rate_values,
+                    index=self.get_features_keys())
             else:
                 logging.error(f'PeriodPowerRateExtractor: period is not '
                               f'available for {oid}')
-                power_rates.append(
-                    [np.nan]*len(self.factors)
-                )
-        power_rates = pd.DataFrame(
-            data=np.array(power_rates),
-            columns=self.get_features_keys(),
-            index=oids)
+                return self.nan_series()
+
+        power_rates = detections.apply(aux_function)
+        power_rates.index.name = 'oid'
         return power_rates
 
     def _get_power_ratio(self, periodogram, period_factor):
