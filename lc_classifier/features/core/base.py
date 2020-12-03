@@ -3,6 +3,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
 import logging
+import time
 
 
 class FeatureExtractor(ABC):
@@ -46,13 +47,22 @@ class FeatureExtractor(ABC):
 
         kwargs Another arguments like Non detections.
         """
+        t0 = time.time()
+        name = self.__class__.__name__
+        
+        def log_elapsed_time(t0, name):
+            t = time.time()
+            logging.debug(f"profiling:lc_classifier:{name}:{t-t0:.5f}")
+            
         logging.debug('base.py compute_features extractor %s type(detections) %s' % (
             self.__class__.__name__,
             type(detections)
         ))
 
         if len(detections) == 0:
-            return pd.DataFrame(columns=self.get_features_keys(), index=[])
+            features = pd.DataFrame(columns=self.get_features_keys(), index=[])
+            log_elapsed_time(t0, name)
+            return features
 
         if type(detections) == pd.core.groupby.generic.DataFrameGroupBy:
             aux_df = pd.DataFrame(columns=detections.obj.columns)
@@ -63,6 +73,7 @@ class FeatureExtractor(ABC):
                 return self.nan_df(oids)
             features = self._compute_features_from_df_groupby(
                 detections, **kwargs)
+            log_elapsed_time(t0, name)
             return features
 
         elif type(detections) == pd.core.frame.DataFrame:
@@ -72,6 +83,7 @@ class FeatureExtractor(ABC):
                     f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
                 return self.nan_df(oids)
             features = self._compute_features(detections, **kwargs)
+            log_elapsed_time(t0, name)
             return features
 
     @abstractmethod
