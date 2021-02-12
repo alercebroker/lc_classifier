@@ -1,21 +1,21 @@
-astropy~=4.0.1
-click~=7.1.2
-Cython~=0.29.21
-GPy~=1.9.9
-Jinja2~=2.11.2
-imblearn
-matplotlib~=3.3.2
-numba~=0.51.2
-numpy>=1.16.0
-requests~=2.24.0
-scipy~=1.5.2
-setuptools~=50.3.0
-sklearn
-tqdm~=4.50.2
-tensorflow~=2.3.1
-pandas~=1.1.3
-wget~=3.2
-celerite2
+astropy >=4.0
+click >=7.1
+Cython >=0.29
+GPy >=1.9
+Jinja2 >=2.11
+imbalanced-learn >= 0.7
+matplotlib >=3.3
+numba >=0.51
+numpy >=1.16
+requests >=2.24
+scipy >=1.4
+setuptools >=49.6
+scikit-learn >=0.23
+tqdm >=4.48
+tensorflow >=2.3
+pandas >=1.1
+wget >=3.2
+celerite2 >=0.1
 
 -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
