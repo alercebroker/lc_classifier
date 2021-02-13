@@ -60,6 +60,5 @@ class StreamSGScoreExtractor(FeatureExtractor):
         metadata = kwargs["metadata"]
         oids = detections.index.unique()
         df_sgscore = metadata[["oid", "sgscore1"]]
-        df_sgscore.drop_duplicates("oid", inplace=True)
-        df_sgscore.set_index("oid", inplace=True)
+        df_sgscore = df_sgscore.drop_duplicates("oid").set_index('oid')
         return df_sgscore.loc[oids]
