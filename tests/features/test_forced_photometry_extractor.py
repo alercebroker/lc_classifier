@@ -15,7 +15,7 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
         self.objects = pd.read_csv("data_examples/100_objects.csv", index_col="objectId")
         self.objects.index.name = 'oid'
 
-    def test_custom_hierarchical_features(self):
+    def test_forced_photometry_extractor(self):
         features_df = self.forced_photometry_extractor.compute_features(
             detections=self.detections,
             objects=self.objects
@@ -23,7 +23,7 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
         self.assertEqual(features_df.shape[0], 98)
         self.assertEqual(features_df.shape[1], 152)
 
-    def test_custom_hierarchical_features_stream(self):
+    def test_forced_photometry_extractor_stream(self):
         oid = "ZTF17aaaorfd"
         detections = self.detections.loc[[oid]]
         xmatches = pd.DataFrame(

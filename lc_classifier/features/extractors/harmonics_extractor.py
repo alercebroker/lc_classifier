@@ -29,7 +29,8 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
             periods = period_extractor.compute_features(detections)
 
         columns = self.get_features_keys_with_band(band)
-        def aux_function(oid_detections, **kwargs):
+
+        def aux_function(oid_detections, band, **kwargs):
             oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
                 logging.debug(
@@ -83,7 +84,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
                               f'available: oid {oid}\n{e}')
                 return self.nan_series_in_band(band)
             
-        features = detections.apply(aux_function)
+        features = detections.apply(lambda det: aux_function(det, band))
         features.index.name = 'oid'
         return features
 

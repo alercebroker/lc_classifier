@@ -19,8 +19,9 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
 
     def compute_feature_in_one_band_from_group(
             self, detections, band, **kwargs) -> pd.DataFrame:
-        def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+        def aux_function(oid_detections, band, **kwargs):
+            fids = oid_detections['fid'].values
+            if band not in fids:
                 logging.info(
                     "extractor=GP DRW extractor object=%s required_cols=%s band=%s",
                     oid_detections.index.values[0],
@@ -28,12 +29,11 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                     band)
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
-            lc = oid_band_detections[[
-                'mjd', 'magpsf_ml', 'sigmapsf_ml']].values
-            time = lc[:, 0]
-            mag = lc[:, 1]
-            err = lc[:, 2]
+            oid_band_detections = oid_detections[fids == band]
+
+            time = oid_band_detections['mjd'].values
+            mag = oid_band_detections['magpsf_ml'].values
+            err = oid_band_detections['sigmapsf_ml'].values
 
             time = time - time.min()
             mag = mag - mag.mean()
@@ -53,7 +53,7 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                 gp = set_params(params, gp, time, sq_error)
                 return -gp.log_likelihood(mag)
 
-            initial_params = [np.log(1.0), np.log(1.0)]
+            initial_params = np.zeros((2,), dtype=np.float)
             sol = minimize(
                 neg_log_like,
                 initial_params,
@@ -69,7 +69,7 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                 data=out_data, index=self.get_features_keys_with_band(band))
             return out
 
-        features = detections.apply(aux_function)
+        features = detections.apply(lambda det: aux_function(det, band))
         features.index.name = 'oid'
         return features
 

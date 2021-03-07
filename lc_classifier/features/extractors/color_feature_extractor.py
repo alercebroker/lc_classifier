@@ -31,16 +31,20 @@ class ColorFeatureExtractor(FeatureExtractor):
         # pd.options.display.precision = 10
         def aux_function(oid_detections):
             oid = oid_detections.index.values[0]
-            if 1 not in oid_detections.fid.unique() or 2 not in oid_detections.fid.unique():
+            fids = oid_detections['fid'].values
+            unique_fids = np.unique(fids)
+            if 1 not in unique_fids or 2 not in unique_fids:
                 logging.debug(
                     f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
                 return self.nan_series()
 
-            g_band_mag_corr = oid_detections[oid_detections.fid == 1]['magpsf_ml'].values
-            r_band_mag_corr = oid_detections[oid_detections.fid == 2]['magpsf_ml'].values
+            mag_corr = oid_detections['magpsf_ml'].values
+            g_band_mag_corr = mag_corr[fids == 1]
+            r_band_mag_corr = mag_corr[fids == 2]
 
-            g_band_mag = oid_detections[oid_detections.fid == 1]['magpsf'].values
-            r_band_mag = oid_detections[oid_detections.fid == 2]['magpsf'].values
+            mag = oid_detections['magpsf'].values
+            g_band_mag = mag[fids == 1]
+            r_band_mag = mag[fids == 2]
 
             g_r_max = g_band_mag.min() - r_band_mag.min()
             g_r_mean = g_band_mag.mean() - r_band_mag.mean()

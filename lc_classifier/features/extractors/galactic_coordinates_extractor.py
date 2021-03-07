@@ -30,8 +30,8 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
 
         radec_df = detections[['ra', 'dec']].groupby(level=0).mean()
         coordinates = SkyCoord(
-            ra=radec_df['ra'],
-            dec=radec_df['dec'],
+            ra=radec_df.values[:, 0],
+            dec=radec_df.values[:, 1],
             frame='icrs',
             unit='deg')
         galactic = coordinates.galactic

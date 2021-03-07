@@ -65,8 +65,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values(
-                'mjd')
+            oid_band_detections = oid_detections[oid_detections.fid == band]
 
             object_features = self.feature_space.calculate_features(
                 oid_band_detections)

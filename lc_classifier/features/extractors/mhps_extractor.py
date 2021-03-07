@@ -34,7 +34,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
             self, detections, band, **kwargs):
         columns = self.get_features_keys_with_band(band)
 
-        def aux_function(oid_detections, **kwargs):
+        def aux_function(oid_detections, band, **kwargs):
             if band not in oid_detections.fid.values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
@@ -43,20 +43,19 @@ class MHPSExtractor(FeatureExtractorSingleBand):
             
             oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
-            mag = oid_band_detections.magpsf_ml.values.astype(np.double)
-            magerr = oid_band_detections.sigmapsf_ml.values.astype(np.double)
-            time = oid_band_detections.mjd.values.astype(np.double)
+            mag = oid_band_detections['magpsf_ml'].values.astype(np.double)
+            magerr = oid_band_detections['sigmapsf_ml'].values.astype(np.double)
+            time = oid_band_detections['mjd'].values.astype(np.double)
             ratio, low, high, non_zero, pn_flag = mhps.statistics(
                 mag,
                 magerr,
                 time,
                 self.t1,
                 self.t2)
-            values = np.array([[ratio, low, high, non_zero, pn_flag]])
             return pd.Series(
                 data=[ratio, low, high, non_zero, pn_flag],
                 index=columns)
         
-        mhps_results = detections.apply(aux_function)
+        mhps_results = detections.apply(lambda det: aux_function(det, band))
         mhps_results.index.name = 'oid'
         return mhps_results

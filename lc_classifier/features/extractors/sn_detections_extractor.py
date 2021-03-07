@@ -40,34 +40,41 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+            fids = oid_detections['fid'].values
+            if band not in fids:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
+            oid_band_detections = oid_detections[fids == band].sort_values('mjd')
 
-            n_pos = len(oid_band_detections[oid_band_detections.isdiffpos > 0])
-            n_neg = len(oid_band_detections[oid_band_detections.isdiffpos < 0])
-            min_mag = oid_band_detections['magpsf_ml'].values.min()
-            first_mag = oid_band_detections['magpsf_ml'].values[0]
-            delta_mjd_fid = oid_band_detections['mjd'].values[-1] - \
-                oid_band_detections['mjd'].values[0]
-            delta_mag_fid = oid_band_detections['magpsf_ml'].values.max(
-            ) - min_mag
+            is_diff_pos_mask = oid_band_detections['isdiffpos'] > 0
+            n_pos = len(oid_band_detections[is_diff_pos_mask])
+            n_neg = len(oid_band_detections[~is_diff_pos_mask])
+
+            mags = oid_band_detections['magpsf_ml'].values
+            min_mag = mags.min()
+            first_mag = mags[0]
+
+            mjds = oid_band_detections['mjd'].values
+            delta_mjd_fid = mjds[-1] - mjds[0]
+            delta_mag_fid = mags.max() - min_mag
             positive_fraction = n_pos/(n_pos + n_neg)
-            mean_mag = oid_band_detections['magpsf_ml'].values.mean()
+            mean_mag = mags.mean()
 
-            data = [delta_mag_fid,
-                    delta_mjd_fid,
-                    first_mag,
-                    mean_mag,
-                    min_mag,
-                    n_neg + n_pos,
-                    n_neg,
-                    n_pos,
-                    positive_fraction]
+            data = [
+                delta_mag_fid,
+                delta_mjd_fid,
+                first_mag,
+                mean_mag,
+                min_mag,
+                n_neg + n_pos,
+                n_neg,
+                n_pos,
+                positive_fraction
+            ]
+
             sn_det_df = pd.Series(
                 data=data,
                 index=columns)

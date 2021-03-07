@@ -3,28 +3,32 @@ from typing import List
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+from numba import jit
+
 
 from ..core.base import FeatureExtractorSingleBand
 from scipy.optimize import OptimizeWarning
 import logging
 
 
+@jit(nopython=True)
+def model_inference(times, A, t0, gamma, f, t_rise, t_fall):
+    # f in this function is SPM_beta
+    beta = 1.0 / 3.0
+    t1 = t0 + gamma
+
+    sigmoid = 1.0 / (1.0 + np.exp(-beta * (times - t1)))
+    den = 1 + np.exp(-(times - t0) / t_rise)
+    flux = (A * (1 - f) * np.exp(-(times - t1) / t_fall) / den
+            * sigmoid
+            + A * (1. - f * (times - t0) / gamma) / den
+            * (1 - sigmoid))
+    return flux
+
+
 class SNModelScipy(object):
     def __init__(self):
-        self.beta = 1.0 / 3.0
         self.parameters = None
-
-    # f in this function is SPM_beta
-    def model(self, times, A, t0, gamma, f, t_rise, t_fall):
-        t1 = t0 + gamma
-
-        sigmoid = 1.0 / (1.0 + np.exp(-self.beta * (times - t1)))
-        den = 1 + np.exp(-(times - t0) / t_rise)
-        flux = (A * (1 - f) * np.exp(-(times - t1) / t_fall) / den
-                * sigmoid
-                + A * (1. - f * (times - t0) / gamma) / den
-                * (1 - sigmoid))
-        return flux
 
     def fit(self, times, targets, obs_errors):
         fluxpsf = targets
@@ -60,7 +64,7 @@ class SNModelScipy(object):
         # get parameters
         try:
             pout, pcov = curve_fit(
-                self.model,
+                model_inference,
                 times,
                 fluxpsf,
                 p0=[A_guess, t0_guess, gamma_guess,
@@ -71,7 +75,7 @@ class SNModelScipy(object):
         except (ValueError, RuntimeError, OptimizeWarning):
             try:
                 pout, pcov = curve_fit(
-                    self.model,
+                    model_inference,
                     times,
                     fluxpsf,
                     p0=[A_guess, t0_guess, gamma_guess,
@@ -84,7 +88,7 @@ class SNModelScipy(object):
                 pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
         self.parameters = pout
-        predictions = self.model(
+        predictions = model_inference(
             times,
             self.parameters[0],
             self.parameters[1],

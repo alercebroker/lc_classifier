@@ -41,13 +41,14 @@ class PeriodExtractor(FeatureExtractor):
             oid_detections = oid_detections.groupby('fid').filter(
                 lambda x: len(x) > 5).sort_values('mjd')
 
-            available_bands = oid_detections.fid.unique()
+            fids = oid_detections.fid.values
+            available_bands = np.unique(fids)
 
             self.periodogram_computer.set_data(
-                mjds=oid_detections[['mjd']].values,
-                mags=oid_detections[['magpsf_ml']].values,
-                errs=oid_detections[['sigmapsf_ml']].values,
-                fids=oid_detections[['fid']].values)
+                mjds=oid_detections['mjd'].values,
+                mags=oid_detections['magpsf_ml'].values,
+                errs=oid_detections['sigmapsf_ml'].values,
+                fids=fids)
 
             try:
                 self.periodogram_computer.frequency_grid_evaluation(
@@ -76,10 +77,10 @@ class PeriodExtractor(FeatureExtractor):
                     continue
                 best_freq_band = self.periodogram_computer.get_best_frequency(band)
 
-                #Getting best period
+                # Getting best period
                 best_period_band = 1.0 / best_freq_band
 
-                #Calculating delta period
+                # Calculating delta period
                 delta_period_band = np.abs(period_candidate - best_period_band)
                 period_candidates_per_band.extend([best_period_band, delta_period_band])
 
