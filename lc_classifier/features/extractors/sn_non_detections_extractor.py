@@ -175,8 +175,6 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
 
         non_det_unique_oids = non_detections.index.unique()
 
-        columns = self.get_features_keys_with_band(band)
-
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
