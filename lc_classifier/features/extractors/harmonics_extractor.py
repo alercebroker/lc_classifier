@@ -11,6 +11,7 @@ from ..extractors import PeriodExtractor
 class HarmonicsExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         self.n_harmonics = 7
+        self.features_keys = None
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -89,9 +90,12 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         return features
 
     def get_features_keys(self) -> List[str]:
+        if self.features_keys is not None:
+            return self.features_keys
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')
+        self.features_keys = feature_names
         return feature_names
 
     def get_required_keys(self) -> List[str]:

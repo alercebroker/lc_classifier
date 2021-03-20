@@ -13,12 +13,16 @@ class PeriodExtractor(FeatureExtractor):
             self.bands = [1, 2]
         else:
             self.bands = bands
+        self.features_keys = None
 
     def get_features_keys(self) -> List[str]:
+        if self.features_keys is not None:
+            return self.features_keys
         features = ['Multiband_period', 'PPE']
         for band in self.bands:
             features.append(f'Period_band_{band}')
             features.append(f'delta_period_{band}')
+        self.features_keys = features
         return features
 
     def get_required_keys(self) -> List[str]:

@@ -45,8 +45,12 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             GPDRWExtractor()
         ]
         self.preprocessor = DetectionsPreprocessorZTF()
+        self.features_keys = None
+        self.required_keys = None
 
     def get_features_keys(self) -> List[str]:
+        if self.features_keys is not None:
+            return self.features_keys
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
@@ -54,13 +58,17 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
+        self.features_keys = features_keys
         return features_keys
 
     def get_required_keys(self) -> List[str]:
+        if self.required_keys is not None:
+            return self.required_keys
         required_keys = set()
         for extractor in self.extractors:
             required_keys.union(set(extractor.get_required_keys()))
-        return list(required_keys)
+        self.required_keys = list(required_keys)
+        return self.required_keys
 
     def get_enough_alerts_mask(self, detections):
         """
@@ -143,8 +151,12 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             GPDRWExtractor()
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
+        self.features_keys = None
+        self.required_keys = None
 
     def get_features_keys(self) -> List[str]:
+        if self.features_keys is not None:
+            return self.features_keys
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
@@ -152,13 +164,17 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
+        self.features_keys = features_keys
         return features_keys
 
     def get_required_keys(self) -> List[str]:
+        if self.required_keys is not None:
+            return self.required_keys
         required_keys = set()
         for extractor in self.extractors:
             required_keys.union(set(extractor.get_required_keys()))
-        return list(required_keys)
+        self.required_keys = list(required_keys)
+        return self.required_keys
 
     def get_enough_alerts_mask(self, detections):
         """

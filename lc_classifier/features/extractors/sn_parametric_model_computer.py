@@ -31,11 +31,15 @@ class SNModelScipy(object):
         self.parameters = None
 
     def fit(self, times, targets, obs_errors):
+        """Assumptions:
+            min(times) == 0
+            lightcurve is sorted by mjd"""
         fluxpsf = targets
-        mjds = times
 
         # Parameter bounds
-        A_bounds = [max(fluxpsf) / 3.0, max(fluxpsf) * 3.0]
+        argmax_fluxpsf = np.argmax(fluxpsf)
+        max_fluxpsf = fluxpsf[argmax_fluxpsf]
+        A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
         t0_bounds = [-50.0, 50.0]
         gamma_bounds = [1.0, 100.0]
         f_bounds = [0.0, 1.0]
@@ -43,23 +47,19 @@ class SNModelScipy(object):
         tfall_bounds = [1.0, 100.0]
 
         # Parameter guess
-        A_guess = max(A_bounds[1], max(A_bounds[0], 1.2 * max(fluxpsf)))
-        # min(t0_bounds[1], max(t0_bounds[0], times[np.argmax(fluxpsf)]))
+        A_guess = max(A_bounds[1], max(A_bounds[0], 1.2 * max_fluxpsf))
         t0_guess = -5.0
         gamma_guess = min(gamma_bounds[1], max(
-            gamma_bounds[0], (times.max() - times.min())))
+            gamma_bounds[0], times[-1]))
         f_guess = 0.5
         trise_guess = min(
             trise_bounds[1],
-            max(trise_bounds[0], (times[np.argmax(fluxpsf)] - times.min()) / 2.0))
+            max(trise_bounds[0], times[argmax_fluxpsf] / 2.0))
         tfall_guess = 40.0
 
         # reference guess
         p0 = [A_guess, t0_guess, gamma_guess,
               f_guess, trise_guess, tfall_guess]
-
-        # update times and flux
-        times = mjds - min(mjds)
 
         # get parameters
         try:
