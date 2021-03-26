@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
@@ -19,24 +20,26 @@ class PowerRateExtractor(FeatureExtractor):
     def __init__(self):
         self.factors = [0.25, 1/3, 0.5, 2.0, 3.0, 4.0]
 
-    def get_features_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return (
             'Power_rate_1/4',
             'Power_rate_1/3',
             'Power_rate_1/2',
             'Power_rate_2',
             'Power_rate_3',
             'Power_rate_4'
-        ]
+        )
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf',
             'magpsf_corr',
             'fid',
             'sigmapsf_corr_ext',
-            'sigmapsf']
+            'sigmapsf')
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -45,7 +48,7 @@ class PowerRateExtractor(FeatureExtractor):
     
     def _compute_features_from_df_groupby(self, detections, **kwargs) -> pd.DataFrame:
         if ('shared_data' in kwargs.keys() and
-            'periodogram' in kwargs['shared_data'].keys()):
+                'periodogram' in kwargs['shared_data'].keys()):
             periodograms = kwargs['shared_data']['periodogram']
         else:
             logging.info('PowerRateExtractor was not provided with periodogram '

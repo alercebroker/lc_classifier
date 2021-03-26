@@ -1,15 +1,18 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractor
 from pandas import DataFrame
 
 
 class SGScoreExtractor(FeatureExtractor):
-    def get_features_keys(self) -> List[str]:
-        return ['sgscore1']
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'sgscore1',
 
-    def get_required_keys(self) -> List[str]:
-        return ['sgscore1']
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'sgscore1',
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -36,11 +39,13 @@ class SGScoreExtractor(FeatureExtractor):
 
 
 class StreamSGScoreExtractor(FeatureExtractor):
-    def get_features_keys(self) -> List[str]:
-        return []
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return ()
 
-    def get_required_keys(self) -> List[str]:
-        return []
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return ()
 
     def _compute_features(self, detections, **kwargs):
         """

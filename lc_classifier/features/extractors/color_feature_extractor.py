@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractor
 import pandas as pd
@@ -7,11 +8,13 @@ import logging
 
 
 class ColorFeatureExtractor(FeatureExtractor):
-    def get_features_keys(self) -> List[str]:
-        return ['g-r_max', 'g-r_mean', 'g-r_max_corr', 'g-r_mean_corr']
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'g-r_max', 'g-r_mean', 'g-r_max_corr', 'g-r_mean_corr'
 
-    def get_required_keys(self) -> List[str]:
-        return ['fid', 'magpsf', 'magpsf_ml']
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'fid', 'magpsf', 'magpsf_ml'
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(

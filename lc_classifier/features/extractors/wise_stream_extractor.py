@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from typing import Tuple
+from functools import lru_cache
 import pandas as pd
 import numpy as np
 from ..core.base import FeatureExtractor
@@ -10,11 +11,13 @@ class WiseStreamExtractor(FeatureExtractor):
         super()
         self.xmatch_keys = ["W1mag", "W2mag", "W3mag"]
 
-    def get_features_keys(self) -> List[str]:
-        return ["W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"]
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return "W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"
 
-    def get_required_keys(self) -> List[str]:
-        return []
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return ()
 
     def calculate_bands(self, detections) -> Tuple:
         """
@@ -69,7 +72,7 @@ class WiseStreamExtractor(FeatureExtractor):
         xmatch = kwargs["xmatches"]
         oids = detections.index.unique()
         g, r = self.calculate_bands(detections)
-        columns = self.get_features_keys()
+        columns = list(self.get_features_keys())
         columns.append("oid")
         missing_xmatch = self.check_keys_xmatch(xmatch)
         xmatch.set_index("oid", inplace=True)

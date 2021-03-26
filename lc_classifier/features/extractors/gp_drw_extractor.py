@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -73,17 +74,16 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
         features.index.name = 'oid'
         return features
 
-    def get_features_keys(self) -> List[str]:
-        feature_names = [
-            'GP_DRW_sigma',
-            'GP_DRW_tau'
-        ]
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        feature_names = 'GP_DRW_sigma', 'GP_DRW_tau'
         return feature_names
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf_ml',
             'fid',
             'sigmapsf_ml'
-        ]
+        )

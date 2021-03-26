@@ -17,7 +17,9 @@ class WiseStreamExtractorTest(unittest.TestCase):
 
     def test_get_features_keys(self):
         features = self.extractor.get_features_keys()
-        self.assertEqual(features, ["W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"])
+        self.assertEqual(
+            features,
+            ("W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"))
 
     def test_calculate_bands(self):
         g, r = self.extractor.calculate_bands(self.detections)

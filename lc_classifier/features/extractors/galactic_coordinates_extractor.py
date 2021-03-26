@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractor
 from astropy.coordinates import SkyCoord
@@ -8,11 +9,13 @@ import logging
 
 
 class GalacticCoordinatesExtractor(FeatureExtractor):
-    def get_features_keys(self) -> List[str]:
-        return ['gal_b', 'gal_l']
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'gal_b', 'gal_l'
 
-    def get_required_keys(self) -> List[str]:
-        return ['ra', 'dec']
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'ra', 'dec'
 
     def _compute_features(self, detections, **kwargs):
         """

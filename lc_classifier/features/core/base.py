@@ -1,17 +1,18 @@
 import numpy as np
 import pandas as pd
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Tuple
 import logging
+from functools import lru_cache
 
 
 class FeatureExtractor(ABC):
     @abstractmethod
-    def get_features_keys(self) -> List[str]:
+    def get_features_keys(self) -> Tuple[str, ...]:
         raise NotImplementedError('get_features_keys is an abstract method')
 
     @abstractmethod
-    def get_required_keys(self) -> List[str]:
+    def get_required_keys(self) -> Tuple[str, ...]:
         raise NotImplementedError('get_required_keys is an abstract method')
 
     def nan_df(self, index):
@@ -158,6 +159,7 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
                 self.compute_feature_in_one_band(detections, band=band, **kwargs))
         return pd.concat(features_response, axis=1, join="outer")
 
+    @lru_cache(maxsize=10)
     def get_features_keys_with_band(self, band):
         return [f'{x}_{band}' for x in self.get_features_keys()]
 

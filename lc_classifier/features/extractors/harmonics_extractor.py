@@ -1,8 +1,9 @@
-from typing import List
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import logging
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from ..extractors import PeriodExtractor
@@ -11,7 +12,6 @@ from ..extractors import PeriodExtractor
 class HarmonicsExtractor(FeatureExtractorSingleBand):
     def __init__(self):
         self.n_harmonics = 7
-        self.features_keys = None
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -21,7 +21,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
             self, detections, band, **kwargs) -> pd.DataFrame:
 
         if ('shared_data' in kwargs.keys() and
-            'period' in kwargs['shared_data'].keys()):
+                'period' in kwargs['shared_data'].keys()):
             periods = kwargs['shared_data']['period']
         else:
             logging.info('Harmonics extractor was not provided with period '
@@ -89,19 +89,18 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         features.index.name = 'oid'
         return features
 
-    def get_features_keys(self) -> List[str]:
-        if self.features_keys is not None:
-            return self.features_keys
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')
-        self.features_keys = feature_names
-        return feature_names
+        return tuple(feature_names)
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf_ml',
             'fid',
             'sigmapsf_ml'
-        ]
+        )

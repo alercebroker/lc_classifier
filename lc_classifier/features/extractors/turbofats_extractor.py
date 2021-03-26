@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from turbofats import FeatureSpace
@@ -13,8 +14,9 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         self.feature_space.data_column_names = [
             'magpsf_ml', 'mjd', 'sigmapsf_ml']
 
+    @lru_cache(1)
     def _feature_keys_for_new_feature_space(self):
-        return [
+        return (
             'Amplitude', 'AndersonDarling', 'Autocor_length',
             'Beyond1Std',
             'Con', 'Eta_e',
@@ -28,14 +30,16 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
             'SF_ML_amplitude', 'SF_ML_gamma',
             'IAR_phi',
             'LinearTrend',
-        ]
+        )
 
-    def get_features_keys(self) -> List[str]:
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
         features_keys = self._feature_keys_for_new_feature_space()
         return features_keys
 
-    def get_required_keys(self) -> List[str]:
-        return ['mjd', 'magpsf_ml', 'fid', 'sigmapsf_ml']
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'mjd', 'magpsf_ml', 'fid', 'sigmapsf_ml'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)

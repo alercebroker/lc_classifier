@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 import logging
 import numpy as np
 import pandas as pd
@@ -11,17 +12,14 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
     """https://github.com/dwkim78/upsilon/blob/
     64b2b7f6e3b3991a281182549959aabd385a6f28/
     upsilon/extract_features/extract_features.py#L151"""
-    def get_features_keys(self) -> List[str]:
-        return [
-            'Psi_CS',
-            'Psi_eta'
-        ]
 
-    def get_required_keys(self) -> List[str]:
-        return [
-            'mjd',
-            'magpsf_ml'
-        ]
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'Psi_CS', 'Psi_eta'
+
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'mjd', 'magpsf_ml'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)

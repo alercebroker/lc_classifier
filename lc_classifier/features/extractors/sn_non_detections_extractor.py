@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
@@ -20,8 +21,9 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
     def __init__(self):
         self.supernovae_detection_extractor = SupernovaeDetectionFeatureExtractor()
 
-    def get_features_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return (
             'delta_mag_fid',
             'delta_mjd_fid',
             'first_mag',
@@ -41,13 +43,15 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             'n_non_det_after_fid',
             'max_diffmaglim_after_fid',
             'median_diffmaglim_after_fid'
-        ]
+        )
 
-    def get_required_keys(self) -> List[str]:
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
         return self.supernovae_detection_extractor.get_required_keys()
 
+    @lru_cache(1)
     def get_non_detections_required_keys(self):
-        return ["diffmaglim", "mjd", "fid"]
+        return "diffmaglim", "mjd", "fid"
 
     def compute_before_features(self, det_result, non_detections, band):
         """

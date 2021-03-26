@@ -1,9 +1,10 @@
-from typing import List
+from typing import Tuple
 import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from P4J import MultiBandPeriodogram
 import logging
+from functools import lru_cache
 
 
 class PeriodExtractor(FeatureExtractor):
@@ -13,25 +14,23 @@ class PeriodExtractor(FeatureExtractor):
             self.bands = [1, 2]
         else:
             self.bands = bands
-        self.features_keys = None
 
-    def get_features_keys(self) -> List[str]:
-        if self.features_keys is not None:
-            return self.features_keys
+    @lru_cache(maxsize=1)
+    def get_features_keys(self) -> Tuple[str, ...]:
         features = ['Multiband_period', 'PPE']
         for band in self.bands:
             features.append(f'Period_band_{band}')
             features.append(f'delta_period_{band}')
-        self.features_keys = features
-        return features
+        return tuple(features)
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf_ml',
             'sigmapsf_ml',
             'fid'
-        ]
+        )
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(

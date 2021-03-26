@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 import pandas as pd
@@ -15,16 +16,18 @@ class MHPSExtractor(FeatureExtractorSingleBand):
         self.mag0 = mag0
         self.epsilon = epsilon
 
-    def get_features_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return (
             'MHPS_ratio',
             'MHPS_low',
             'MHPS_high',
             'MHPS_non_zero',
-            'MHPS_PN_flag']
+            'MHPS_PN_flag')
 
-    def get_required_keys(self) -> List[str]:
-        return ["magpsf_ml", "sigmapsf_ml", "mjd"]
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return "magpsf_ml", "sigmapsf_ml", "mjd"
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
