@@ -13,16 +13,15 @@ import logging
 
 
 @jit(nopython=True)
-def model_inference(times, A, t0, gamma, f, t_rise, t_fall):
-    # f in this function is SPM_beta
-    beta = 1.0 / 3.0
+def model_inference(times, A, t0, gamma, beta, t_rise, t_fall):
+    sigmoid_factor = 1.0 / 3.0
     t1 = t0 + gamma
 
-    sigmoid = 1.0 / (1.0 + np.exp(-beta * (times - t1)))
+    sigmoid = 1.0 / (1.0 + np.exp(-sigmoid_factor * (times - t1)))
     den = 1 + np.exp(-(times - t0) / t_rise)
-    flux = ((1 - f) * np.exp(-(times - t1) / t_fall)
+    flux = ((1 - beta) * np.exp(-(times - t1) / t_fall)
             * sigmoid
-            + (1. - f * (times - t0) / gamma)
+            + (1. - beta * (times - t0) / gamma)
             * (1 - sigmoid)) * A / den
     return flux
 
@@ -42,7 +41,7 @@ class SNModelScipy(object):
         A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
         t0_bounds = [-50.0, 50.0]
         gamma_bounds = [1.0, 100.0]
-        f_bounds = [0.0, 1.0]
+        beta_bounds = [0.0, 1.0]
         trise_bounds = [1.0, 100.0]
         tfall_bounds = [1.0, 100.0]
 
@@ -51,7 +50,7 @@ class SNModelScipy(object):
         t0_guess = -5.0
         gamma_guess = min(gamma_bounds[1], max(
             gamma_bounds[0], max(times)))
-        f_guess = 0.5
+        beta_guess = 0.5
         trise_guess = min(
             trise_bounds[1],
             max(trise_bounds[0], times[argmax_fluxpsf] / 2.0))
@@ -59,7 +58,7 @@ class SNModelScipy(object):
 
         # reference guess
         p0 = [A_guess, t0_guess, gamma_guess,
-              f_guess, trise_guess, tfall_guess]
+              beta_guess, trise_guess, tfall_guess]
 
         # get parameters
         try:
@@ -67,10 +66,9 @@ class SNModelScipy(object):
                 model_inference,
                 times,
                 fluxpsf,
-                p0=[A_guess, t0_guess, gamma_guess,
-                    f_guess, trise_guess, tfall_guess],
-                bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], f_bounds[0], trise_bounds[0], tfall_bounds[0]],
-                        [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1], tfall_bounds[1]]],
+                p0=p0,
+                bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
+                        [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
                 ftol=A_guess / 20.)
         except (ValueError, RuntimeError, OptimizeWarning):
             try:
@@ -78,10 +76,9 @@ class SNModelScipy(object):
                     model_inference,
                     times,
                     fluxpsf,
-                    p0=[A_guess, t0_guess, gamma_guess,
-                        f_guess, trise_guess, tfall_guess],
-                    bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], f_bounds[0], trise_bounds[0], tfall_bounds[0]],
-                            [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1], tfall_bounds[1]]],
+                    p0=p0,
+                    bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
+                            [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
                     ftol=A_guess / 3.)
             except (ValueError, RuntimeError, OptimizeWarning):
                 pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
@@ -100,6 +97,88 @@ class SNModelScipy(object):
         # nmse = mse / np.mean(targets ** 2)
 
         chi = np.sum((predictions - targets) ** 2 / (obs_errors + 0.01) ** 2)
+        chi_den = len(predictions) - len(self.parameters)
+        if chi_den >= 1:
+            chi_per_degree = chi / chi_den
+        else:
+            chi_per_degree = np.NaN
+        return chi_per_degree
+
+    def get_model_parameters(self):
+        return self.parameters.tolist()
+
+
+class SNModelScipyPhaseII(object):
+    def __init__(self):
+        self.parameters = None
+
+    def fit(self, times, fluxpsf, obs_errors):
+        """Assumptions:
+            min(times) == 0"""
+
+        # Parameter bounds
+        argmax_fluxpsf = np.argmax(fluxpsf)
+        max_fluxpsf = fluxpsf[argmax_fluxpsf]
+        A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
+        t0_bounds = [-50.0, 50.0]
+        gamma_bounds = [1.0, 100.0]
+        beta_bounds = [0.0, 1.0]
+        trise_bounds = [1.0, 100.0]
+        tfall_bounds = [1.0, 100.0]
+
+        # Parameter guess
+        A_guess = np.clip(1.2 * max_fluxpsf, A_bounds[0], A_bounds[1])
+        t0_guess = np.clip(times[argmax_fluxpsf] * 2.0 / 3.0, t0_bounds[0], t0_bounds[1])
+        gamma_guess = np.clip(times[argmax_fluxpsf], gamma_bounds[0], gamma_bounds[1])
+        beta_guess = 0.5
+        trise_guess = np.clip(times[argmax_fluxpsf] / 2.0, trise_bounds[0], trise_bounds[1])
+        tfall_guess = 50.0
+
+        # reference guess
+        p0 = [A_guess, t0_guess, gamma_guess,
+              beta_guess, trise_guess, tfall_guess]
+
+        # get parameters
+        try:
+            pout, pcov = curve_fit(
+                f=model_inference,
+                xdata=times,
+                ydata=fluxpsf,
+                p0=p0,
+                sigma=5+obs_errors,
+                bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
+                        [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
+                ftol=0.01,
+                verbose=2
+            )
+        except (ValueError, RuntimeError, OptimizeWarning):
+            try:
+                pout, pcov = curve_fit(
+                    f=model_inference,
+                    xdata=times,
+                    ydata=fluxpsf,
+                    p0=p0,
+                    sigma=5+obs_errors,
+                    bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
+                            [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
+                    ftol=0.1)
+            except (ValueError, RuntimeError, OptimizeWarning):
+                pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+
+        self.parameters = pout
+        predictions = model_inference(
+            times,
+            self.parameters[0],
+            self.parameters[1],
+            self.parameters[2],
+            self.parameters[3],
+            self.parameters[4],
+            self.parameters[5])
+
+        # mse = np.mean((predictions - targets) ** 2)
+        # nmse = mse / np.mean(targets ** 2)
+
+        chi = np.sum((predictions - fluxpsf) ** 2 / (obs_errors + 0.01) ** 2)
         chi_den = len(predictions) - len(self.parameters)
         if chi_den >= 1:
             chi_per_degree = chi / chi_den
@@ -189,7 +268,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
     the fitted parameters as features."""
 
     def __init__(self):
-        self.sn_model = SNModelScipy()
+        self.sn_model = SNModelScipyPhaseII()
 
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
