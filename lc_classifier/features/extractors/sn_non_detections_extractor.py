@@ -3,18 +3,10 @@ from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
+from .utils import is_sorted
 import pandas as pd
 import numpy as np
-import numba
 import logging
-
-
-@numba.jit(nopython=True)
-def is_sorted(a):
-    for i in range(a.size-1):
-        if a[i+1] < a[i]:
-            return False
-    return True
 
 
 class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleBand):

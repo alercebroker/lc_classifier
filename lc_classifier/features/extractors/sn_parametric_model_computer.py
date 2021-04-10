@@ -20,10 +20,10 @@ def model_inference(times, A, t0, gamma, f, t_rise, t_fall):
 
     sigmoid = 1.0 / (1.0 + np.exp(-beta * (times - t1)))
     den = 1 + np.exp(-(times - t0) / t_rise)
-    flux = (A * (1 - f) * np.exp(-(times - t1) / t_fall) / den
+    flux = ((1 - f) * np.exp(-(times - t1) / t_fall)
             * sigmoid
-            + A * (1. - f * (times - t0) / gamma) / den
-            * (1 - sigmoid))
+            + (1. - f * (times - t0) / gamma)
+            * (1 - sigmoid)) * A / den
     return flux
 
 
@@ -81,8 +81,7 @@ class SNModelScipy(object):
                     p0=[A_guess, t0_guess, gamma_guess,
                         f_guess, trise_guess, tfall_guess],
                     bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], f_bounds[0], trise_bounds[0], tfall_bounds[0]],
-                            [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1],
-                             tfall_bounds[1]]],
+                            [A_bounds[1], t0_bounds[1], gamma_bounds[1], f_bounds[1], trise_bounds[1], tfall_bounds[1]]],
                     ftol=A_guess / 3.)
             except (ValueError, RuntimeError, OptimizeWarning):
                 pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]

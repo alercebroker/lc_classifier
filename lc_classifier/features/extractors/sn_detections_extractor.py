@@ -21,7 +21,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return "isdiffpos", "magpsf_ml", "mjd"
+        return "isdiffpos", "magpsf_ml", "mjd", "fid"
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)

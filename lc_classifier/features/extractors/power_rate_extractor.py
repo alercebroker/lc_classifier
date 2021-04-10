@@ -4,16 +4,8 @@ import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from ..extractors import PeriodExtractor
-import numba
+from .utils import is_sorted
 import logging
-
-
-@numba.jit(nopython=True)
-def is_sorted(a):
-    for i in range(a.size-1):
-        if a[i+1] < a[i]:
-            return False
-    return True
 
 
 class PowerRateExtractor(FeatureExtractor):
