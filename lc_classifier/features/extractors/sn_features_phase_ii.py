@@ -49,8 +49,6 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             positive_observations = diff_flux_band > 0
             positive_fraction = positive_observations.astype(np.float).mean()
 
-            # TODO: dflux_first_det_fid
-
             # first detection in any band
             if not is_sorted(oid_detections['mjd'].values):
                 oid_detections = oid_detections.sort_values('mjd')
@@ -61,9 +59,19 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             # This value "3" is arbitrary
             detected = np.abs(diff_flux_any_band) - 3 * diff_err_any_band > 0
             first_detection_index = first_occurrence(detected, True)
+
+            # no detections in any band
             if first_detection_index == -1:
                 n_non_det_before_fid = 0
+                n_non_det_after_fid = 0
                 frac_non_det_after_fid = 0.0
+                dflux_first_det_fid = np.nan
+                dflux_non_det_fid = np.nan
+                last_flux_before_fid = np.nan
+                max_flux_before_fid = np.nan
+                max_flux_after_fid = np.nan
+                median_flux_before_fid = np.nan
+                median_flux_after_fid = np.nan
 
             else:
                 # number of non detections in band before the 1st detection is any band
@@ -76,11 +84,47 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
 
                 frac_non_det_after_fid = n_det_after_fid / (n_det_after_fid + n_non_det_after_fid)
 
+                # diff of flux between first det in any band and previous non det in band
+                flux_1st_det = diff_flux_any_band[first_detection_index]
+                before_1st_det = oid_detections.iloc[:first_detection_index]
+                before_1st_det_in_band = before_1st_det[before_1st_det.fid == band]
+                if len(before_1st_det_in_band) == 0:
+                    dflux_first_det_fid = np.nan
+                    dflux_non_det_fid = np.nan
+                    last_flux_before_fid = np.nan
+                    max_flux_before_fid = np.nan
+                    median_flux_before_fid = np.nan
+                else:
+                    non_det_flux_in_band = before_1st_det_in_band['diff_flux'].values
+                    dflux_first_det_fid = flux_1st_det - non_det_flux_in_band[-1]
+                    dflux_non_det_fid = flux_1st_det - np.median(non_det_flux_in_band)
+                    last_flux_before_fid = non_det_flux_in_band[-1]
+                    max_flux_before_fid = np.max(non_det_flux_in_band)
+                    median_flux_before_fid = np.median(non_det_flux_in_band)
+
+                after_mask = np.zeros(len(fids), dtype=np.bool)
+                after_mask[first_detection_index:] = True
+                non_det_after_fid = diff_flux_any_band[~detected & band_mask & after_mask]
+                if len(non_det_after_fid) == 0:
+                    max_flux_after_fid = np.nan
+                    median_flux_after_fid = np.nan
+                else:
+                    max_flux_after_fid = np.max(non_det_after_fid)
+                    median_flux_after_fid = np.median(non_det_after_fid)
+
             data = [
                 delta_mag_fid,
                 positive_fraction,
+                dflux_first_det_fid,
+                dflux_non_det_fid,
+                last_flux_before_fid,
+                max_flux_before_fid,
+                max_flux_after_fid,
+                median_flux_before_fid,
+                median_flux_after_fid,
                 n_non_det_before_fid,
-                frac_non_det_after_fid
+                n_non_det_after_fid,
+                # frac_non_det_after_fid
             ]
             features_series = pd.Series(
                 data=data,
@@ -97,10 +141,16 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             'delta_mag_fid',
             'positive_fraction',
 
-            #'dflux_first_det_fid',
-            #'dmag_non_det_fid',
+            'dflux_first_det_fid',
+            'dflux_non_det_fid',
+            'last_flux_before_fid',
+            'max_flux_before_fid',
+            'max_flux_after_fid',
+            'median_flux_before_fid',
+            'median_flux_after_fid',
             'n_non_det_before_fid',
-            'frac_non_det_after_fid'
+            'n_non_det_after_fid',
+            # 'frac_non_det_after_fid'
         )
 
     @lru_cache(1)
