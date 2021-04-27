@@ -1,9 +1,10 @@
-from typing import List
+from typing import Tuple
 import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from P4J import MultiBandPeriodogram
 import logging
+from functools import lru_cache
 
 
 class PeriodExtractor(FeatureExtractor):
@@ -14,20 +15,22 @@ class PeriodExtractor(FeatureExtractor):
         else:
             self.bands = bands
 
-    def get_features_keys(self) -> List[str]:
+    @lru_cache(maxsize=1)
+    def get_features_keys(self) -> Tuple[str, ...]:
         features = ['Multiband_period', 'PPE']
         for band in self.bands:
             features.append(f'Period_band_{band}')
             features.append(f'delta_period_{band}')
-        return features
+        return tuple(features)
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf_ml',
             'sigmapsf_ml',
             'fid'
-        ]
+        )
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -41,13 +44,14 @@ class PeriodExtractor(FeatureExtractor):
             oid_detections = oid_detections.groupby('fid').filter(
                 lambda x: len(x) > 5).sort_values('mjd')
 
-            available_bands = oid_detections.fid.unique()
+            fids = oid_detections.fid.values
+            available_bands = np.unique(fids)
 
             self.periodogram_computer.set_data(
-                mjds=oid_detections[['mjd']].values,
-                mags=oid_detections[['magpsf_ml']].values,
-                errs=oid_detections[['sigmapsf_ml']].values,
-                fids=oid_detections[['fid']].values)
+                mjds=oid_detections['mjd'].values,
+                mags=oid_detections['magpsf_ml'].values,
+                errs=oid_detections['sigmapsf_ml'].values,
+                fids=fids)
 
             try:
                 self.periodogram_computer.frequency_grid_evaluation(
@@ -76,10 +80,10 @@ class PeriodExtractor(FeatureExtractor):
                     continue
                 best_freq_band = self.periodogram_computer.get_best_frequency(band)
 
-                #Getting best period
+                # Getting best period
                 best_period_band = 1.0 / best_freq_band
 
-                #Calculating delta period
+                # Calculating delta period
                 delta_period_band = np.abs(period_candidate - best_period_band)
                 period_candidates_per_band.extend([best_period_band, delta_period_band])
 

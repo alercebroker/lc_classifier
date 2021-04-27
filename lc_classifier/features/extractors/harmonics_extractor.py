@@ -1,8 +1,9 @@
-from typing import List
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import logging
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from ..extractors import PeriodExtractor
@@ -20,7 +21,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
             self, detections, band, **kwargs) -> pd.DataFrame:
 
         if ('shared_data' in kwargs.keys() and
-            'period' in kwargs['shared_data'].keys()):
+                'period' in kwargs['shared_data'].keys()):
             periods = kwargs['shared_data']['period']
         else:
             logging.info('Harmonics extractor was not provided with period '
@@ -29,7 +30,8 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
             periods = period_extractor.compute_features(detections)
 
         columns = self.get_features_keys_with_band(band)
-        def aux_function(oid_detections, **kwargs):
+
+        def aux_function(oid_detections, band, **kwargs):
             oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
                 logging.debug(
@@ -83,20 +85,22 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
                               f'available: oid {oid}\n{e}')
                 return self.nan_series_in_band(band)
             
-        features = detections.apply(aux_function)
+        features = detections.apply(lambda det: aux_function(det, band))
         features.index.name = 'oid'
         return features
 
-    def get_features_keys(self) -> List[str]:
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')
-        return feature_names
+        return tuple(feature_names)
 
-    def get_required_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return (
             'mjd',
             'magpsf_ml',
             'fid',
             'sigmapsf_ml'
-        ]
+        )

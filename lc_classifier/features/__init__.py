@@ -18,6 +18,7 @@ from .extractors.gp_drw_extractor import GPDRWExtractor
 
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
+from .custom.forced_photometry_extractor import ForcedPhotometryExtractor, StreamedForcedPhotometryExtractor
 
 from .preprocess.preprocess_ztf import DetectionsPreprocessorZTF
 

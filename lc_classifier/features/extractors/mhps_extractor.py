@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 import pandas as pd
@@ -15,16 +16,18 @@ class MHPSExtractor(FeatureExtractorSingleBand):
         self.mag0 = mag0
         self.epsilon = epsilon
 
-    def get_features_keys(self) -> List[str]:
-        return [
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return (
             'MHPS_ratio',
             'MHPS_low',
             'MHPS_high',
             'MHPS_non_zero',
-            'MHPS_PN_flag']
+            'MHPS_PN_flag')
 
-    def get_required_keys(self) -> List[str]:
-        return ["magpsf_ml", "sigmapsf_ml", "mjd"]
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return "magpsf_ml", "sigmapsf_ml", "mjd"
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -34,7 +37,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
             self, detections, band, **kwargs):
         columns = self.get_features_keys_with_band(band)
 
-        def aux_function(oid_detections, **kwargs):
+        def aux_function(oid_detections, band, **kwargs):
             if band not in oid_detections.fid.values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
@@ -43,20 +46,19 @@ class MHPSExtractor(FeatureExtractorSingleBand):
             
             oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
 
-            mag = oid_band_detections.magpsf_ml.values.astype(np.double)
-            magerr = oid_band_detections.sigmapsf_ml.values.astype(np.double)
-            time = oid_band_detections.mjd.values.astype(np.double)
+            mag = oid_band_detections['magpsf_ml'].values.astype(np.double)
+            magerr = oid_band_detections['sigmapsf_ml'].values.astype(np.double)
+            time = oid_band_detections['mjd'].values.astype(np.double)
             ratio, low, high, non_zero, pn_flag = mhps.statistics(
                 mag,
                 magerr,
                 time,
                 self.t1,
                 self.t2)
-            values = np.array([[ratio, low, high, non_zero, pn_flag]])
             return pd.Series(
                 data=[ratio, low, high, non_zero, pn_flag],
                 index=columns)
         
-        mhps_results = detections.apply(aux_function)
+        mhps_results = detections.apply(lambda det: aux_function(det, band))
         mhps_results.index.name = 'oid'
         return mhps_results

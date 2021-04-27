@@ -1,5 +1,6 @@
 import os
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 import requests
 import pandas as pd
@@ -37,11 +38,13 @@ class WiseStaticExtractor(FeatureExtractor):
         self.wise_bands = pd.read_csv(WISE_CSV, index_col="oid")
         self.wise_colors = compute_colors_from_bands(self.wise_bands)
 
-    def get_features_keys(self) -> List[str]:
-        return ["W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"]
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return "W1-W2", "W2-W3", "g-W2", "g-W3", "r-W2", "r-W3"
 
-    def get_required_keys(self) -> List[str]:
-        return []
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return ()
 
     def _compute_features(self, detections, **kwargs):
         oids = detections.index.unique()

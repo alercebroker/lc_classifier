@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 import scipy.stats as sstats
@@ -7,11 +8,13 @@ import logging
 
 
 class IQRExtractor(FeatureExtractorSingleBand):
-    def get_features_keys(self) -> List[str]:
-        return ['iqr']
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'iqr',
 
-    def get_required_keys(self) -> List[str]:
-        return ['fid', 'magpsf_ml']
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'fid', 'magpsf_ml'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)

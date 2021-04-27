@@ -1,6 +1,6 @@
 from typing import List
 
-from lc_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor
+from lc_classifier.features import SupernovaeDetectionFeatureExtractor
 from lc_classifier.features import GalacticCoordinatesExtractor
 from lc_classifier.features import TurboFatsFeatureExtractor
 from lc_classifier.features import ColorFeatureExtractor
@@ -22,10 +22,9 @@ from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessor
 
 import pandas as pd
 import logging
-from functools import lru_cache
 
 
-class CustomHierarchicalExtractor(FeatureExtractor):
+class ForcedPhotometryExtractor(FeatureExtractor):
     def __init__(self, bands=None):
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [
@@ -36,7 +35,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             MHPSExtractor(),
             IQRExtractor(),
             TurboFatsFeatureExtractor(),
-            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
+            SupernovaeDetectionFeatureExtractor(),
             SNParametricModelExtractor(),
             # WiseStaticExtractor(),
             PeriodExtractor(bands=bands),
@@ -47,7 +46,6 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
-    @lru_cache(1)
     def get_features_keys(self) -> List[str]:
         features_keys = []
         for extractor in self.extractors:
@@ -58,13 +56,11 @@ class CustomHierarchicalExtractor(FeatureExtractor):
                 features_keys.append(extractor.get_features_keys())
         return features_keys
 
-    @lru_cache(1)
     def get_required_keys(self) -> List[str]:
         required_keys = set()
         for extractor in self.extractors:
             required_keys.union(set(extractor.get_required_keys()))
-        required_keys = list(required_keys)
-        return required_keys
+        return list(required_keys)
 
     def get_enough_alerts_mask(self, detections):
         """
@@ -95,10 +91,10 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        required = ["non_detections", "objects"]
+        required = ["objects"]
         for key in required:
             if key not in kwargs:
-                raise Exception(f"HierarchicalFeaturesComputer requires {key} argument")
+                raise Exception(f"ForcedPhotometryExtractor requires {key} argument")
         objects = kwargs["objects"]
         detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
@@ -106,10 +102,6 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values("mjd")
-        non_detections = kwargs["non_detections"]
-
-        if len(non_detections) == 0:
-            non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
 
         features = []
         shared_data = dict()
@@ -117,7 +109,6 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         for ex in self.extractors:
             df = ex.compute_features(
                 grouped_detections,
-                non_detections=non_detections,
                 shared_data=shared_data)
             logging.info(f"FLAG={ex}")
             features.append(df)
@@ -126,7 +117,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         return df
 
 
-class CustomStreamHierarchicalExtractor(FeatureExtractor):
+class StreamedForcedPhotometryExtractor(FeatureExtractor):
     def __init__(self, bands=None):
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [
@@ -138,7 +129,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             MHPSExtractor(),
             IQRExtractor(),
             TurboFatsFeatureExtractor(),
-            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
+            SupernovaeDetectionFeatureExtractor(),
             SNParametricModelExtractor(),
             PeriodExtractor(bands=bands),
             PowerRateExtractor(),
@@ -148,7 +139,6 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
 
-    @lru_cache(1)
     def get_features_keys(self) -> List[str]:
         features_keys = []
         for extractor in self.extractors:
@@ -159,13 +149,11 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
                 features_keys.append(extractor.get_features_keys())
         return features_keys
 
-    @lru_cache(1)
     def get_required_keys(self) -> List[str]:
         required_keys = set()
         for extractor in self.extractors:
             required_keys.union(set(extractor.get_required_keys()))
-        required_keys = list(required_keys)
-        return required_keys
+        return list(required_keys)
 
     def get_enough_alerts_mask(self, detections):
         """
@@ -199,10 +187,10 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         if not isinstance(detections, pd.core.frame.DataFrame):
             raise TypeError('detections has to be a DataFrame')
         
-        required = ["non_detections", "xmatches", "metadata"]
+        required = ["xmatches", "metadata"]
         for key in required:
             if key not in kwargs:
-                raise Exception(f"HierarchicalFeaturesComputer requires {key} argument")
+                raise Exception(f"StreamedForcedPhotometryExtractor requires {key} argument")
         detections = self.preprocessor.preprocess(detections)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
         too_short_oids = has_enough_alerts[~has_enough_alerts]
@@ -211,19 +199,14 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         detections = detections.sort_values("mjd")
         if len(detections) == 0:
             return pd.DataFrame()
-        non_detections = kwargs["non_detections"]
         xmatches = kwargs["xmatches"]
         metadata = kwargs["metadata"]
-
-        if len(non_detections) == 0:
-            non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
 
         features = []
         shared_data = dict()
         for ex in self.extractors:
             df = ex.compute_features(
                 detections,
-                non_detections=non_detections,
                 shared_data=shared_data,
                 metadata=metadata,
                 xmatches=xmatches,

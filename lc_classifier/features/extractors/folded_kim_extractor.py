@@ -1,4 +1,5 @@
-from typing import List
+from typing import Tuple
+from functools import lru_cache
 import logging
 import numpy as np
 import pandas as pd
@@ -11,17 +12,14 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
     """https://github.com/dwkim78/upsilon/blob/
     64b2b7f6e3b3991a281182549959aabd385a6f28/
     upsilon/extract_features/extract_features.py#L151"""
-    def get_features_keys(self) -> List[str]:
-        return [
-            'Psi_CS',
-            'Psi_eta'
-        ]
 
-    def get_required_keys(self) -> List[str]:
-        return [
-            'mjd',
-            'magpsf_ml'
-        ]
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'Psi_CS', 'Psi_eta'
+
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'mjd', 'magpsf_ml'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -40,7 +38,8 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
             periods = period_extractor.compute_features(detections)
 
         columns = self.get_features_keys_with_band(band)
-        def aux_function(oid_detections, **kwargs):
+
+        def aux_function(oid_detections, band, **kwargs):
             oid = oid_detections.index.values[0]
             if band not in oid_detections.fid.values:
                 logging.debug(
@@ -48,16 +47,19 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                     f'required_cols={self.get_required_keys()}  band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
-            time = oid_band_detections['mjd'].values
             try:
                 oid_period = periods[['Multiband_period']].loc[[oid]].values.flatten()
             except KeyError as e:
                 logging.error(f'KeyError in FoldedKimExtractor, period is not '
                               f'available: oid {oid}\n{e}')
                 return self.nan_series_in_band(band)
-            folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
+
+            oid_band_detections = oid_detections[oid_detections.fid == band]
+
+            time = oid_band_detections['mjd'].values
             magnitude = oid_band_detections['magpsf_ml'].values
+
+            folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
             sorted_mags = magnitude[np.argsort(folded_time)]
             sigma = np.std(sorted_mags)
             m = np.mean(sorted_mags)
@@ -72,6 +74,6 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                 index=columns)
             return out
         
-        features = detections.apply(aux_function)
+        features = detections.apply(lambda det: aux_function(det, band))
         features.index.name = 'oid'
         return features
