@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
@@ -8,11 +8,12 @@ import logging
 
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
-    def __init__(self):
+    def __init__(self, bands: List[str]):
+        super().__init__(bands)
         self.feature_space = FeatureSpace(
             self._feature_keys_for_new_feature_space())
         self.feature_space.data_column_names = [
-            'magpsf_ml', 'mjd', 'sigmapsf_ml']
+            'magnitude', 'time', 'error']
 
     @lru_cache(1)
     def _feature_keys_for_new_feature_space(self):
@@ -39,7 +40,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'mjd', 'magpsf_ml', 'fid', 'sigmapsf_ml'
+        return 'time', 'magnitude', 'band', 'error'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -63,13 +64,13 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=TURBOFATS object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
             object_features = self.feature_space.calculate_features(
                 oid_band_detections)

@@ -4,8 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from lc_classifier.features.extractors.sn_parametric_model_computer import SNModelScipy
-from lc_classifier.features.extractors.sn_parametric_model_computer import mag_to_flux
-
+from lc_classifier.utils import mag_to_flux
 
 detections = pd.read_pickle(sys.argv[1])
 labels = pd.read_pickle(sys.argv[2])

@@ -3,7 +3,7 @@ from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
 from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
-from .utils import is_sorted
+from ...utils import is_sorted
 import pandas as pd
 import numpy as np
 import logging

@@ -7,7 +7,7 @@ import numpy as np
 import logging
 
 
-class ColorFeatureExtractor(FeatureExtractor):
+class ZTFColorFeatureExtractor(FeatureExtractor):
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
         return 'g-r_max', 'g-r_mean', 'g-r_max_corr', 'g-r_mean_corr'

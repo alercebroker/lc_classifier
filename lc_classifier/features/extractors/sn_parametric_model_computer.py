@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 
 import numpy as np
@@ -10,6 +10,8 @@ from numba import jit
 from ..core.base import FeatureExtractorSingleBand
 from scipy.optimize import OptimizeWarning
 import logging
+
+from ...utils import mag_to_flux
 
 
 @jit(nopython=True)
@@ -148,8 +150,7 @@ class SNModelScipyPhaseII(object):
                 sigma=5+obs_errors,
                 bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
                         [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
-                ftol=0.01,
-                verbose=2
+                ftol=0.01
             )
         except (ValueError, RuntimeError, OptimizeWarning):
             try:
@@ -190,16 +191,12 @@ class SNModelScipyPhaseII(object):
         return self.parameters.tolist()
 
 
-def mag_to_flux(mag):
-    """Converts a list of magnitudes into flux."""
-    return 10 ** (-(mag + 48.6) / 2.5 + 26.0)
-
-
 class SNParametricModelExtractor(FeatureExtractorSingleBand):
     """Fits a SNe parametric model to the light curve and provides
     the fitted parameters as features."""
 
-    def __init__(self):
+    def __init__(self, bands: List[str]):
+        super().__init__(bands)
         self.sn_model = SNModelScipy()
 
     @lru_cache(1)
@@ -216,7 +213,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'mjd', 'magpsf', 'sigmapsf', 'fid'
+        return 'time', 'magpsf', 'sigmapsf', 'band'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -226,19 +223,19 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=SN parametric model object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
             oid_band_detections = oid_band_detections[[
-                'mjd', 'magpsf', 'sigmapsf']]
+                'time', 'magpsf', 'sigmapsf']]
             oid_band_detections = oid_band_detections.dropna()
 
-            times = oid_band_detections['mjd'].values
+            times = oid_band_detections['time'].values
             times = times - np.min(times)
             mag_targets = oid_band_detections['magpsf'].values
             targets = mag_to_flux(mag_targets)
@@ -267,7 +264,8 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
     """Fits a SNe parametric model to the light curve and provides
     the fitted parameters as features."""
 
-    def __init__(self):
+    def __init__(self, bands: List[str]):
+        super().__init__(bands)
         self.sn_model = SNModelScipyPhaseII()
 
     @lru_cache(1)
@@ -284,7 +282,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'mjd', 'diff_flux', 'diff_err', 'fid'
+        return 'time', 'diff_flux', 'diff_err', 'band'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -295,16 +293,16 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=SN parametric model object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
             oid_band_detections = oid_band_detections[[
-                'mjd', 'diff_flux', 'diff_err']]
+                'time', 'diff_flux', 'diff_err']]
             oid_band_detections = oid_band_detections.dropna()
 
             np_array_data = oid_band_detections.values.astype(np.float32)

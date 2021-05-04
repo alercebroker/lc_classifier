@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, List
 import logging
 from functools import lru_cache
 
@@ -99,6 +99,9 @@ class FeatureExtractor(ABC):
 
 
 class FeatureExtractorSingleBand(FeatureExtractor, ABC):
+    def __init__(self, bands: List[str]):
+        self.bands = bands
+
     def _compute_features(self, detections, **kwargs):
         """
         Compute features to single band detections of an object. Verify if input has only one band.
@@ -116,11 +119,9 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         """
         return self.compute_by_bands(detections, **kwargs)
 
-    def _compute_features_from_df_groupby(self, detections, bands=None, **kwargs) -> pd.DataFrame:
-        if bands is None:
-            bands = [1, 2]
+    def _compute_features_from_df_groupby(self, detections, **kwargs) -> pd.DataFrame:
         features_response = []
-        for band in bands:
+        for band in self.bands:
             features_response.append(
                 self.compute_feature_in_one_band_from_group(detections, band, **kwargs))
         return pd.concat(features_response, axis=1)
@@ -150,11 +151,9 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         raise NotImplementedError(
             'compute_feature_in_one_band is an abstract class')
 
-    def compute_by_bands(self, detections, bands=None,  **kwargs):
-        if bands is None:
-            bands = [1, 2]
+    def compute_by_bands(self, detections,  **kwargs):
         features_response = []
-        for band in bands:
+        for band in self.bands:
             features_response.append(
                 self.compute_feature_in_one_band(detections, band=band, **kwargs))
         return pd.concat(features_response, axis=1, join="outer")
@@ -168,3 +167,29 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
         return pd.Series(
             data=[np.nan]*len(columns),
             index=columns)
+
+
+class FeatureExtractorComposer(FeatureExtractor):
+    def __init__(self, feature_extractors: List[FeatureExtractor]):
+        self.feature_extractors = feature_extractors
+
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        features_keys = []
+        for extractor in self.feature_extractors:
+            features_keys += extractor.get_features_keys()
+        return tuple(features_keys)
+
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        required_keys = []
+        for extractor in self.feature_extractors:
+            required_keys += extractor.get_required_keys()
+        return tuple(set(required_keys))
+
+    def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        feature_dataframes = []
+        for extractor in self.feature_extractors:
+            feature_dataframes.append(
+                extractor.compute_features(detections, **kwargs))
+        return pd.concat(feature_dataframes, axis=1)

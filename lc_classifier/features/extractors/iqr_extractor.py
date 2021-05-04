@@ -14,7 +14,7 @@ class IQRExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'fid', 'magpsf_ml'
+        return 'band', 'magnitude'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -26,14 +26,14 @@ class IQRExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=IQR  object={oid}  required_cols={self.get_required_keys()}  band={band}')
                 return self.nan_series_in_band(band)
             
-            oid_band_detections = oid_detections[oid_detections.fid == band]
-            mag_dets = oid_band_detections["magpsf_ml"]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
+            mag_dets = oid_band_detections["magnitude"]
             iqr = sstats.iqr(mag_dets.values)
             return pd.Series(
                 data=[iqr],

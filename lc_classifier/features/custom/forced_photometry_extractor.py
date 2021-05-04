@@ -3,7 +3,7 @@ from typing import List
 from lc_classifier.features import SupernovaeDetectionFeatureExtractor
 from lc_classifier.features import GalacticCoordinatesExtractor
 from lc_classifier.features import TurboFatsFeatureExtractor
-from lc_classifier.features import ColorFeatureExtractor
+from lc_classifier.features import ZTFColorFeatureExtractor
 from lc_classifier.features import SGScoreExtractor, StreamSGScoreExtractor
 from lc_classifier.features import RealBogusExtractor
 from lc_classifier.features import MHPSExtractor
@@ -30,7 +30,7 @@ class ForcedPhotometryExtractor(FeatureExtractor):
         self.extractors = [
             GalacticCoordinatesExtractor(),
             SGScoreExtractor(),
-            ColorFeatureExtractor(),
+            ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
             MHPSExtractor(),
             IQRExtractor(),
@@ -124,7 +124,7 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
             WiseStreamExtractor(),
             StreamSGScoreExtractor(),
             GalacticCoordinatesExtractor(),
-            ColorFeatureExtractor(),
+            ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
             MHPSExtractor(),
             IQRExtractor(),

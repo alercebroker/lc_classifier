@@ -1,4 +1,4 @@
-from .extractors.color_feature_extractor import ColorFeatureExtractor
+from .extractors.color_feature_extractor import ZTFColorFeatureExtractor
 from .extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .extractors.iqr_extractor import IQRExtractor
 from .extractors.mhps_extractor import MHPSExtractor
@@ -15,6 +15,8 @@ from .extractors.power_rate_extractor import PowerRateExtractor
 from .extractors.folded_kim_extractor import FoldedKimExtractor
 from .extractors.harmonics_extractor import HarmonicsExtractor
 from .extractors.gp_drw_extractor import GPDRWExtractor
+from .extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
+from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 
 
 from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
@@ -22,9 +24,11 @@ from .custom.forced_photometry_extractor import ForcedPhotometryExtractor, Strea
 
 from .preprocess.preprocess_ztf import DetectionsPreprocessorZTF
 
+from .core.base import FeatureExtractorComposer
+
 
 __all__ = [
-    'ColorFeatureExtractor',
+    'ZTFColorFeatureExtractor',
     'GalacticCoordinatesExtractor',
     'IQRExtractor',
     'MHPSExtractor',
@@ -43,5 +47,8 @@ __all__ = [
     'HarmonicsExtractor',
     'CustomHierarchicalExtractor',
     'GPDRWExtractor',
-    'DetectionsPreprocessorZTF'
+    'DetectionsPreprocessorZTF',
+    'FeatureExtractorComposer',
+    'SNFeaturesPhaseIIExtractor',
+    'SPMExtractorPhaseII'
 ]

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
@@ -9,7 +9,8 @@ import mhps
 
 
 class MHPSExtractor(FeatureExtractorSingleBand):
-    def __init__(self, t1=100, t2=10, dt=3.0, mag0=19.0, epsilon=1.0):
+    def __init__(self, bands: List[str], t1=100, t2=10, dt=3.0, mag0=19.0, epsilon=1.0):
+        super().__init__(bands)
         self.t1 = t1
         self.t2 = t2
         self.dt = dt
@@ -27,7 +28,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return "magpsf_ml", "sigmapsf_ml", "mjd"
+        return 'time', 'magnitude', 'error', 'band'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -38,17 +39,17 @@ class MHPSExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, band, **kwargs):
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=MHPS object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
             
-            oid_band_detections = oid_detections[oid_detections.fid == band].sort_values('mjd')
+            oid_band_detections = oid_detections[oid_detections['band'] == band].sort_values('time')
 
-            mag = oid_band_detections['magpsf_ml'].values.astype(np.double)
-            magerr = oid_band_detections['sigmapsf_ml'].values.astype(np.double)
-            time = oid_band_detections['mjd'].values.astype(np.double)
+            mag = oid_band_detections['magnitude'].values.astype(np.double)
+            magerr = oid_band_detections['error'].values.astype(np.double)
+            time = oid_band_detections['time'].values.astype(np.double)
             ratio, low, high, non_zero, pn_flag = mhps.statistics(
                 mag,
                 magerr,

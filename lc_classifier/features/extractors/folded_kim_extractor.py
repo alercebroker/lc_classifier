@@ -19,7 +19,7 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'mjd', 'magpsf_ml'
+        return 'time', 'magnitude'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -34,14 +34,14 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
         else:
             logging.info('Folded Kim extractor was not provided with period '
                          'data, so a periodogram is being computed')
-            period_extractor = PeriodExtractor()
+            period_extractor = PeriodExtractor(self.bands)
             periods = period_extractor.compute_features(detections)
 
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, band, **kwargs):
             oid = oid_detections.index.values[0]
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 logging.debug(
                     f'extractor=Folded Kim extractor object={oid} '
                     f'required_cols={self.get_required_keys()}  band={band}')
@@ -54,10 +54,10 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                               f'available: oid {oid}\n{e}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
-            time = oid_band_detections['mjd'].values
-            magnitude = oid_band_detections['magpsf_ml'].values
+            time = oid_band_detections['time'].values
+            magnitude = oid_band_detections['magnitude'].values
 
             folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
             sorted_mags = magnitude[np.argsort(folded_time)]

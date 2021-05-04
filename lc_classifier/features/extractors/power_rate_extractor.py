@@ -1,15 +1,16 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 import numpy as np
 import pandas as pd
 from ..core.base import FeatureExtractor
 from ..extractors import PeriodExtractor
-from .utils import is_sorted
+from ...utils import is_sorted
 import logging
 
 
 class PowerRateExtractor(FeatureExtractor):
-    def __init__(self):
+    def __init__(self, bands: List[str]):
+        self.bands = bands
         self.factors = [0.25, 1/3, 0.5, 2.0, 3.0, 4.0]
 
     @lru_cache(1)
@@ -25,13 +26,7 @@ class PowerRateExtractor(FeatureExtractor):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return (
-            'mjd',
-            'magpsf',
-            'magpsf_corr',
-            'fid',
-            'sigmapsf_corr_ext',
-            'sigmapsf')
+        return PeriodExtractor(self.bands).get_required_keys()
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -46,7 +41,7 @@ class PowerRateExtractor(FeatureExtractor):
             logging.info('PowerRateExtractor was not provided with periodogram '
                          'data, so a periodogram is being computed')
             shared_data = dict()
-            period_extractor = PeriodExtractor()
+            period_extractor = PeriodExtractor(self.bands)
             _ = period_extractor.compute_features(
                 detections,
                 shared_data=shared_data)
