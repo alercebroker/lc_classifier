@@ -195,7 +195,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
     """Fits a SNe parametric model to the light curve and provides
     the fitted parameters as features."""
 
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         super().__init__(bands)
         self.sn_model = SNModelScipy()
 
@@ -264,7 +264,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
     """Fits a SNe parametric model to the light curve and provides
     the fitted parameters as features."""
 
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         super().__init__(bands)
         self.sn_model = SNModelScipyPhaseII()
 

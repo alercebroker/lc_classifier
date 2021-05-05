@@ -26,8 +26,8 @@ class CustomHierarchicalExtractorTest(unittest.TestCase):
             non_detections=self.non_detections,
             objects=self.objects
         )
-        self.assertEqual(features_df.shape[0], 98)
-        self.assertEqual(features_df.shape[1], 172)
+        self.assertEqual(98, features_df.shape[0])
+        self.assertEqual(172, features_df.shape[1])
 
     def test_custom_hierarchical_features_stream(self):
         oid = "ZTF17aaaorfd"

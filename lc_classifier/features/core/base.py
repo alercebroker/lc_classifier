@@ -29,7 +29,8 @@ class FeatureExtractor(ABC):
         pd.DataFrame
             One-row dataframe full of nans.
         """
-        return pd.DataFrame(columns=self.get_features_keys(), index=[index])
+        return pd.DataFrame(
+            columns=self.get_features_keys(), index=[index], dtype=np.float)
 
     def nan_series(self):
         return pd.Series(
@@ -99,7 +100,7 @@ class FeatureExtractor(ABC):
 
 
 class FeatureExtractorSingleBand(FeatureExtractor, ABC):
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         self.bands = bands
 
     def _compute_features(self, detections, **kwargs):

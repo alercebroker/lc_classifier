@@ -10,7 +10,7 @@ from ..extractors import PeriodExtractor
 
 
 class HarmonicsExtractor(FeatureExtractorSingleBand):
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         super().__init__(bands)
         self.n_harmonics = 7
 

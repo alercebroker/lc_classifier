@@ -6,7 +6,6 @@ from lc_classifier.features import HarmonicsExtractor, IQRExtractor
 from lc_classifier.features import PowerRateExtractor, SNFeaturesPhaseIIExtractor
 from lc_classifier.features import SPMExtractorPhaseII, TurboFatsFeatureExtractor
 
-# from lc_classifier.features import ZTFLightcurvePreprocessor
 from lc_classifier.utils import LightcurveBuilder, mag_to_flux
 from lc_classifier.features import FeatureExtractorComposer
 import numpy as np
@@ -57,7 +56,7 @@ def plot_sn2012aw():
     plt.show()
 
 
-class TestNewInterface(unittest.TestCase):
+class TestUserInterface(unittest.TestCase):
     def test_lightcurve_builder(self):
         oid = 'dummy_oid'
         lc_builder = LightcurveBuilder(oid)
@@ -73,7 +72,6 @@ class TestNewInterface(unittest.TestCase):
                 magnitude,
                 error)
         lc_dataframe = lc_builder.build_dataframe()
-        print(lc_dataframe)
 
     def test_compose_extractor(self):
         lightcurve = load_sn2012aw()
@@ -113,12 +111,6 @@ class TestNewInterface(unittest.TestCase):
         )
 
         features_df = feature_extractor.compute_features(lightcurve)
-        print(features_df)
-
-    def test_lightcurve_preprocessor(self):
-        lightcurve_preprocessor = ZTFLightcurvePreprocessor()
-        processed_lightcurve = lightcurve_preprocessor.preprocess(
-            original_lightcurve)
 
 
 if __name__ == '__main__':

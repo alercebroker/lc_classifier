@@ -9,7 +9,7 @@ from ...utils import is_sorted, first_occurrence
 
 
 class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         super().__init__(bands)
         logging.warning("This class is not fully implemented")  # TODO: finish implementation
 

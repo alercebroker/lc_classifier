@@ -18,39 +18,39 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
-from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
+from ..preprocess import ZTFLightcurvePreprocessor, StreamDetectionsPreprocessorZTF
 
 import pandas as pd
 import logging
 
 
 class ForcedPhotometryExtractor(FeatureExtractor):
-    def __init__(self, bands=None):
-        self.bands = bands if bands is not None else [1, 2]
+    def __init__(self, bands=(1, 2)):
+        self.bands = list(bands)
         self.extractors = [
             GalacticCoordinatesExtractor(),
             SGScoreExtractor(),
             ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
-            MHPSExtractor(),
-            IQRExtractor(),
-            TurboFatsFeatureExtractor(),
-            SupernovaeDetectionFeatureExtractor(),
-            SNParametricModelExtractor(),
+            MHPSExtractor(bands),
+            IQRExtractor(bands),
+            TurboFatsFeatureExtractor(bands),
+            SupernovaeDetectionFeatureExtractor(bands),
+            SNParametricModelExtractor(bands),
             # WiseStaticExtractor(),
-            PeriodExtractor(bands=bands),
-            PowerRateExtractor(),
-            FoldedKimExtractor(),
-            HarmonicsExtractor(),
-            GPDRWExtractor()
+            PeriodExtractor(bands),
+            PowerRateExtractor(bands),
+            FoldedKimExtractor(bands),
+            HarmonicsExtractor(bands),
+            GPDRWExtractor(bands)
         ]
-        self.preprocessor = DetectionsPreprocessorZTF()
+        self.preprocessor = ZTFLightcurvePreprocessor()
 
     def get_features_keys(self) -> List[str]:
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
-                for band in [1, 2]:
+                for band in self.bands:
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
@@ -74,8 +74,8 @@ class ForcedPhotometryExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections = detections[["time"]].groupby(level=0).count()
+        has_enough_alerts = n_detections['time'] > 5
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -101,7 +101,7 @@ class ForcedPhotometryExtractor(FeatureExtractor):
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
-        detections = detections.sort_values("mjd")
+        detections = detections.sort_values("time")
 
         features = []
         shared_data = dict()
@@ -118,24 +118,24 @@ class ForcedPhotometryExtractor(FeatureExtractor):
 
 
 class StreamedForcedPhotometryExtractor(FeatureExtractor):
-    def __init__(self, bands=None):
-        self.bands = bands if bands is not None else [1, 2]
+    def __init__(self, bands=(1, 2)):
+        self.bands = list(bands)
         self.extractors = [
             WiseStreamExtractor(),
             StreamSGScoreExtractor(),
             GalacticCoordinatesExtractor(),
             ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
-            MHPSExtractor(),
-            IQRExtractor(),
-            TurboFatsFeatureExtractor(),
-            SupernovaeDetectionFeatureExtractor(),
-            SNParametricModelExtractor(),
-            PeriodExtractor(bands=bands),
-            PowerRateExtractor(),
-            FoldedKimExtractor(),
-            HarmonicsExtractor(),
-            GPDRWExtractor()
+            MHPSExtractor(bands),
+            IQRExtractor(bands),
+            TurboFatsFeatureExtractor(bands),
+            SupernovaeDetectionFeatureExtractor(bands),
+            SNParametricModelExtractor(bands),
+            PeriodExtractor(bands),
+            PowerRateExtractor(bands),
+            FoldedKimExtractor(bands),
+            HarmonicsExtractor(bands),
+            GPDRWExtractor(bands)
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
 
@@ -143,7 +143,7 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
-                for band in [1, 2]:
+                for band in self.bands:
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
@@ -167,8 +167,8 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections = detections[["time"]].groupby(level=0).count()
+        has_enough_alerts = n_detections['time'] > 5
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -196,7 +196,7 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
-        detections = detections.sort_values("mjd")
+        detections = detections.sort_values("time")
         if len(detections) == 0:
             return pd.DataFrame()
         xmatches = kwargs["xmatches"]

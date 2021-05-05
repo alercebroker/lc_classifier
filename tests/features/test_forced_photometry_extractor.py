@@ -20,8 +20,8 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
             detections=self.detections,
             objects=self.objects
         )
-        self.assertEqual(features_df.shape[0], 98)
-        self.assertEqual(features_df.shape[1], 152)
+        self.assertEqual(98, features_df.shape[0])
+        self.assertEqual(152, features_df.shape[1])
 
     def test_forced_photometry_extractor_stream(self):
         oid = "ZTF17aaaorfd"

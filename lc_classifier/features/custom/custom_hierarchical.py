@@ -18,7 +18,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
-from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
+from ..preprocess import ZTFLightcurvePreprocessor, StreamDetectionsPreprocessorZTF
 
 import pandas as pd
 import logging
@@ -26,33 +26,33 @@ from functools import lru_cache
 
 
 class CustomHierarchicalExtractor(FeatureExtractor):
-    def __init__(self, bands=None):
-        self.bands = bands if bands is not None else [1, 2]
+    def __init__(self, bands=(1, 2)):
+        self.bands = list(bands)
         self.extractors = [
             GalacticCoordinatesExtractor(),
             SGScoreExtractor(),
             ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
-            MHPSExtractor(),
-            IQRExtractor(),
-            TurboFatsFeatureExtractor(),
-            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
-            SNParametricModelExtractor(),
+            MHPSExtractor(bands),
+            IQRExtractor(bands),
+            TurboFatsFeatureExtractor(bands),
+            SupernovaeDetectionAndNonDetectionFeatureExtractor(bands),
+            SNParametricModelExtractor(bands),
             # WiseStaticExtractor(),
             PeriodExtractor(bands=bands),
-            PowerRateExtractor(),
-            FoldedKimExtractor(),
-            HarmonicsExtractor(),
-            GPDRWExtractor()
+            PowerRateExtractor(bands),
+            FoldedKimExtractor(bands),
+            HarmonicsExtractor(bands),
+            GPDRWExtractor(bands)
         ]
-        self.preprocessor = DetectionsPreprocessorZTF()
+        self.preprocessor = ZTFLightcurvePreprocessor()
 
     @lru_cache(1)
     def get_features_keys(self) -> List[str]:
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
-                for band in [1, 2]:
+                for band in self.bands:
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
@@ -78,8 +78,8 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections = detections[["time"]].groupby(level=0).count()
+        has_enough_alerts = n_detections['time'] > 5
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -105,11 +105,13 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
-        detections = detections.sort_values("mjd")
+        detections = detections.sort_values("time")
         non_detections = kwargs["non_detections"]
 
         if len(non_detections) == 0:
-            non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
+            non_detections = pd.DataFrame(columns=["time", "band", "diffmaglim"])
+
+        non_detections = self.preprocessor.rename_columns_non_detections(non_detections)
 
         features = []
         shared_data = dict()
@@ -127,24 +129,24 @@ class CustomHierarchicalExtractor(FeatureExtractor):
 
 
 class CustomStreamHierarchicalExtractor(FeatureExtractor):
-    def __init__(self, bands=None):
-        self.bands = bands if bands is not None else [1, 2]
+    def __init__(self, bands=(1, 2)):
+        self.bands = list(bands)
         self.extractors = [
             WiseStreamExtractor(),
             StreamSGScoreExtractor(),
             GalacticCoordinatesExtractor(),
             ZTFColorFeatureExtractor(),
             RealBogusExtractor(),
-            MHPSExtractor(),
-            IQRExtractor(),
-            TurboFatsFeatureExtractor(),
-            SupernovaeDetectionAndNonDetectionFeatureExtractor(),
-            SNParametricModelExtractor(),
-            PeriodExtractor(bands=bands),
-            PowerRateExtractor(),
-            FoldedKimExtractor(),
-            HarmonicsExtractor(),
-            GPDRWExtractor()
+            MHPSExtractor(bands),
+            IQRExtractor(bands),
+            TurboFatsFeatureExtractor(bands),
+            SupernovaeDetectionAndNonDetectionFeatureExtractor(bands),
+            SNParametricModelExtractor(bands),
+            PeriodExtractor(bands),
+            PowerRateExtractor(bands),
+            FoldedKimExtractor(bands),
+            HarmonicsExtractor(bands),
+            GPDRWExtractor(bands)
         ]
         self.preprocessor = StreamDetectionsPreprocessorZTF()
 
@@ -153,7 +155,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         features_keys = []
         for extractor in self.extractors:
             if isinstance(extractor, FeatureExtractorSingleBand):
-                for band in [1, 2]:
+                for band in self.bands:
                     features_keys.append(extractor.get_features_keys_with_band(band))
             else:
                 features_keys.append(extractor.get_features_keys())
@@ -179,8 +181,8 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections = detections[["time"]].groupby(level=0).count()
+        has_enough_alerts = n_detections['time'] > 5
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -208,7 +210,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
-        detections = detections.sort_values("mjd")
+        detections = detections.sort_values("time")
         if len(detections) == 0:
             return pd.DataFrame()
         non_detections = kwargs["non_detections"]
@@ -216,7 +218,9 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         metadata = kwargs["metadata"]
 
         if len(non_detections) == 0:
-            non_detections = pd.DataFrame(columns=["mjd", "fid", "diffmaglim"])
+            non_detections = pd.DataFrame(columns=["time", "band", "diffmaglim"])
+
+        non_detections = self.preprocessor.rename_columns_non_detections(non_detections)
 
         features = []
         shared_data = dict()

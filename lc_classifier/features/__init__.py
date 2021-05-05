@@ -22,7 +22,7 @@ from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
 from .custom.forced_photometry_extractor import ForcedPhotometryExtractor, StreamedForcedPhotometryExtractor
 
-from .preprocess.preprocess_ztf import DetectionsPreprocessorZTF
+from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor
 
 from .core.base import FeatureExtractorComposer
 
@@ -47,7 +47,7 @@ __all__ = [
     'HarmonicsExtractor',
     'CustomHierarchicalExtractor',
     'GPDRWExtractor',
-    'DetectionsPreprocessorZTF',
+    'ZTFLightcurvePreprocessor',
     'FeatureExtractorComposer',
     'SNFeaturesPhaseIIExtractor',
     'SPMExtractorPhaseII'

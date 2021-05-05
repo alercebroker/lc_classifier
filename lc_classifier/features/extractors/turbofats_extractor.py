@@ -8,7 +8,7 @@ import logging
 
 
 class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         super().__init__(bands)
         self.feature_space = FeatureSpace(
             self._feature_keys_for_new_feature_space())

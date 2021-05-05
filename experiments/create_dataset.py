@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lc_classifier.features import DetectionsPreprocessorZTF
+from lc_classifier.features import ZTFLightcurvePreprocessor
 
 
 # Loading data
@@ -45,7 +45,7 @@ valid_oids = valid_oids.intersection(non_detections.index.unique())
 labeled_non_detections = non_detections.loc[valid_oids]
 
 # ZTF preprocessing
-preprocessor_ztf = DetectionsPreprocessorZTF()
+preprocessor_ztf = ZTFLightcurvePreprocessor()
 labeled_detections = preprocessor_ztf.preprocess(labeled_detections)
 
 # Save data

@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from lc_classifier.features.extractors.sn_model_tf import SNModel
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorPhaseII
+from lc_classifier.features import ZTFLightcurvePreprocessor
 from forced_photometry_data.txt_lc_parser import parse_lightcurve_txt, filter_name_to_int
 import os
 
@@ -36,8 +37,12 @@ class TestSPMExtractorPhaseII(unittest.TestCase):
             filter_name_to_int[name] for name in self.light_curve_df['filter']]
         self.light_curve_df['oid'] = 'ZTF21aaomuka'
         self.light_curve_df.set_index('oid', inplace=True)
+        self.bands = [1, 2]
+        self.preprocessor = ZTFLightcurvePreprocessor()
+        self.light_curve_df = self.preprocessor.rename_columns_detections(
+            self.light_curve_df)
 
     def test_fit(self):
-        extractor = SPMExtractorPhaseII()
+        extractor = SPMExtractorPhaseII(self.bands)
         features = extractor.compute_features(self.light_curve_df)
         self.assertFalse(np.any(np.isnan(features.values)))

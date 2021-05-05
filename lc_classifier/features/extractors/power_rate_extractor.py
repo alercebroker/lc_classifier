@@ -9,7 +9,7 @@ import logging
 
 
 class PowerRateExtractor(FeatureExtractor):
-    def __init__(self, bands: List[str]):
+    def __init__(self, bands: List):
         self.bands = bands
         self.factors = [0.25, 1/3, 0.5, 2.0, 3.0, 4.0]
 

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
@@ -10,8 +10,9 @@ import logging
 
 
 class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleBand):
-    def __init__(self):
-        self.supernovae_detection_extractor = SupernovaeDetectionFeatureExtractor()
+    def __init__(self, bands: List):
+        super().__init__(bands)
+        self.supernovae_detection_extractor = SupernovaeDetectionFeatureExtractor(bands)
 
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
@@ -43,7 +44,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
 
     @lru_cache(1)
     def get_non_detections_required_keys(self):
-        return "diffmaglim", "mjd", "fid"
+        return "diffmaglim", "time", "band"
 
     def compute_before_features(self, det_result, non_detections, band):
         """
@@ -75,7 +76,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             max_diffmaglim_before_fid = non_detections_diffmaglim.max()
             median_diffmaglim_before_fid = non_detections_diffmaglim.median()
             last_diffmaglim_before_fid = non_detections.iloc[-1]['diffmaglim']
-            last_mjd_before_fid = non_detections.iloc[-1]['mjd']
+            last_mjd_before_fid = non_detections.iloc[-1]['time']
             dmag_non_det_fid = median_diffmaglim_before_fid - \
                 det_result[f'min_mag_{band}']
             dmag_first_det_fid = last_diffmaglim_before_fid - \
@@ -173,14 +174,14 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
 
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 logging.debug(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
             
-            oid_band_detections = oid_detections[oid_detections['fid'] == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
-            first_mjd = oid_band_detections["mjd"].min()
+            first_mjd = oid_band_detections["time"].min()
 
             if oid not in non_det_unique_oids:
                 oid_non_detections = pd.DataFrame(
@@ -188,12 +189,12 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             else:
                 oid_non_detections = non_detections.loc[[oid]]
 
-            oid_band_non_detections = oid_non_detections[oid_non_detections['fid'] == band]
+            oid_band_non_detections = oid_non_detections[oid_non_detections['band'] == band]
             if (len(oid_band_non_detections) != 0 and
-                not is_sorted(oid_band_non_detections['mjd'].values)):
-                oid_band_non_detections = oid_band_non_detections.sort_values('mjd')
+                not is_sorted(oid_band_non_detections['time'].values)):
+                oid_band_non_detections = oid_band_non_detections.sort_values('time')
 
-            before_mask = oid_band_non_detections['mjd'] < first_mjd
+            before_mask = oid_band_non_detections['time'] < first_mjd
             non_detections_before = oid_band_non_detections[before_mask]
             non_detections_after = oid_band_non_detections[~before_mask]
 

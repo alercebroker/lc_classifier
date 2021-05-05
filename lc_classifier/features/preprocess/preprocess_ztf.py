@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-class DetectionsPreprocessorZTF(GenericPreprocessor):
+class ZTFLightcurvePreprocessor(GenericPreprocessor):
     def __init__(self):
         super().__init__()
         self.not_null_columns = [
@@ -19,6 +19,12 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
             'rb',
             'sgscore1'
         ]
+        self.column_translation = {
+            'mjd': 'time',
+            'fid': 'band',
+            'magpsf_ml': 'magnitude',
+            'sigmapsf_ml': 'error'
+        }
         self.max_sigma = 1.0
         self.rb_threshold = 0.55
 
@@ -115,7 +121,16 @@ class DetectionsPreprocessorZTF(GenericPreprocessor):
         dataframe = self.discard_noisy_detections(dataframe)
         dataframe = self.discard_bogus(dataframe)
         dataframe = self.enough_alerts(dataframe)
+        dataframe = self.rename_columns_detections(dataframe)
         return dataframe
+
+    def rename_columns_non_detections(self, non_detections):
+        return non_detections.rename(
+            columns=self.column_translation, errors='ignore')
+
+    def rename_columns_detections(self, detections):
+        return detections.rename(
+            columns=self.column_translation, errors='ignore')
 
 
 class StreamDetectionsPreprocessorZTF(GenericPreprocessor):
@@ -132,6 +147,12 @@ class StreamDetectionsPreprocessorZTF(GenericPreprocessor):
             'dec',
             'rb',
         ]
+        self.column_translation = {
+            'mjd': 'time',
+            'fid': 'band',
+            'magpsf_ml': 'magnitude',
+            'sigmapsf_ml': 'error'
+        }
         self.max_sigma = 1.0
         self.rb_threshold = 0.55
 
@@ -226,4 +247,13 @@ class StreamDetectionsPreprocessorZTF(GenericPreprocessor):
         dataframe = self.discard_noisy_detections(dataframe)
         dataframe = self.discard_bogus(dataframe)
         dataframe = self.enough_alerts(dataframe)
+        dataframe = self.rename_columns_detections(dataframe)
         return dataframe
+
+    def rename_columns_non_detections(self, non_detections):
+        return non_detections.rename(
+            columns=self.column_translation, errors='ignore')
+
+    def rename_columns_detections(self, detections):
+        return detections.rename(
+            columns=self.column_translation, errors='ignore')
