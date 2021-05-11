@@ -1,0 +1,19 @@
+SN: sn2012aw
+Filter: J-2mass
+Npoints:           15
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+    56009.57000    13.000     0.060  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56010.59000    13.040     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56011.62000    12.900     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56016.18000    12.820     0.100  Landolt           NICS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56018.57000    12.800     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56021.58000    12.740     0.030  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56030.87000    12.560     0.070  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56034.51000    12.540     0.050  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56041.62000    12.490     0.090  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56049.49000    12.410     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56051.92000    12.340     0.040  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56062.91000    12.490     0.040  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56084.90000    12.310     0.020  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56087.91000    12.340     0.040  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56095.94000    12.420     0.030  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D

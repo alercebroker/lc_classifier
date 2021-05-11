@@ -1,6 +1,5 @@
-import pandas as pd
 import unittest
-from lc_classifier.features.extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
+from lc_classifier.features import SNFeaturesPhaseIIExtractor
 from forced_photometry_data.txt_lc_parser import build_forced_detections_df
 from lc_classifier.features import ZTFLightcurvePreprocessor
 

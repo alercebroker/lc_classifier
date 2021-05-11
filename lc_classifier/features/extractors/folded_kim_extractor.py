@@ -14,7 +14,7 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
     upsilon/extract_features/extract_features.py#L151"""
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return 'Psi_CS', 'Psi_eta'
 
     @lru_cache(1)

@@ -34,7 +34,7 @@ class TurboFatsFeatureExtractor(FeatureExtractorSingleBand):
         )
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         features_keys = self._feature_keys_for_new_feature_space()
         return features_keys
 

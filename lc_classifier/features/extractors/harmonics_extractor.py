@@ -91,7 +91,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         return features
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')

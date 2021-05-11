@@ -59,20 +59,16 @@ class FeatureExtractor(ABC):
         if type(detections) == pd.core.groupby.generic.DataFrameGroupBy:
             aux_df = pd.DataFrame(columns=detections.obj.columns)
             if not self.has_all_columns(aux_df):
-                oids = detections.obj.index.unique()
-                logging.info(
+                raise Exception(
                     f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
-                return self.nan_df(oids)
             features = self._compute_features_from_df_groupby(
                 detections, **kwargs)
             return features
 
         elif type(detections) == pd.core.frame.DataFrame:
             if not self.has_all_columns(detections):
-                oids = detections.index.unique()
-                logging.info(
+                raise Exception(
                     f'detections_df has missing columns: {self.__class__.__name__} requires {self.get_required_keys()}')
-                return self.nan_df(oids)
             features = self._compute_features(detections, **kwargs)
             return features
 
@@ -150,7 +146,7 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
             Single-row dataframe with the computed features.
         """
         raise NotImplementedError(
-            'compute_feature_in_one_band is an abstract class')
+            'compute_feature_in_one_band is an abstract method')
 
     def compute_by_bands(self, detections,  **kwargs):
         features_response = []
@@ -161,7 +157,19 @@ class FeatureExtractorSingleBand(FeatureExtractor, ABC):
 
     @lru_cache(maxsize=10)
     def get_features_keys_with_band(self, band):
-        return [f'{x}_{band}' for x in self.get_features_keys()]
+        return [f'{x}_{band}' for x in self.get_features_keys_without_band()]
+
+    @abstractmethod
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
+        raise NotImplementedError(
+            'get_features_keys_without_band is an abstract method')
+
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        feature_names = []
+        for band in self.bands:
+            feature_names += self.get_features_keys_with_band(band)
+        return tuple(feature_names)
 
     def nan_series_in_band(self, band):
         columns = self.get_features_keys_with_band(band)

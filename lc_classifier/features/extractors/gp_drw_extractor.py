@@ -79,7 +79,7 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
         return features
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         feature_names = 'GP_DRW_sigma', 'GP_DRW_tau'
         return feature_names
 

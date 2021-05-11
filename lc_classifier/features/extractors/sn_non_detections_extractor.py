@@ -15,7 +15,7 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
         self.supernovae_detection_extractor = SupernovaeDetectionFeatureExtractor(bands)
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return (
             'delta_mag_fid',
             'delta_mjd_fid',
@@ -78,9 +78,9 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
             last_diffmaglim_before_fid = non_detections.iloc[-1]['diffmaglim']
             last_mjd_before_fid = non_detections.iloc[-1]['time']
             dmag_non_det_fid = median_diffmaglim_before_fid - \
-                det_result[f'min_mag_{band}']
+                det_result[f'min_mag_{band}'].iloc[0]
             dmag_first_det_fid = last_diffmaglim_before_fid - \
-                det_result[f'first_mag_{band}']
+                det_result[f'first_mag_{band}'].iloc[0]
 
         feature_names = [
             'n_non_det_before_fid',

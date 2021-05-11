@@ -1,0 +1,17 @@
+Name: sn2012aw
+Type: SNIIP
+Zhel: 0.002595
+Redshift_error: 0.000013
+Zcmb: 0.003758
+Ra:        160.97400
+Dec:        11.671639
+Epoch: 2000
+E(B-V)_MW:      0.024000000
+E(B-V)_MW_Ref: Schlafly & Finkbeiner 2011, Appendix; 2011ApJ...737..103S
+Host: NGC 3351
+Host_type: SB(r)b
+Distance(m-M):  30.02
+Distance_error(m-M): 0.20
+Distance_method: NED
+Major_Diameter(arcmin):  3.07
+Minor_Diameter(arcmin):  2.86

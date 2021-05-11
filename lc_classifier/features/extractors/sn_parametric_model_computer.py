@@ -200,7 +200,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
         self.sn_model = SNModelScipy()
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return (
             'SPM_A',
             'SPM_t0',
@@ -269,7 +269,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
         self.sn_model = SNModelScipyPhaseII()
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return (
             'SPM_A',
             'SPM_t0',

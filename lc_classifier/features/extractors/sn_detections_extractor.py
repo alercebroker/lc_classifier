@@ -8,7 +8,7 @@ import logging
 
 class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return ('delta_mag_fid',
                 'delta_mjd_fid',
                 'first_mag',

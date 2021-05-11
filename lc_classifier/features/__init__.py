@@ -19,8 +19,7 @@ from .extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
 from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 
 
-from .custom.custom_hierarchical import CustomHierarchicalExtractor, CustomStreamHierarchicalExtractor
-from .custom.forced_photometry_extractor import ForcedPhotometryExtractor, StreamedForcedPhotometryExtractor
+from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
 
 from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor
 
@@ -45,7 +44,8 @@ __all__ = [
     'PowerRateExtractor',
     'FoldedKimExtractor',
     'HarmonicsExtractor',
-    'CustomHierarchicalExtractor',
+    'ZTFFeatureExtractor',
+    'ZTFForcedPhotometryFeatureExtractor',
     'GPDRWExtractor',
     'ZTFLightcurvePreprocessor',
     'FeatureExtractorComposer',

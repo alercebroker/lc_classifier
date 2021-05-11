@@ -9,7 +9,7 @@ import logging
 
 class IQRExtractor(FeatureExtractorSingleBand):
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return 'iqr',
 
     @lru_cache(1)

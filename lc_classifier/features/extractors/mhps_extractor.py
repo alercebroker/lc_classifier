@@ -18,7 +18,7 @@ class MHPSExtractor(FeatureExtractorSingleBand):
         self.epsilon = epsilon
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return (
             'MHPS_ratio',
             'MHPS_low',
