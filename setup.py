@@ -7,8 +7,8 @@ required_packages = [r for r in required_packages if "-e" not in r]
 
 setup(
     name="lc_classifier",
-    version="1.0.0",
-    description='Scripts for ALeRCE light curve classifier',
+    version="2.0.0",
+    description='ALeRCE light curve classifier',
     author="ALeRCE Team",
     author_email='contact@alerce.online',
     packages=['lc_classifier'],
