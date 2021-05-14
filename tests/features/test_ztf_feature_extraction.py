@@ -37,6 +37,7 @@ class ZTFFeatureExtractorTest(unittest.TestCase):
     def test_feature_extraction_stream(self):
         oid = "ZTF17aaaorfd"
         detections = self.detections.loc[[oid]]
+        detections['corrected'] = True
         non_detections = self.non_detections.loc[[oid]]
         xmatches = pd.DataFrame(
             data=[[1.0, 1.0, 1.0, 'ZTF17aaaorfd']],
@@ -50,8 +51,7 @@ class ZTFFeatureExtractorTest(unittest.TestCase):
             bands=(1, 2), stream=True)
         preprocessor = ZTFLightcurvePreprocessor(stream=True)
 
-        detections = preprocessor.preprocess(
-            detections, objects=self.objects)
+        detections = preprocessor.preprocess(detections)
 
         non_detections = preprocessor.rename_columns_non_detections(
             non_detections)

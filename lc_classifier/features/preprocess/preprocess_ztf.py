@@ -18,7 +18,8 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
             'dec',
             'rb'
         ]
-        if not stream:
+        self.stream = stream
+        if not self.stream:
             self.not_null_columns.append('sgscore1')
         self.column_translation = {
             'mjd': 'time',
@@ -89,7 +90,7 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
         return detections.loc[indexes]
 
     def get_magpsf_ml(self, detections, objects):
-        def magpsf_ml(detections, objects_table):
+        def magpsf_ml_not_stream(detections, objects_table):
             detections = detections.copy()
             oid = detections.index.values[0]
             is_corrected = objects_table.loc[[oid]].corrected.values[0]
@@ -101,8 +102,23 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
                 detections["sigmapsf_ml"] = detections["sigmapsf"]
             return detections
 
-        detections = detections.groupby(level=0, sort=False)\
-            .apply(magpsf_ml, objects_table=objects).droplevel(level=1)
+        def magpsf_ml_stream(detections):
+            detections = detections.copy()
+            is_corrected = detections.corrected.all()
+            if is_corrected:
+                detections["magpsf_ml"] = detections["magpsf_corr"]
+                detections["sigmapsf_ml"] = detections["sigmapsf_corr_ext"]
+            else:
+                detections["magpsf_ml"] = detections["magpsf"]
+                detections["sigmapsf_ml"] = detections["sigmapsf"]
+            return detections
+
+        if self.stream:
+            detections = detections.groupby(level=0, sort=False) \
+                .apply(magpsf_ml_stream).droplevel(level=1)
+        else:
+            detections = detections.groupby(level=0, sort=False)\
+                .apply(magpsf_ml_not_stream, objects_table=objects).droplevel(level=1)
         return detections
 
     def preprocess(self, dataframe, objects=None):
@@ -111,7 +127,7 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
         :param objects:
         :return:
         """
-        if objects is None:
+        if not self.stream and objects is None:
             raise Exception('ZTF Preprocessor requires objects dataframe')
         self.verify_dataframe(dataframe)
         dataframe = self.get_magpsf_ml(dataframe, objects)

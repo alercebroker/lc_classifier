@@ -40,6 +40,7 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
     def test_forced_photometry_extractor_stream(self):
         oid = "ZTF17aaaorfd"
         detections = self.detections.loc[[oid]]
+        detections['corrected'] = True
         xmatches = pd.DataFrame(
             data=[[1.0, 1.0, 1.0, 'ZTF17aaaorfd']],
             columns=['W1mag', 'W2mag', 'W3mag', 'oid'])
@@ -49,7 +50,7 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
             columns=['oid', 'candid', 'sgscore1'])
 
         preprocessor = ZTFLightcurvePreprocessor(stream=True)
-        detections = preprocessor.preprocess(detections, self.objects)
+        detections = preprocessor.preprocess(detections)
 
         features_df = self.streamed_forced_photometry_extractor.compute_features(
             detections=detections,
