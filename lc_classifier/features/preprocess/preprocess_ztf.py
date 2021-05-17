@@ -113,12 +113,12 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
                 detections["sigmapsf_ml"] = detections["sigmapsf"]
             return detections
 
+        grouped_detections = detections.groupby(level=0, sort=False, group_keys=False)
         if self.stream:
-            detections = detections.groupby(level=0, sort=False) \
-                .apply(magpsf_ml_stream).droplevel(level=1)
+            detections = grouped_detections.apply(magpsf_ml_stream)
         else:
-            detections = detections.groupby(level=0, sort=False)\
-                .apply(magpsf_ml_not_stream, objects_table=objects).droplevel(level=1)
+            detections = grouped_detections.apply(
+                magpsf_ml_not_stream, objects_table=objects)
         return detections
 
     def preprocess(self, dataframe, objects=None):
