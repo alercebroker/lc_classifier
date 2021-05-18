@@ -41,7 +41,7 @@ class SGScoreExtractor(FeatureExtractor):
 class StreamSGScoreExtractor(FeatureExtractor):
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
-        return ()
+        return 'sgscore1',
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:

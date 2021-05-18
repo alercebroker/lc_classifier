@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import lc_classifier.features.extractors as extractors
-from lc_classifier.features import DetectionsPreprocessorZTF
+from lc_classifier.features import ZTFLightcurvePreprocessor
 
 
 class WiseStreamExtractorTest(unittest.TestCase):
@@ -14,6 +14,9 @@ class WiseStreamExtractorTest(unittest.TestCase):
         self.xmatch = pd.DataFrame(
             data=[[1.0, 1.0, 1.0, 'ZTF00test']],
             columns=['W1mag', 'W2mag', 'W3mag', 'oid'])
+        self.preprocessor = ZTFLightcurvePreprocessor()
+        self.detections = self.preprocessor.rename_columns_detections(
+            self.detections)
 
     def test_get_features_keys(self):
         features = self.extractor.get_features_keys()
@@ -41,7 +44,7 @@ class WiseExtractorTest(unittest.TestCase):
         self.objects = pd.read_csv("data_examples/100_objects.csv", index_col="objectId")
         self.objects.index.name = 'oid'
 
-        self.detections = DetectionsPreprocessorZTF().get_magpsf_ml(
+        self.detections = ZTFLightcurvePreprocessor().get_magpsf_ml(
             detections=self.detections,
             objects=self.objects
         )

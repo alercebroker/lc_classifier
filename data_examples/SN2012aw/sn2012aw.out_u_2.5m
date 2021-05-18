@@ -1,0 +1,12 @@
+SN: sn2012aw
+Filter: u_2.5m
+Npoints:            8
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+   56008.07000    13.340     0.110       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56009.86000    13.290     0.040       AB         Asiago             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56012.99000    13.550     0.140       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56023.91000    14.390     0.060       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56038.91000    16.180     0.080       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56073.93000    17.670     0.160       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56078.91000    17.900     0.120       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+   56079.91000    17.840     0.100       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D

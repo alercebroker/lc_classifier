@@ -1,0 +1,46 @@
+SN: sn2012aw
+Filter: U
+Npoints:           42
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+    56005.82000    12.671     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56006.80000    12.582     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56007.81000    12.517     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56008.76000    12.599     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56010.84000    12.652     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56011.78000    12.676     0.043  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56018.63000    13.010     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56024.63000    13.627     0.043  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56026.74000    13.909     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56029.71000    14.199     0.042  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56036.65000    14.788     0.043  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56038.61000    14.905     0.043  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56042.75000    15.189     0.044  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56046.70000    15.377     0.050  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56048.61000    15.455     0.057  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56051.63000    15.552     0.089  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56053.62000    15.725     0.041  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56056.61000    15.802     0.067  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56060.68000    16.049     0.059  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56061.69000    16.133     0.068  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56064.64000    16.239     0.049  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56071.63000    16.424     0.089  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56074.66000    16.577     0.144  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56084.64000    16.840     0.061  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56087.62000    17.010     0.062  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56089.63000    16.886     0.052  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56105.63000    16.979     0.219  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56230.98000    19.551     0.361  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56247.98000    20.291     0.239  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56249.98000    19.934     0.153  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56256.95000    19.821     0.111  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56270.98000    20.166     0.165  Landolt      ST-0.104m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56009.85000    12.500     0.040  Landolt          CAFOS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56010.86000    12.550     0.080  Landolt          CAFOS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56012.86000    12.740     0.070  Landolt          AFOSC             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56014.89000    12.840     0.060  Landolt          AFOSC             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56048.05000    15.430     0.020  Landolt         EFOSC2             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56052.90000    15.700     0.030  Landolt           ACAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56073.88000    16.560     0.050  Landolt         ALFOSC             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56095.91000    17.170     0.060  Landolt         ALFOSC             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56115.90000    17.620     0.050  Landolt         ALFOSC             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56335.13000    20.340     0.100  Landolt           ACAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D

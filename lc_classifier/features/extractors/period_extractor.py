@@ -8,12 +8,9 @@ from functools import lru_cache
 
 
 class PeriodExtractor(FeatureExtractor):
-    def __init__(self, bands=None):
+    def __init__(self, bands):
         self.periodogram_computer = MultiBandPeriodogram(method='MHAOV')
-        if bands is None:
-            self.bands = [1, 2]
-        else:
-            self.bands = bands
+        self.bands = bands
 
     @lru_cache(maxsize=1)
     def get_features_keys(self) -> Tuple[str, ...]:
@@ -26,10 +23,10 @@ class PeriodExtractor(FeatureExtractor):
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
         return (
-            'mjd',
-            'magpsf_ml',
-            'sigmapsf_ml',
-            'fid'
+            'time',
+            'magnitude',
+            'error',
+            'band'
         )
 
     def _compute_features(self, detections, **kwargs):
@@ -41,17 +38,17 @@ class PeriodExtractor(FeatureExtractor):
             self, detections, **kwargs) -> pd.DataFrame:
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
-            oid_detections = oid_detections.groupby('fid').filter(
-                lambda x: len(x) > 5).sort_values('mjd')
+            oid_detections = oid_detections.groupby('band').filter(
+                lambda x: len(x) > 5).sort_values('time')
 
-            fids = oid_detections.fid.values
-            available_bands = np.unique(fids)
+            bands = oid_detections['band'].values
+            available_bands = np.unique(bands)
 
             self.periodogram_computer.set_data(
-                mjds=oid_detections['mjd'].values,
-                mags=oid_detections['magpsf_ml'].values,
-                errs=oid_detections['sigmapsf_ml'].values,
-                fids=fids)
+                mjds=oid_detections['time'].values,
+                mags=oid_detections['magnitude'].values,
+                errs=oid_detections['error'].values,
+                fids=bands)
 
             try:
                 self.periodogram_computer.frequency_grid_evaluation(

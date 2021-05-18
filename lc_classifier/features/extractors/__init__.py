@@ -1,6 +1,6 @@
 from .sn_non_detections_extractor import SupernovaeDetectionAndNonDetectionFeatureExtractor
 from .turbofats_extractor import TurboFatsFeatureExtractor
-from .color_feature_extractor import ColorFeatureExtractor
+from .color_feature_extractor import ZTFColorFeatureExtractor
 from .sn_detections_extractor import SupernovaeDetectionFeatureExtractor
 from .galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .real_bogus_extractor import RealBogusExtractor

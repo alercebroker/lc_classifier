@@ -14,35 +14,47 @@ pip install lc-classifier
 For development:
 
 ```
-pip install -e .
+python -m pip install -e .
 ```
 
-# Functionalities
+## How to use the library?
 
-## Augmentation
-If you want more samples you can use our implementation of data augmentation. For now you can use ShortTransientAugmenter for some transients.
+Check the available Jupyter notebooks in the *examples* directory.
 
-## Classifier
-The classifier code contains BaseClassifier (a simple random forest) and HierarchicalRandomForest (a random forest with internal hierarchy), both with methods for fit and predict.
+## Functionalities
 
-## Features
-For train the models, we use features of astronomical time series. The features are obtained from our different extractors, these receive a DataFrame with detections indexed by `oid`.   
+### Feature computation
+This library provides an extensive number of feature extractors for astronomical
+light curves, including period computation, autoregresive models, parametric models,
+statistical features, etc. We also provide tools to transform your data into 
+the format that this library expects (Pandas dataframes).
 
-### Preprocess:
-Before to get features, we preprocess the time series with filters and boundary conditions:
-- Drop duplicates.
+### Augmentation
+If you want more samples you can use our ShortTransientAugmenter class.
+More data augmentation techniques will be implemented in further releases.
+
+### Classifier
+Two classifiers are available: A traditional Random Forest model, and a hierarchical
+model made from 4 Random Forest classifiers.
+
+### Preprocessing for ZTF data:
+Before computing features, we preprocess the time series with filters 
+and boundary conditions:
+- Drop duplicate observations.
 - Discard noisy detections.
 - Discard bogus.
 - Filter time series with more than 5 detections.
 - Discard invalid values (like nans and infinite).  
 
-### Extractors:
-The extractors are the portion of code with the logic to extract features from time series. Each extractor do only one task, after that our CustomHierarchicalExtractor merge all extractors for get features to train the model.
 
-##### How can I add extractors to library?
-You can use inheritance from `base extractors` and use it for create your own extractor. For now you can inherit:
-- `FeatureExtractor` is a generic extractor only fill methods.
-- `FeatureExtractorSingleBand` is a extractor that compute features by band.
+## How can I add my own feature extractors to the library?
+Feature extractors extend the following classes:
+- `FeatureExtractor`
+- `FeatureExtractorSingleBand`. This type of feature extractor runs independently 
+on each available band.
+  
+Check out the existent feature extractors in the directory 
+*lc_classifier/features/extractors*.
 
 
 ## Profile functionalities

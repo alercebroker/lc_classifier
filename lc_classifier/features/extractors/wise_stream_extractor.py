@@ -17,7 +17,7 @@ class WiseStreamExtractor(FeatureExtractor):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return ()
+        return 'band', 'magnitude'
 
     def calculate_bands(self, detections) -> Tuple:
         """
@@ -30,13 +30,13 @@ class WiseStreamExtractor(FeatureExtractor):
 
         Returns g, r
         """
-        assert 'magpsf_ml' in detections.columns
+        assert 'magnitude' in detections.columns
         
-        detections_g = detections[detections["fid"] == 1]
-        detections_r = detections[detections["fid"] == 2]
-        g = detections_g["magpsf_ml"].groupby(detections_g.index).mean()
+        detections_g = detections[detections["band"] == 1]
+        detections_r = detections[detections["band"] == 2]
+        g = detections_g["magnitude"].groupby(detections_g.index).mean()
         g.name = "g"
-        r = detections_r["magpsf_ml"].groupby(detections_r.index).mean()
+        r = detections_r["magnitude"].groupby(detections_r.index).mean()
         r.name = "r"
         return g, r
 

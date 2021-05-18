@@ -7,14 +7,14 @@ import numpy as np
 import logging
 
 
-class ColorFeatureExtractor(FeatureExtractor):
+class ZTFColorFeatureExtractor(FeatureExtractor):
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
         return 'g-r_max', 'g-r_mean', 'g-r_max_corr', 'g-r_mean_corr'
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'fid', 'magpsf', 'magpsf_ml'
+        return 'band', 'magpsf', 'magnitude'
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -34,20 +34,20 @@ class ColorFeatureExtractor(FeatureExtractor):
         # pd.options.display.precision = 10
         def aux_function(oid_detections):
             oid = oid_detections.index.values[0]
-            fids = oid_detections['fid'].values
-            unique_fids = np.unique(fids)
+            bands = oid_detections['band'].values
+            unique_fids = np.unique(bands)
             if 1 not in unique_fids or 2 not in unique_fids:
                 logging.debug(
                     f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
                 return self.nan_series()
 
-            mag_corr = oid_detections['magpsf_ml'].values
-            g_band_mag_corr = mag_corr[fids == 1]
-            r_band_mag_corr = mag_corr[fids == 2]
+            mag_corr = oid_detections['magnitude'].values
+            g_band_mag_corr = mag_corr[bands == 1]
+            r_band_mag_corr = mag_corr[bands == 2]
 
             mag = oid_detections['magpsf'].values
-            g_band_mag = mag[fids == 1]
-            r_band_mag = mag[fids == 2]
+            g_band_mag = mag[bands == 1]
+            r_band_mag = mag[bands == 2]
 
             g_r_max = g_band_mag.min() - r_band_mag.min()
             g_r_mean = g_band_mag.mean() - r_band_mag.mean()

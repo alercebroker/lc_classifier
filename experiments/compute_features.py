@@ -1,12 +1,12 @@
 import sys
 import numpy as np
 import pandas as pd
-from lc_classifier.features import CustomHierarchicalExtractor
+from lc_classifier.features import ZTFFeatureExtractor
 from joblib import Parallel, delayed
 
 
 def extract_features(process_id, detections_df, non_detections_df):
-    hierarchical_extractor = CustomHierarchicalExtractor([1, 2])
+    hierarchical_extractor = ZTFFeatureExtractor([1, 2])
     features = hierarchical_extractor.compute_features(
         detections_df, non_detections=non_detections_df)
     return features

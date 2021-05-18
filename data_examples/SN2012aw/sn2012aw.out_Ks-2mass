@@ -1,0 +1,17 @@
+SN: sn2012aw
+Filter: Ks-2mass
+Npoints:           13
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+    56009.57000    12.660     0.060  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56010.59000    12.710     0.070  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56011.62000    12.520     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56016.18000    12.450     0.060  Landolt           NICS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56018.57000    12.560     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56021.58000    12.420     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56024.57000    12.350     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56034.51000    12.260     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56039.88000    11.960     0.170  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56041.62000    12.140     0.090  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56049.49000    12.080     0.060  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56087.91000    11.970     0.110  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56095.94000    12.040     0.010  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D

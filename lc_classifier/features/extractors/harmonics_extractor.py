@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,8 @@ from ..extractors import PeriodExtractor
 
 
 class HarmonicsExtractor(FeatureExtractorSingleBand):
-    def __init__(self):
+    def __init__(self, bands: List):
+        super().__init__(bands)
         self.n_harmonics = 7
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
@@ -26,24 +27,24 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         else:
             logging.info('Harmonics extractor was not provided with period '
                          'data, so a periodogram is being computed')
-            period_extractor = PeriodExtractor()
+            period_extractor = PeriodExtractor(self.bands)
             periods = period_extractor.compute_features(detections)
 
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, band, **kwargs):
             oid = oid_detections.index.values[0]
-            if band not in oid_detections.fid.values:
+            if band not in oid_detections['band'].values:
                 logging.debug(
                     f'extractor=Harmonics extractor object={oid} '
                     f'required_cols={self.get_required_keys()}  band={band}')
                 return self.nan_series_in_band(band)
             
-            oid_band_detections = oid_detections[oid_detections.fid == band]
+            oid_band_detections = oid_detections[oid_detections['band'] == band]
 
-            magnitude = oid_band_detections['magpsf_ml'].values
-            time = oid_band_detections['mjd'].values
-            error = oid_band_detections['sigmapsf_ml'].values + 10 ** -2
+            magnitude = oid_band_detections['magnitude'].values
+            time = oid_band_detections['time'].values
+            error = oid_band_detections['error'].values + 10 ** -2
 
             try:
                 period = periods[['Multiband_period']].loc[[oid]].values.flatten()
@@ -90,7 +91,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         return features
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')
@@ -99,8 +100,8 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
         return (
-            'mjd',
-            'magpsf_ml',
-            'fid',
-            'sigmapsf_ml'
+            'time',
+            'magnitude',
+            'band',
+            'error'
         )

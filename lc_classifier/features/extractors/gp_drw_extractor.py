@@ -6,6 +6,7 @@ import pandas as pd
 import logging
 
 from ..core.base import FeatureExtractorSingleBand
+from ...utils import is_sorted
 
 import celerite2
 from celerite2 import terms
@@ -21,8 +22,8 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
     def compute_feature_in_one_band_from_group(
             self, detections, band, **kwargs) -> pd.DataFrame:
         def aux_function(oid_detections, band, **kwargs):
-            fids = oid_detections['fid'].values
-            if band not in fids:
+            bands = oid_detections['band'].values
+            if band not in bands:
                 logging.info(
                     "extractor=GP DRW extractor object=%s required_cols=%s band=%s",
                     oid_detections.index.values[0],
@@ -30,11 +31,14 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                     band)
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[fids == band]
+            oid_band_detections = oid_detections[bands == band]
 
-            time = oid_band_detections['mjd'].values
-            mag = oid_band_detections['magpsf_ml'].values
-            err = oid_band_detections['sigmapsf_ml'].values
+            if not is_sorted(oid_band_detections['time'].values):
+                oid_band_detections.sort_values('time', inplace=True)
+
+            time = oid_band_detections['time'].values
+            mag = oid_band_detections['magnitude'].values
+            err = oid_band_detections['error'].values
 
             time = time - time.min()
             mag = mag - mag.mean()
@@ -75,15 +79,15 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
         return features
 
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         feature_names = 'GP_DRW_sigma', 'GP_DRW_tau'
         return feature_names
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
         return (
-            'mjd',
-            'magpsf_ml',
-            'fid',
-            'sigmapsf_ml'
+            'time',
+            'magnitude',
+            'band',
+            'error'
         )

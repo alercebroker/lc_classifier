@@ -1,0 +1,32 @@
+SN: sn2012aw
+Filter: g_2.5m
+Npoints:            28
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+    56058.66000    13.922     0.031       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56074.68000    14.038     0.031       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56075.65000    14.052     0.031       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56094.67000    14.173     0.031       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56216.97000    17.150     0.033       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56217.98000    17.161     0.033       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56241.93000    17.339     0.033       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56242.93000    17.353     0.033       AB    DFOT-0.130m             --               Bose et al. 2013: 2013arXiv1305.3152B
+    56005.07000    13.570     0.040       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56006.08000    13.460     0.030       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56007.07000    13.500     0.040       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56008.07000    13.400     0.030       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56009.08000    13.380     0.030       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56010.04000    13.330     0.020       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56009.86000    13.260     0.030       AB         Asiago             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56011.04000    13.330     0.030       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56011.56000    13.300     0.120       AB        Faulkes             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56012.99000    13.270     0.020       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56015.03000    13.380     0.050       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56016.01000    13.370     0.040       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56016.87000    13.340     0.110       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56023.91000    13.420     0.020       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56034.06000    13.760     0.040       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56038.91000    13.820     0.010       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56061.08000    14.110     0.030       AB         PROMPT             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56073.93000    14.220     0.020       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56078.91000    14.220     0.030       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56079.91000    14.260     0.030       AB         RATCAM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D

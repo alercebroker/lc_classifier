@@ -8,7 +8,7 @@ import logging
 
 class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
     @lru_cache(1)
-    def get_features_keys(self) -> Tuple[str, ...]:
+    def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return ('delta_mag_fid',
                 'delta_mjd_fid',
                 'first_mag',
@@ -21,7 +21,7 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return "isdiffpos", "magpsf_ml", "mjd", "fid"
+        return "isdiffpos", "magnitude", "time", "band"
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -43,24 +43,24 @@ class SupernovaeDetectionFeatureExtractor(FeatureExtractorSingleBand):
         columns = self.get_features_keys_with_band(band)
 
         def aux_function(oid_detections, **kwargs):
-            fids = oid_detections['fid'].values
-            if band not in fids:
+            bands = oid_detections['band'].values
+            if band not in bands:
                 oid = oid_detections.index.values[0]
                 logging.debug(
                     f'extractor=SN detection object={oid} required_cols={self.get_required_keys()} band={band}')
                 return self.nan_series_in_band(band)
 
-            oid_band_detections = oid_detections[fids == band].sort_values('mjd')
+            oid_band_detections = oid_detections[bands == band].sort_values('time')
 
             is_diff_pos_mask = oid_band_detections['isdiffpos'] > 0
             n_pos = len(oid_band_detections[is_diff_pos_mask])
             n_neg = len(oid_band_detections[~is_diff_pos_mask])
 
-            mags = oid_band_detections['magpsf_ml'].values
+            mags = oid_band_detections['magnitude'].values
             min_mag = mags.min()
             first_mag = mags[0]
 
-            mjds = oid_band_detections['mjd'].values
+            mjds = oid_band_detections['time'].values
             delta_mjd_fid = mjds[-1] - mjds[0]
             delta_mag_fid = mags.max() - min_mag
             positive_fraction = n_pos/(n_pos + n_neg)

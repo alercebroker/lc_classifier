@@ -1,4 +1,4 @@
-from lc_classifier.features import CustomHierarchicalExtractor
+from lc_classifier.features import ZTFFeatureExtractor
 import os
 import logging
 import pandas as pd
@@ -33,7 +33,7 @@ non_detections.index.name = "oid"
 objects.index.name = "oid"
 
 
-class ProfiledHierarchicalFeatureExtractor(CustomHierarchicalExtractor):
+class ProfiledHierarchicalFeatureExtractor(ZTFFeatureExtractor):
     def _compute_features(self, detections, **kwargs):
         """
 

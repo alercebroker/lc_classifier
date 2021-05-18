@@ -1,0 +1,20 @@
+SN: sn2012aw
+Filter: H-2mass
+Npoints:           16
+MJD       Mag    DMag  magsys  Telescope  Detector   Source
+    56009.57000    12.950     0.060  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56010.59000    12.870     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56011.62000    12.780     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56016.18000    12.630     0.070  Landolt           NICS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56018.57000    12.620     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56021.58000    12.570     0.030  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56024.57000    12.550     0.080  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56030.87000    12.390     0.080  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56034.51000    12.340     0.050  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56041.62000    12.340     0.090  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56049.49000    12.210     0.040  Landolt            REM             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56051.92000    12.030     0.060  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56062.91000    12.740     0.070  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56084.90000    12.180     0.060  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56087.91000    12.120     0.040  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
+    56095.94000    12.230     0.060  Landolt            TCS             --            Dall'Ora et al. 2014:2014arXiv1404.1294D
