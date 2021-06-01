@@ -83,7 +83,7 @@ class SNModelScipy(object):
                             [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
                     ftol=A_guess / 3.)
             except (ValueError, RuntimeError, OptimizeWarning):
-                pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                pout = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
 
         self.parameters = pout
         predictions = model_inference(
@@ -122,11 +122,11 @@ class SNModelScipyPhaseII(object):
         argmax_fluxpsf = np.argmax(fluxpsf)
         max_fluxpsf = fluxpsf[argmax_fluxpsf]
         A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
-        t0_bounds = [-50.0, 50.0]
+        t0_bounds = [-50.0, 70.0]
         gamma_bounds = [1.0, 100.0]
         beta_bounds = [0.0, 1.0]
         trise_bounds = [1.0, 100.0]
-        tfall_bounds = [1.0, 100.0]
+        tfall_bounds = [1.0, 180.0]
 
         # Parameter guess
         A_guess = np.clip(1.2 * max_fluxpsf, A_bounds[0], A_bounds[1])
@@ -150,10 +150,12 @@ class SNModelScipyPhaseII(object):
                 sigma=5+obs_errors,
                 bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
                         [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
-                ftol=0.01
+                ftol=1e-8,
+                # verbose=2
             )
         except (ValueError, RuntimeError, OptimizeWarning):
             try:
+                logging.info('First fit of SPM failed. Attempting second fit.')
                 pout, pcov = curve_fit(
                     f=model_inference,
                     xdata=times,
@@ -162,9 +164,12 @@ class SNModelScipyPhaseII(object):
                     sigma=5+obs_errors,
                     bounds=[[A_bounds[0], t0_bounds[0], gamma_bounds[0], beta_bounds[0], trise_bounds[0], tfall_bounds[0]],
                             [A_bounds[1], t0_bounds[1], gamma_bounds[1], beta_bounds[1], trise_bounds[1], tfall_bounds[1]]],
-                    ftol=0.1)
+                    ftol=0.1,
+                    # verbose=2
+                )
             except (ValueError, RuntimeError, OptimizeWarning):
-                pout = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                logging.info('Two fits of SPM failed. Returning NaN.')
+                pout = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
 
         self.parameters = pout
         predictions = model_inference(
