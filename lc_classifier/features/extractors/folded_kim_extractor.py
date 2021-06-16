@@ -55,20 +55,26 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                 return self.nan_series_in_band(band)
 
             oid_band_detections = oid_detections[oid_detections['band'] == band]
+            lc_len = len(oid_band_detections)
+            if lc_len <= 2:
+                psi_cumsum = psi_eta = np.nan
+            else:
+                time = oid_band_detections['time'].values
+                magnitude = oid_band_detections['magnitude'].values
 
-            time = oid_band_detections['time'].values
-            magnitude = oid_band_detections['magnitude'].values
+                folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
+                sorted_mags = magnitude[np.argsort(folded_time)]
+                sigma = np.std(sorted_mags)
+                if sigma != 0.0:
+                    m = np.mean(sorted_mags)
+                    s = np.cumsum(sorted_mags - m) * 1.0 / (lc_len * sigma)
+                    psi_cumsum = np.max(s) - np.min(s)
+                    sigma_squared = sigma ** 2
+                    psi_eta = (1.0 / ((lc_len - 1) * sigma_squared) *
+                               np.sum(np.power(sorted_mags[1:] - sorted_mags[:-1], 2)))
+                else:
+                    psi_cumsum = psi_eta = np.nan
 
-            folded_time = np.mod(time, 2 * oid_period) / (2 * oid_period)
-            sorted_mags = magnitude[np.argsort(folded_time)]
-            sigma = np.std(sorted_mags)
-            m = np.mean(sorted_mags)
-            lc_len = len(sorted_mags)
-            s = np.cumsum(sorted_mags - m) * 1.0 / (lc_len * sigma)
-            psi_cumsum = np.max(s) - np.min(s)
-            sigma_squared = sigma ** 2
-            psi_eta = (1.0 / ((lc_len - 1) * sigma_squared) *
-                       np.sum(np.power(sorted_mags[1:] - sorted_mags[:-1], 2)))
             out = pd.Series(
                 data=[psi_cumsum, psi_eta],
                 index=columns)
