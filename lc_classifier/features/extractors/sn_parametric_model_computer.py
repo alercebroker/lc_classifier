@@ -122,8 +122,8 @@ class SNModelScipyPhaseII(object):
         argmax_fluxpsf = np.argmax(fluxpsf)
         max_fluxpsf = fluxpsf[argmax_fluxpsf]
         A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
-        t0_bounds = [-50.0, 70.0]
-        gamma_bounds = [1.0, 100.0]
+        t0_bounds = [-50.0, 90.0]
+        gamma_bounds = [1.0, 120.0]
         beta_bounds = [0.0, 1.0]
         trise_bounds = [1.0, 100.0]
         tfall_bounds = [1.0, 180.0]

@@ -13,7 +13,6 @@ class GenericPreprocessor:
             raise ValueError("Input isn't a Pandas DataFrame")
         return
 
-
     @abstractmethod
     def preprocess(self, dataframe):
         """

@@ -148,3 +148,103 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
     def rename_columns_detections(self, detections):
         return detections.rename(
             columns=self.column_translation, errors='ignore')
+
+
+class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
+    def __init__(self):
+        super().__init__()
+
+        self.required_columns = [
+            'time',
+            'band',
+            'magnitude',
+            'error',
+            'magpsf',  # TODO: rename to diff_magnitude
+            'sigmapsf',  # diff_error
+            'diff_flux',
+            'diff_err',
+            'ra',
+            'dec',
+            'infobitssci'
+        ]
+
+        self.column_translation = {
+            'mjd': 'time',
+            'fid': 'band',
+        }
+        self.max_sigma = 1.0
+
+    def has_necessary_columns(self, dataframe):
+        """
+        :param dataframe:
+        :return:
+        """
+        booleans = list(map(lambda x: x in dataframe.columns, self.required_columns))
+        return reduce(lambda x, y: x & y, booleans)
+
+    def discard_invalid_value_detections(self, detections):
+        """
+        :param detections:
+        :return:
+        """
+        detections = detections.replace([np.inf, -np.inf], np.nan)
+        valid_alerts = detections[self.required_columns].notna().all(axis=1)
+        detections = detections[valid_alerts.values]
+        detections[self.required_columns] = detections[self.required_columns].apply(
+            lambda x: pd.to_numeric(x, errors='coerce'))
+        return detections
+
+    def drop_duplicates(self, detections):
+        """
+        :param detections:
+        :return:
+        """
+        assert detections.index.name == 'oid'
+        detections = detections.copy()
+        detections['oid'] = detections.index
+        detections = detections.drop_duplicates(['oid', 'time'])
+        detections = detections[[col for col in detections.columns if col != 'oid']]
+        return detections
+
+    def discard_noisy_detections(self, detections):
+        """
+        :param detections:
+        :return:
+        """
+        detections = detections[((detections['error'] > 0.0) &
+                                 (detections['error'] < self.max_sigma))
+                                ]
+        return detections
+
+    def discard_defectuous_detections(self, detections):
+        detections = detections[detections['infobitssci'] == 0.0]
+        return detections
+
+    def enough_alerts(self, detections, min_dets=5):
+        objects = detections.groupby("oid")
+        indexes = []
+        for oid, group in objects:
+            if len(group.band == 1) > min_dets or len(group.band == 2) > min_dets:
+                indexes.append(oid)
+        return detections.loc[indexes]
+
+    def preprocess(self, dataframe, objects=None):
+        """
+        :param dataframe:
+        :param objects:
+        :return:
+        """
+        self.verify_dataframe(dataframe)
+        dataframe = self.rename_columns_detections(dataframe)
+        if not self.has_necessary_columns(dataframe):
+            raise Exception('dataframe does not have all the necessary columns')
+        dataframe = self.drop_duplicates(dataframe)
+        dataframe = self.discard_invalid_value_detections(dataframe)
+        dataframe = self.discard_noisy_detections(dataframe)
+        dataframe = self.discard_defectuous_detections(dataframe)
+        dataframe = self.enough_alerts(dataframe)
+        return dataframe
+
+    def rename_columns_detections(self, detections):
+        return detections.rename(
+            columns=self.column_translation, errors='ignore')
