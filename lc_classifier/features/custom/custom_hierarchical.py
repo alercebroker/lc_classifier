@@ -9,7 +9,6 @@ from lc_classifier.features import RealBogusExtractor
 from lc_classifier.features import MHPSExtractor
 from lc_classifier.features import IQRExtractor
 from lc_classifier.features import SNParametricModelExtractor
-from lc_classifier.features import WiseStaticExtractor
 from lc_classifier.features import WiseStreamExtractor
 from lc_classifier.features import PeriodExtractor
 from lc_classifier.features import PowerRateExtractor
@@ -18,7 +17,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
-from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
+from ..preprocess import DetectionsPreprocessorZTF
 
 import pandas as pd
 import logging
@@ -78,8 +77,9 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections_by_fid = detections[["mjd", "fid"]].groupby(["oid", "fid"]).count()
+        has_enough_alerts = n_detections_by_fid.mjd > 5
+        has_enough_alerts = has_enough_alerts.groupby(level=0).sum() > 0
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -105,7 +105,6 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
-        detections = detections.sort_values("mjd")
         non_detections = kwargs["non_detections"]
 
         if len(non_detections) == 0:
@@ -146,7 +145,7 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             HarmonicsExtractor(),
             GPDRWExtractor()
         ]
-        self.preprocessor = StreamDetectionsPreprocessorZTF()
+        self.preprocessor = DetectionsPreprocessorZTF()
 
     @lru_cache(1)
     def get_features_keys(self) -> List[str]:
@@ -179,8 +178,9 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         -------
 
         """
-        n_detections = detections[["mjd"]].groupby(level=0).count()
-        has_enough_alerts = n_detections.mjd > 5
+        n_detections_by_fid = detections[["mjd", "fid"]].groupby(["oid", "fid"]).count()
+        has_enough_alerts = n_detections_by_fid.mjd > 5
+        has_enough_alerts = has_enough_alerts.groupby(level=0).sum() > 0
         return has_enough_alerts
 
     def _compute_features(self, detections, **kwargs):
@@ -199,14 +199,15 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
         if not isinstance(detections, pd.core.frame.DataFrame):
             raise TypeError('detections has to be a DataFrame')
         
-        required = ["non_detections", "xmatches", "metadata"]
+        required = ["non_detections", "xmatches", "metadata", "objects"]
         for key in required:
             if key not in kwargs:
                 raise Exception(f"HierarchicalFeaturesComputer requires {key} argument")
-        detections = self.preprocessor.preprocess(detections)
+        objects = kwargs["objects"]
+        detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
-        too_short_oids = has_enough_alerts[~has_enough_alerts]
-        too_short_features = pd.DataFrame(index=too_short_oids.index)
+        #  too_short_oids = has_enough_alerts[~has_enough_alerts]
+        #  too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         detections = detections.sort_values("mjd")
         if len(detections) == 0:
@@ -231,5 +232,5 @@ class CustomStreamHierarchicalExtractor(FeatureExtractor):
             logging.info(f"EXTRACTOR={ex}, FEATURE_SHAPE={df.shape}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")
-        df = pd.concat([df, too_short_features], axis=0, join="outer", sort=True)
+        # df = pd.concat([df, too_short_features], axis=0, join="outer", sort=True)
         return df
