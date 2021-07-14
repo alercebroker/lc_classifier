@@ -18,7 +18,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 
 from ..core.base import FeatureExtractor, FeatureExtractorSingleBand
-from ..preprocess import DetectionsPreprocessorZTF, StreamDetectionsPreprocessorZTF
+from ..preprocess import DetectionsPreprocessorZTF
 
 import pandas as pd
 import logging
@@ -42,7 +42,7 @@ class ForcedPhotometryExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
-            GPDRWExtractor()
+            GPDRWExtractor(),
         ]
         self.preprocessor = DetectionsPreprocessorZTF()
 
@@ -107,9 +107,7 @@ class ForcedPhotometryExtractor(FeatureExtractor):
         shared_data = dict()
         grouped_detections = detections.groupby(level=0)
         for ex in self.extractors:
-            df = ex.compute_features(
-                grouped_detections,
-                shared_data=shared_data)
+            df = ex.compute_features(grouped_detections, shared_data=shared_data)
             logging.info(f"FLAG={ex}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")
@@ -135,9 +133,9 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
             PowerRateExtractor(),
             FoldedKimExtractor(),
             HarmonicsExtractor(),
-            GPDRWExtractor()
+            GPDRWExtractor(),
         ]
-        self.preprocessor = StreamDetectionsPreprocessorZTF()
+        self.preprocessor = DetectionsPreprocessorZTF()
 
     def get_features_keys(self) -> List[str]:
         features_keys = []
@@ -185,13 +183,16 @@ class StreamedForcedPhotometryExtractor(FeatureExtractor):
 
         """
         if not isinstance(detections, pd.core.frame.DataFrame):
-            raise TypeError('detections has to be a DataFrame')
-        
-        required = ["xmatches", "metadata"]
+            raise TypeError("detections has to be a DataFrame")
+
+        required = ["xmatches", "metadata", "objects"]
         for key in required:
             if key not in kwargs:
-                raise Exception(f"StreamedForcedPhotometryExtractor requires {key} argument")
-        detections = self.preprocessor.preprocess(detections)
+                raise Exception(
+                    f"StreamedForcedPhotometryExtractor requires {key} argument"
+                )
+        objects = kwargs["objects"]
+        detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
         too_short_oids = has_enough_alerts[~has_enough_alerts]
         too_short_features = pd.DataFrame(index=too_short_oids.index)
