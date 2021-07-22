@@ -29,7 +29,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         self.bands = bands if bands is not None else [1, 2]
         self.extractors = [
             GalacticCoordinatesExtractor(),
-            SGScoreExtractor(),
+            # SGScoreExtractor(),
             ColorFeatureExtractor(),
             RealBogusExtractor(),
             MHPSExtractor(),
@@ -102,8 +102,8 @@ class CustomHierarchicalExtractor(FeatureExtractor):
         objects = kwargs["objects"]
         detections = self.preprocessor.preprocess(detections, objects=objects)
         has_enough_alerts = self.get_enough_alerts_mask(detections)
-        too_short_oids = has_enough_alerts[~has_enough_alerts]
-        too_short_features = pd.DataFrame(index=too_short_oids.index)
+        # too_short_oids = has_enough_alerts[~has_enough_alerts]
+        # too_short_features = pd.DataFrame(index=too_short_oids.index)
         detections = detections.loc[has_enough_alerts]
         non_detections = kwargs["non_detections"]
 
@@ -121,7 +121,7 @@ class CustomHierarchicalExtractor(FeatureExtractor):
             logging.info(f"FLAG={ex}")
             features.append(df)
         df = pd.concat(features, axis=1, join="inner")
-        df = pd.concat([df, too_short_features], axis=0, join="outer", sort=True)
+        # df = pd.concat([df, too_short_features], axis=0, join="outer", sort=True)
         return df
 
 
