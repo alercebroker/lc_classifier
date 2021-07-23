@@ -297,13 +297,13 @@ class HierarchicalRandomForest(BaseClassifier):
 
         prob_children = []
         resp_children = {}
-
         child_models = [
             self.stochastic_classifier,
-            self.periodic_classifier,
             self.transient_classifier,
+            self.periodic_classifier,
         ]
-        child_names = ["Stochastic", "Periodic", "Transient"]
+        child_names = ["Transient", "Stochastic", "Periodic"]
+
         for name, model in zip(child_names, child_models):
             prob_child = pd.DataFrame(
                 model.predict_proba(input_features),
@@ -312,7 +312,7 @@ class HierarchicalRandomForest(BaseClassifier):
             )
 
             resp_children[name] = prob_child
-            prob_child = prob_child.mul(prob_root[name].values, axis="rows")
+            prob_child = prob_child.mul(prob_root[name].values, axis=0)
             prob_children.append(prob_child)
         prob_all = pd.concat(prob_children, axis=1, sort=False)
 
