@@ -17,5 +17,5 @@ pandas >=1.1
 wget >=3.2
 celerite2 >=0.1
 -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
-mhps @ git+https://github.com/alercebroker/mhps
-P4J @ git+https://github.com/alercebroker/P4J
+-e git+https://git@github.com/alercebroker/mhps#egg=mhps
+-e git+https://git@github.com/alercebroker/P4J#egg=P4J

@@ -10,6 +10,8 @@ From PyPI stable version:
 ```
 pip install numpy Cython
 pip install -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
+pip install -e git+https://git@github.com/alercebroker/mhps#egg=mhps
+pip install -e git+https://git@github.com/alercebroker/P4J#egg=P4J
 pip install lc-classifier
 ```
 
