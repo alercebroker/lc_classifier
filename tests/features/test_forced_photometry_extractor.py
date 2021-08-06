@@ -34,7 +34,9 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
             detections=detections)
 
         self.assertEqual(98, features_df.shape[0])
-        self.assertEqual(162, features_df.shape[1])
+        self.assertEqual(
+            len(self.forced_photometry_extractor.get_features_keys()),
+            features_df.shape[1])
         self.assertFalse(np.all(np.isnan(features_df.values), axis=(0, 1)))
 
     def test_forced_photometry_extractor_stream(self):
@@ -61,8 +63,8 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
     def test_get_features_keys(self):
         keys = self.forced_photometry_extractor.get_features_keys()
         keys_stream = self.streamed_forced_photometry_extractor.get_features_keys()
-        self.assertEqual(162, len(keys))
-        self.assertEqual(162, len(keys_stream))
+        self.assertEqual(154, len(keys))
+        self.assertEqual(154, len(keys_stream))
 
 
 if __name__ == '__main__':
