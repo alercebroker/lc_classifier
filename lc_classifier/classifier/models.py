@@ -106,7 +106,9 @@ class BaselineRandomForest(BaseClassifier):
             rf = pickle.load(f)
 
         self.random_forest_classifier = rf
-        self.feature_list = pd.read_pickle(os.path.join(directory, "feature_list.pkl"))
+
+        with open(os.path.join(directory, "feature_list.pkl"), 'rb') as f:
+            self.feature_list = pickle.load(f)
 
 
 class HierarchicalRandomForest(BaseClassifier):
