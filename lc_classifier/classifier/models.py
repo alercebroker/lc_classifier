@@ -116,7 +116,7 @@ class BaselineRandomForest(BaseClassifier):
 
 class HierarchicalRandomForest(BaseClassifier):
     MODEL_NAME = "hierarchical_random_forest"
-    MODEL_VERSION = "1.0.0"
+    MODEL_VERSION = "1.1.1"
     MODEL_VERSION_NAME = f"{MODEL_NAME}_{MODEL_VERSION}"
     MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
 
@@ -153,10 +153,10 @@ class HierarchicalRandomForest(BaseClassifier):
         self.inverted_dictionary = invert_dictionary(self.taxonomy_dictionary)
         self.pickles = {
             "features_list":"features_RF_model.pkl",
-            "top_rf":"hierarchical_level_RF_model.pkl",
-            "periodic_rf":"periodic_level_RF_model.pkl",
-            "stochastic_rf":"stochastic_level_RF_model.pkl",
-            "transient_rf":"transient_level_RF_model.pkl"
+            "top_rf":"top_level_BRF_model.pkl",
+            "periodic_rf":"periodic_level_BRF_model.pkl",
+            "stochastic_rf":"stochastic_level_BRF_model.pkl",
+            "transient_rf":"transient_level_BRF_model.pkl"
         }
         self.url_model = f"https://assets.alerce.online/pipeline/hierarchical_rf_{self.MODEL_VERSION}/"
 
