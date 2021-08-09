@@ -1,5 +1,4 @@
 from .base import GenericPreprocessor
-from functools import reduce
 import numpy as np
 import pandas as pd
 
@@ -35,8 +34,10 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
         :param dataframe:
         :return:
         """
-        booleans = list(map(lambda x: x in dataframe.columns, self.not_null_columns))
-        return reduce(lambda x, y: x & y, booleans)
+        input_columns = set(dataframe.columns)
+        constraint = set(self.not_null_columns)
+        difference = constraint.difference(input_columns)
+        return len(difference) == 0
 
     def discard_invalid_value_detections(self, detections):
         """
@@ -52,13 +53,19 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
 
     def drop_duplicates(self, detections):
         """
+        Sometimes the same source triggers two detections with slightly
+        different positions.
+
         :param detections:
         :return:
         """
         assert detections.index.name == 'oid'
         detections = detections.copy()
+
+        # keep the one with best rb
+        detections = detections.sort_values("rb", ascending=False)
         detections['oid'] = detections.index
-        detections = detections.drop_duplicates(['oid', 'mjd'])
+        detections = detections.drop_duplicates(['oid', 'mjd'], keep='first')
         detections = detections[[col for col in detections.columns if col != 'oid']]
         return detections
 
@@ -133,10 +140,10 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
         dataframe = self.get_magpsf_ml(dataframe, objects)
         if not self.has_necessary_columns(dataframe):
             raise Exception('dataframe does not have all the necessary columns')
-        dataframe = self.drop_duplicates(dataframe)
+        dataframe = self.discard_bogus(dataframe)
         dataframe = self.discard_invalid_value_detections(dataframe)
         dataframe = self.discard_noisy_detections(dataframe)
-        dataframe = self.discard_bogus(dataframe)
+        dataframe = self.drop_duplicates(dataframe)
         dataframe = self.enough_alerts(dataframe)
         dataframe = self.rename_columns_detections(dataframe)
         return dataframe
@@ -179,8 +186,10 @@ class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
         :param dataframe:
         :return:
         """
-        booleans = list(map(lambda x: x in dataframe.columns, self.required_columns))
-        return reduce(lambda x, y: x & y, booleans)
+        input_columns = set(dataframe.columns)
+        constraint = set(self.required_columns)
+        difference = constraint.difference(input_columns)
+        return len(difference) == 0
 
     def discard_invalid_value_detections(self, detections):
         """

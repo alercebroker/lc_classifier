@@ -210,4 +210,5 @@ class SupernovaeDetectionAndNonDetectionFeatureExtractor(FeatureExtractorSingleB
 
         sn_features = detections.apply(aux_function)
         sn_features.index.name = 'oid'
+        sn_features = sn_features.astype(float)
         return sn_features
