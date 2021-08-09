@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-import pickle
+import pickle5 as pickle
 import wget
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from lc_classifier.classifier.preprocessing import FeaturePreprocessor
@@ -266,21 +266,21 @@ class HierarchicalRandomForest(BaseClassifier):
             pickle.dump(self.feature_list, f, pickle.HIGHEST_PROTOCOL)
 
     def load_model(self, directory: str) -> None:
-        self.top_classifier = pd.read_pickle(
-            os.path.join(directory, self.pickles["top_rf"])
-        )
-        self.stochastic_classifier = pd.read_pickle(
-            os.path.join(directory, self.pickles["stochastic_rf"])
-        )
-        self.periodic_classifier = pd.read_pickle(
-            os.path.join(directory, self.pickles["periodic_rf"])
-        )
-        self.transient_classifier = pd.read_pickle(
-            os.path.join(directory, self.pickles["transient_rf"])
-        )
-        self.feature_list = pd.read_pickle(
-            os.path.join(directory, self.pickles["features_list"])
-        )
+        with open(os.path.join(directory, self.pickles["top_rf"]), 'rb') as f:
+            self.top_classifier = pickle.load(f)
+
+        with open(os.path.join(directory, self.pickles["stochastic_rf"]), 'rb') as f:
+            self.stochastic_classifier = pickle.load(f)
+
+        with open(os.path.join(directory, self.pickles["periodic_rf"]), 'rb') as f:
+            self.periodic_classifier = pickle.load(f)
+
+        with open(os.path.join(directory, self.pickles["transient_rf"]), 'rb') as f:
+            self.transient_classifier = pickle.load(f)
+
+        with open(os.path.join(directory, self.pickles["features_list"]), 'rb') as f:
+            self.feature_list = pickle.load(f)
+
         self.check_loaded_models()
 
     def check_loaded_models(self):
