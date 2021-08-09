@@ -33,6 +33,8 @@ class ZTFFeatureExtractorTest(unittest.TestCase):
             non_detections=non_detections)
         self.assertEqual(98, features_df.shape[0])
         self.assertEqual(178, features_df.shape[1])
+        for f in features_df.columns:
+            print(f)
 
     def test_feature_extraction_stream(self):
         oid = "ZTF17aaaorfd"

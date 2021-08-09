@@ -134,12 +134,12 @@ class ZTFFeatureExtractor(FeatureExtractor):
 class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
     def __init__(self, bands=(1, 2), stream=False):
         self.bands = list(bands)
-        self.stream = stream
+        # self.stream = stream
 
         extractors = [
             GalacticCoordinatesExtractor(),
             ZTFColorFeatureExtractor(),
-            RealBogusExtractor(),
+            # RealBogusExtractor(),
             MHPSExtractor(bands),
             IQRExtractor(bands),
             TurboFatsFeatureExtractor(bands),
@@ -151,16 +151,16 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
             HarmonicsExtractor(bands),
             GPDRWExtractor(bands)
         ]
-        if self.stream:
-            extractors += [
-                StreamSGScoreExtractor(),
-                WiseStreamExtractor()
-            ]
-        else:
-            extractors += [
-                SGScoreExtractor(),
-                WiseStaticExtractor()
-            ]
+        # if self.stream:
+        #     extractors += [
+        #         StreamSGScoreExtractor(),
+        #         WiseStreamExtractor()
+        #     ]
+        # else:
+        #     extractors += [
+        #         SGScoreExtractor(),
+        #         WiseStaticExtractor()
+        #     ]
         self.composed_feature_extractor = FeatureExtractorComposer(extractors)
 
     @lru_cache(1)
@@ -201,8 +201,8 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
 
         """
         required = []
-        if self.stream:
-            required += ['metadata', 'xmatches']
+        # if self.stream:
+        #     required += ['metadata', 'xmatches']
         for key in required:
             if key not in kwargs:
                 raise Exception(f"HierarchicalFeaturesComputer requires {key} argument")
