@@ -15,7 +15,7 @@ class TestHierarchicalRF(unittest.TestCase):
         del self.test_labels["objectId"]
 
         self.model_trained = HierarchicalRandomForest()
-        # self.model_trained.download_model()
+        self.model_trained.download_model()
         self.model_trained.load_model(self.model_trained.MODEL_PICKLE_PATH)
 
         self.taxonomy = {

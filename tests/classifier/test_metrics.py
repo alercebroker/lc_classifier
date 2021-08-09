@@ -26,7 +26,7 @@ class KaggleScoreTest(unittest.TestCase):
 class HRFMetricsTest(unittest.TestCase):
     def setUp(self):
         self.model_trained = HierarchicalRandomForest()
-        # self.model_trained.download_model()
+        self.model_trained.download_model()
         self.model_trained.load_model(self.model_trained.MODEL_PICKLE_PATH)
 
         self.train_features = pd.read_csv('data_examples/2000_features.csv')

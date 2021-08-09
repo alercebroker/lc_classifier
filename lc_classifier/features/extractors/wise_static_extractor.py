@@ -10,7 +10,7 @@ from ..core.base import FeatureExtractor
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 WISE_CSV = os.path.abspath(os.path.join(FILE_PATH, "data/wise_bands.csv"))
-WISE_CSV_URL = "https://droppy.alerce.online/$/5tZUY"
+WISE_CSV_URL = "https://alerce-static.s3.amazonaws.com/datasets/wise_bands.csv"
 
 
 def compute_colors_from_bands(bands: pd.DataFrame) -> pd.DataFrame:
