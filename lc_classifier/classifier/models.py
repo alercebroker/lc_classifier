@@ -102,7 +102,9 @@ class BaselineRandomForest(BaseClassifier):
             pickle.dump(self.feature_list, f, pickle.HIGHEST_PROTOCOL)
 
     def load_model(self, directory: str) -> None:
-        rf = pd.read_pickle(os.path.join(directory, self.model_filename))
+        with open(os.path.join(directory, self.model_filename), 'rb') as f:
+            rf = pickle.load(f)
+
         self.random_forest_classifier = rf
         self.feature_list = pd.read_pickle(os.path.join(directory, "feature_list.pkl"))
 
