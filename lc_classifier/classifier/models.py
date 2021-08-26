@@ -108,7 +108,7 @@ class BaselineRandomForest(BaseClassifier):
 
 
 class HierarchicalRandomForest(BaseClassifier):
-    MODEL_NAME = "hierarchical_random_forest"
+    MODEL_NAME = "hierarchical_rf"
     MODEL_VERSION = "1.1.0"
     MODEL_VERSION_NAME = f"{MODEL_NAME}_{MODEL_VERSION}"
     MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
