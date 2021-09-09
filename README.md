@@ -26,6 +26,9 @@ python -m pip install -e .
 
 Check the available Jupyter notebooks in the *examples* directory.
 
+
+* [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alercebroker/lc_classifier/blob/main/examples/feature_extraction_from_ztf_data.ipynb) Feature extraction with ZTF light curves.
+
 ## Functionalities
 
 ### Feature computation
