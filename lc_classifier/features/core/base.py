@@ -198,6 +198,8 @@ class FeatureExtractorComposer(FeatureExtractor):
 
     def _compute_features(self, detections: pd.DataFrame, **kwargs) -> pd.DataFrame:
         feature_dataframes = []
+        # TODO: loop over lightcurves instead of features in order to improve
+        # cache friendliness. Requires heavy refactoring.
         for extractor in self.feature_extractors:
             feature_dataframes.append(
                 extractor.compute_features(detections, **kwargs))
