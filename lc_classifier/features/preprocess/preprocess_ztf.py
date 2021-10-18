@@ -158,28 +158,37 @@ class ZTFLightcurvePreprocessor(GenericPreprocessor):
 
 
 class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
+    """Preprocessing for lightcurves from ZTF forced photometry service."""
     def __init__(self):
         super().__init__()
 
         self.required_columns = [
-            'time',
-            'band',
-            'magnitude',
-            'error',
-            'magpsf',  # TODO: rename to diff_magnitude
-            'sigmapsf',  # diff_error
-            'diff_flux',
-            'diff_err',
-            'ra',
-            'dec',
-            'infobitssci'
+            'mjd',
+            'fid',
+            'forcediffimflux',
+            'forcediffimfluxunc',
+            'mag_tot',
+            'sigma_mag_tot',
         ]
 
         self.column_translation = {
             'mjd': 'time',
             'fid': 'band',
+            'forcediffimflux': 'difference_flux',
+            'forcediffimfluxunc': 'difference_flux_error',
+            'mag_tot': 'magnitude',
+            'sigma_mag_tot': 'error'
         }
         self.max_sigma = 1.0
+
+        self.new_columns = []
+        for c in self.required_columns:
+            if c in self.column_translation.keys():
+                self.new_columns.append(self.column_translation[c])
+            else:
+                self.new_columns.append(c)
+
+        self.required_cols_metadata = ['ra', 'dec']
 
     def has_necessary_columns(self, dataframe):
         """
@@ -191,15 +200,19 @@ class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
         difference = constraint.difference(input_columns)
         return len(difference) == 0
 
+    def metadata_has_necessary_columns(self, object_df):
+        for c in self.required_cols_metadata:
+            if c not in object_df.columns:
+                return False
+        return True
+
     def discard_invalid_value_detections(self, detections):
         """
         :param detections:
         :return:
         """
         detections = detections.replace([np.inf, -np.inf], np.nan)
-        valid_alerts = detections[self.required_columns].notna().all(axis=1)
-        detections = detections[valid_alerts.values]
-        detections[self.required_columns] = detections[self.required_columns].apply(
+        detections[self.new_columns] = detections[self.new_columns].apply(
             lambda x: pd.to_numeric(x, errors='coerce'))
         return detections
 
@@ -220,13 +233,10 @@ class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
         :param detections:
         :return:
         """
-        detections = detections[((detections['error'] > 0.0) &
-                                 (detections['error'] < self.max_sigma))
-                                ]
-        return detections
-
-    def discard_defectuous_detections(self, detections):
-        detections = detections[detections['infobitssci'] == 0.0]
+        detections = detections[
+            ((detections['error'] > 0.0) &
+             (detections['error'] < self.max_sigma)) | detections['error'].isna()
+        ]
         return detections
 
     def enough_alerts(self, detections, min_dets=5):
@@ -237,6 +247,9 @@ class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
                 indexes.append(oid)
         return detections.loc[indexes]
 
+    def discard_i_filter(self, detections):
+        return detections[detections.band != 3]
+
     def preprocess(self, dataframe, objects=None):
         """
         :param dataframe:
@@ -244,13 +257,18 @@ class ZTFForcedPhotometryLightcurvePreprocessor(GenericPreprocessor):
         :return:
         """
         self.verify_dataframe(dataframe)
-        dataframe = self.rename_columns_detections(dataframe)
         if not self.has_necessary_columns(dataframe):
-            raise Exception('dataframe does not have all the necessary columns')
+            raise Exception(
+                'Lightcurve dataframe does not have all the necessary columns')
+
+        if not self.metadata_has_necessary_columns(objects):
+            raise Exception(
+                'Metadata dataframe does not have all the necessary columns')
+        dataframe = self.rename_columns_detections(dataframe)
+        dataframe = self.discard_i_filter(dataframe)
         dataframe = self.drop_duplicates(dataframe)
         dataframe = self.discard_invalid_value_detections(dataframe)
         dataframe = self.discard_noisy_detections(dataframe)
-        dataframe = self.discard_defectuous_detections(dataframe)
         dataframe = self.enough_alerts(dataframe)
         return dataframe
 

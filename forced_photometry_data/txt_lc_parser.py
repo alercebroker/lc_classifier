@@ -43,8 +43,8 @@ def build_forced_detections_df():
     df = pd.concat(dataframes, axis=0)
     df['fid'] = df['filter'].apply(lambda name: filter_name_to_int[name])
     df['mjd'] = df['jd'] - 2400000.5
-    df['diff_flux'] = df['forcediffimflux']
-    df['diff_err'] = df['forcediffimfluxunc']
+    df['difference_flux'] = df['forcediffimflux']
+    df['difference_flux_error'] = df['forcediffimfluxunc']
 
     nearestrefflux = 10 ** (0.4 * (df['zpdiff'] - df['nearestrefmag']))
     nearestreffluxunc = df['nearestrefmagunc'] * nearestrefflux / 1.0857

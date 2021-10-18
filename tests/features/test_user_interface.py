@@ -87,10 +87,10 @@ class TestUserInterface(unittest.TestCase):
         lightcurve['ra'] = np.random.randn(len(lightcurve)) + 30.0
         lightcurve['dec'] = np.random.randn(len(lightcurve)) + 30.0
 
-        lightcurve['diff_flux'] = mag_to_flux(lightcurve['magnitude'].values)
-        lightcurve['diff_err'] = (
+        lightcurve['difference_flux'] = mag_to_flux(lightcurve['magnitude'].values)
+        lightcurve['difference_flux_error'] = (
             mag_to_flux(lightcurve['magnitude'].values - lightcurve['error'].values)
-            - lightcurve['diff_flux'].values
+            - lightcurve['difference_flux'].values
         )
 
         bands = lightcurve.band.unique()

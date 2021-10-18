@@ -65,3 +65,53 @@ class ZTFColorFeatureExtractor(FeatureExtractor):
         colors = detections.apply(aux_function)
         colors.index.name = 'oid'
         return colors
+
+
+class ZTFColorForcedFeatureExtractor(FeatureExtractor):
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return 'g-r_max', 'g-r_mean'
+
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'band', 'magnitude'
+
+    def _compute_features(self, detections, **kwargs):
+        return self._compute_features_from_df_groupby(
+            detections.groupby(level=0),
+            **kwargs)
+
+    def _compute_features_from_df_groupby(self, detections, **kwargs):
+        """
+        Parameters
+        ----------
+        detections
+        DataFrame with detections of an object.
+        kwargs Not required.
+        Returns :class:pandas.`DataFrame`
+        -------
+        """
+
+        def aux_function(oid_detections):
+            oid = oid_detections.index.values[0]
+            bands = oid_detections['band'].values
+            unique_fids = np.unique(bands)
+            if 1 not in unique_fids or 2 not in unique_fids:
+                logging.debug(
+                    f'extractor=COLOR  object={oid}  required_cols={self.get_required_keys()}  filters_qty=2')
+                return self.nan_series()
+
+            mag = oid_detections['magnitude'].values
+            g_band_mag = mag[bands == 1]
+            r_band_mag = mag[bands == 2]
+
+            g_r_max = g_band_mag.min() - r_band_mag.min()
+            g_r_mean = g_band_mag.mean() - r_band_mag.mean()
+
+            data = [g_r_max, g_r_mean]
+            oid_color = pd.Series(data=data, index=self.get_features_keys())
+            return oid_color
+
+        colors = detections.apply(aux_function)
+        colors.index.name = 'oid'
+        return colors

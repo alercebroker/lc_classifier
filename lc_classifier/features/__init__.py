@@ -1,4 +1,5 @@
 from .extractors.color_feature_extractor import ZTFColorFeatureExtractor
+from .extractors.color_feature_extractor import ZTFColorForcedFeatureExtractor
 from .extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .extractors.iqr_extractor import IQRExtractor
 from .extractors.mhps_extractor import MHPSExtractor
@@ -21,13 +22,14 @@ from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 
 from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
 
-from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor
+from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor, ZTFForcedPhotometryLightcurvePreprocessor
 
 from .core.base import FeatureExtractorComposer
 
 
 __all__ = [
     'ZTFColorFeatureExtractor',
+    'ZTFColorForcedFeatureExtractor',
     'GalacticCoordinatesExtractor',
     'IQRExtractor',
     'MHPSExtractor',
@@ -48,6 +50,7 @@ __all__ = [
     'ZTFForcedPhotometryFeatureExtractor',
     'GPDRWExtractor',
     'ZTFLightcurvePreprocessor',
+    'ZTFForcedPhotometryLightcurvePreprocessor',
     'FeatureExtractorComposer',
     'SNFeaturesPhaseIIExtractor',
     'SPMExtractorPhaseII'

@@ -35,15 +35,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             band_mask = bands == band
             oid_band_detections = oid_detections[band_mask]
 
-            diff_flux_band = oid_band_detections['diff_flux'].values
-
-            mag_band = oid_band_detections['magnitude'].dropna().values
-
-            # delta_mag_band
-            if len(mag_band) > 0:
-                delta_mag_band = mag_band.max() - mag_band.min()
-            else:
-                delta_mag_band = np.nan
+            diff_flux_band = oid_band_detections['difference_flux'].values
 
             # positive_fraction
             positive_observations = diff_flux_band > 0
@@ -53,10 +45,11 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             if not is_sorted(oid_detections['time'].values):
                 oid_detections = oid_detections.sort_values('time')
 
-            diff_flux_any_band = oid_detections['diff_flux'].values
-            diff_err_any_band = oid_detections['diff_err'].values
+            diff_flux_any_band = oid_detections['difference_flux'].values
+            diff_err_any_band = oid_detections['difference_flux_error'].values
 
             # This value "3" is arbitrary
+            # TODO: replace with a less arbitrary version
             detected = np.abs(diff_flux_any_band) - 3 * diff_err_any_band > 0
             first_detection_index = first_occurrence(detected, True)
 
@@ -64,7 +57,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             if first_detection_index == -1:
                 n_non_det_before_band = 0
                 n_non_det_after_band = 0
-                frac_non_det_after_band = 0.0
+                # frac_non_det_after_band = 0.0
                 dflux_first_det_band = np.nan
                 dflux_non_det_band = np.nan
                 last_flux_before_band = np.nan
@@ -82,7 +75,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
                 n_det_after_band = (band_mask & detected)[first_detection_index:].astype(np.float).sum()
                 n_non_det_after_band = (band_mask & ~detected)[first_detection_index:].astype(np.float).sum()
 
-                frac_non_det_after_band = n_det_after_band / (n_det_after_band + n_non_det_after_band)
+                # frac_non_det_after_band = n_det_after_band / (n_det_after_band + n_non_det_after_band)
 
                 # diff of flux between first det in any band and previous non det in band
                 flux_1st_det = diff_flux_any_band[first_detection_index]
@@ -95,7 +88,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
                     max_flux_before_band = np.nan
                     median_flux_before_band = np.nan
                 else:
-                    non_det_flux_in_band = before_1st_det_in_band['diff_flux'].values
+                    non_det_flux_in_band = before_1st_det_in_band['difference_flux'].values
                     dflux_first_det_band = flux_1st_det - non_det_flux_in_band[-1]
                     dflux_non_det_band = flux_1st_det - np.median(non_det_flux_in_band)
                     last_flux_before_band = non_det_flux_in_band[-1]
@@ -113,7 +106,6 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
                     median_flux_after_band = np.median(non_det_after_band)
 
             data = [
-                delta_mag_band,
                 positive_fraction,
                 dflux_first_det_band,
                 dflux_non_det_band,
@@ -138,7 +130,6 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
     @lru_cache(1)
     def get_features_keys_without_band(self) -> Tuple[str, ...]:
         return (
-            'delta_mag_band',
             'positive_fraction',
 
             'dflux_first_det_band',
@@ -155,4 +146,4 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return "diff_flux", "diff_err", "time", "band", "magnitude"
+        return "difference_flux", "difference_flux_error", "time", "band"

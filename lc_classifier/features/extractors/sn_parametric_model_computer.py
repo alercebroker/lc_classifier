@@ -122,7 +122,7 @@ class SNModelScipyPhaseII(object):
         argmax_fluxpsf = np.argmax(fluxpsf)
         max_fluxpsf = fluxpsf[argmax_fluxpsf]
         A_bounds = [max_fluxpsf / 3.0, max_fluxpsf * 3.0]
-        t0_bounds = [-50.0, 90.0]
+        t0_bounds = [-50.0, np.max(times)]
         gamma_bounds = [1.0, 120.0]
         beta_bounds = [0.0, 1.0]
         trise_bounds = [1.0, 100.0]
@@ -130,10 +130,10 @@ class SNModelScipyPhaseII(object):
 
         # Parameter guess
         A_guess = np.clip(1.2 * max_fluxpsf, A_bounds[0], A_bounds[1])
-        t0_guess = np.clip(times[argmax_fluxpsf] * 2.0 / 3.0, t0_bounds[0], t0_bounds[1])
-        gamma_guess = np.clip(times[argmax_fluxpsf], gamma_bounds[0], gamma_bounds[1])
+        t0_guess = np.clip(times[argmax_fluxpsf] - 10, t0_bounds[0], t0_bounds[1])
+        gamma_guess = 3.0
         beta_guess = 0.5
-        trise_guess = np.clip(times[argmax_fluxpsf] / 2.0, trise_bounds[0], trise_bounds[1])
+        trise_guess = 3.0
         tfall_guess = 50.0
 
         # reference guess
@@ -287,7 +287,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return 'time', 'diff_flux', 'diff_err', 'band'
+        return 'time', 'difference_flux', 'difference_flux_error', 'band'
 
     def compute_feature_in_one_band(self, detections, band, **kwargs):
         grouped_detections = detections.groupby(level=0)
@@ -307,7 +307,7 @@ class SPMExtractorPhaseII(FeatureExtractorSingleBand):
             oid_band_detections = oid_detections[oid_detections['band'] == band]
 
             oid_band_detections = oid_band_detections[[
-                'time', 'diff_flux', 'diff_err']]
+                'time', 'difference_flux', 'difference_flux_error']]
             oid_band_detections = oid_band_detections.dropna()
 
             np_array_data = oid_band_detections.values.astype(np.float32)

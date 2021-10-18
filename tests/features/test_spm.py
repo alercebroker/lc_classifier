@@ -31,8 +31,8 @@ class TestSPMExtractorPhaseII(unittest.TestCase):
         )
         self.light_curve_df = parse_lightcurve_txt(example_csv_filename)
         self.light_curve_df['mjd'] = self.light_curve_df['jd'] - 2400000.5
-        self.light_curve_df['diff_flux'] = self.light_curve_df['forcediffimflux']
-        self.light_curve_df['diff_err'] = self.light_curve_df['forcediffimfluxunc']
+        self.light_curve_df['difference_flux'] = self.light_curve_df['forcediffimflux']
+        self.light_curve_df['difference_flux_error'] = self.light_curve_df['forcediffimfluxunc']
         self.light_curve_df['fid'] = [
             filter_name_to_int[name] for name in self.light_curve_df['filter']]
         self.light_curve_df['oid'] = 'ZTF21aaomuka'
