@@ -122,22 +122,30 @@ class HierarchicalRandomForest(BaseClassifier):
         'Transient': ['SLSN', 'SNII', 'SNIa', 'SNIbc']
     }
 
-    def __init__(self, taxonomy_dictionary=None, non_used_features=None):
-        n_trees = 500
+    def __init__(self,
+                 taxonomy_dictionary=None,
+                 non_used_features=None,
+                 n_trees=500,
+                 n_jobs=1):
+
         self.top_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None, max_features="auto"
+            n_estimators=n_trees, max_depth=None,
+            max_features="auto", n_jobs=n_jobs
         )
 
         self.stochastic_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None, max_features=0.2
+            n_estimators=n_trees, max_depth=None,
+            max_features=0.2, n_jobs=n_jobs
         )
 
         self.periodic_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None, max_features="auto"
+            n_estimators=n_trees, max_depth=None,
+            max_features="auto", n_jobs=n_jobs
         )
 
         self.transient_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None, max_features="auto"
+            n_estimators=n_trees, max_depth=None,
+            max_features="auto", n_jobs=n_jobs
         )
 
         self.feature_preprocessor = FeaturePreprocessor(
