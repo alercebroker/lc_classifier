@@ -167,14 +167,16 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
     @lru_cache(1)
     def get_features_keys(self) -> Tuple[str, ...]:
         return (
-                self.magnitude_feature_extractor.get_features_keys()
+                self.gal_extractor.get_features_keys()
+                + self.magnitude_feature_extractor.get_features_keys()
                 + self.flux_feature_extractor.get_features_keys()
         )
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
         return (
-            self.magnitude_feature_extractor.get_required_keys()
+            self.gal_extractor.get_required_keys()
+            + self.magnitude_feature_extractor.get_required_keys()
             + self.flux_feature_extractor.get_required_keys()
         )
 
