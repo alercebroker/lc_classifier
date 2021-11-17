@@ -23,7 +23,7 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
         else:
             return 'ra', 'dec'
 
-    def compute_from_metadata(self, metadata):
+    def compute_from_metadata(self, detections, metadata):
         coordinates = SkyCoord(
             ra=metadata['ra'],
             dec=metadata['dec'],
@@ -36,6 +36,8 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
             index=metadata.index,
             columns=['gal_b', 'gal_l'])
         galactic_coordinates_df.index.name = 'oid'
+        det_oids = detections.index.unique()
+        galactic_coordinates_df = galactic_coordinates_df.loc[det_oids]
         return galactic_coordinates_df
 
     def compute_from_detections(self, detections):
@@ -68,6 +70,6 @@ class GalacticCoordinatesExtractor(FeatureExtractor):
 
         """
         if self.from_metadata:
-            return self.compute_from_metadata(kwargs['metadata'])
+            return self.compute_from_metadata(detections, kwargs['metadata'])
         else:
             return self.compute_from_detections(detections)

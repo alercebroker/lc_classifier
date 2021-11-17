@@ -136,10 +136,10 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
     def __init__(self, bands=(1, 2)):
         self.bands = list(bands)
 
-        magnitude_extractors = [
-            # input: metadata
-            GalacticCoordinatesExtractor(from_metadata=True),
+        # input: metadata
+        self.gal_extractor = GalacticCoordinatesExtractor(from_metadata=True)
 
+        magnitude_extractors = [
             # input: apparent magnitude
             ZTFColorForcedFeatureExtractor(),
             MHPSExtractor(bands),
@@ -215,6 +215,10 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
         shared_data = dict()
         kwargs['shared_data'] = shared_data
 
+        gal_features = self.gal_extractor.compute_features(
+            detections, **kwargs
+        )
+
         magnitude_features = self.compute_magnitude_features(
             detections, **kwargs)
 
@@ -222,7 +226,7 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
             detections, **kwargs)
 
         df = pd.concat(
-            [magnitude_features, flux_features],
+            [gal_features, magnitude_features, flux_features],
             axis=1, join="outer", sort=True)
         return df
 
