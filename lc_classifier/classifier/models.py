@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+from pathlib import Path
 import pickle5 as pickle
 import wget
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
@@ -96,6 +97,7 @@ class BaselineRandomForest(BaseClassifier):
         return self.random_forest_classifier.classes_
 
     def save_model(self, directory: str) -> None:
+        Path(directory).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(directory, self.model_filename), "wb") as f:
             pickle.dump(self.random_forest_classifier, f, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(directory, "feature_list.pkl"), "wb") as f:
@@ -262,6 +264,7 @@ class HierarchicalRandomForest(BaseClassifier):
         return final_columns
 
     def save_model(self, directory: str) -> None:
+        Path(directory).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(directory, self.pickles["top_rf"]), "wb") as f:
             pickle.dump(self.top_classifier, f, pickle.HIGHEST_PROTOCOL)
 
