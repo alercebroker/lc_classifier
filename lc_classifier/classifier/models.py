@@ -388,7 +388,7 @@ class HierarchicalRandomForest(BaseClassifier):
 
 
 class ElasticcRandomForest(HierarchicalRandomForest):
-        def __init__(self,
+    def __init__(self,
                  taxonomy_dictionary,
                  non_used_features=None,
                  n_trees=500,
