@@ -21,6 +21,7 @@ from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 
 
 from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
+from .custom.elasticc_feature_extractor import ElasticcFeatureExtractor
 
 from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor, ZTFForcedPhotometryLightcurvePreprocessor
 
@@ -53,5 +54,6 @@ __all__ = [
     'ZTFForcedPhotometryLightcurvePreprocessor',
     'FeatureExtractorComposer',
     'SNFeaturesPhaseIIExtractor',
-    'SPMExtractorPhaseII'
+    'SPMExtractorPhaseII',
+    'ElasticcFeatureExtractor'
 ]

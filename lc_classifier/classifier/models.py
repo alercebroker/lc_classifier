@@ -128,26 +128,41 @@ class HierarchicalRandomForest(BaseClassifier):
                  taxonomy_dictionary=None,
                  non_used_features=None,
                  n_trees=500,
-                 n_jobs=1):
+                 n_jobs=1,
+                 verbose: bool = False):
 
+        self.verbose = verbose
+        if self.verbose:
+            verbose_number = 11
+        else:
+            verbose_number = 0
+            
         self.top_classifier = RandomForestClassifier(
             n_estimators=n_trees, max_depth=None,
-            max_features="auto", n_jobs=n_jobs
+            max_features="sqrt",
+            n_jobs=n_jobs,
+            verbose=verbose_number
         )
 
         self.stochastic_classifier = RandomForestClassifier(
             n_estimators=n_trees, max_depth=None,
-            max_features=0.2, n_jobs=n_jobs
+            max_features=0.2,
+            n_jobs=n_jobs,
+            verbose=verbose_number
         )
 
         self.periodic_classifier = RandomForestClassifier(
             n_estimators=n_trees, max_depth=None,
-            max_features="auto", n_jobs=n_jobs
+            max_features="sqrt",
+            n_jobs=n_jobs,
+            verbose=verbose_number
         )
 
         self.transient_classifier = RandomForestClassifier(
             n_estimators=n_trees, max_depth=None,
-            max_features="auto", n_jobs=n_jobs
+            max_features="sqrt",
+            n_jobs=n_jobs,
+            verbose=verbose_number
         )
 
         self.feature_preprocessor = FeaturePreprocessor(
@@ -192,19 +207,27 @@ class HierarchicalRandomForest(BaseClassifier):
         self.feature_list = samples.columns
 
         # Train top classifier
+        if self.verbose:
+            print("training top classifier")
         self.top_classifier.fit(samples.values, labels["top_class"].values)
 
         # Train specialized classifiers
+        if self.verbose:
+            print("training stochastic classifier")
         is_stochastic = labels["top_class"] == "Stochastic"
         self.stochastic_classifier.fit(
             samples[is_stochastic].values, labels[is_stochastic]["classALeRCE"].values
         )
 
+        if self.verbose:
+            print("training periodic classifier")
         is_periodic = labels["top_class"] == "Periodic"
         self.periodic_classifier.fit(
             samples[is_periodic].values, labels[is_periodic]["classALeRCE"].values
         )
 
+        if self.verbose:
+            print("training transient classifier")
         is_transient = labels["top_class"] == "Transient"
         self.transient_classifier.fit(
             samples[is_transient].values, labels[is_transient]["classALeRCE"].values
@@ -361,4 +384,64 @@ class HierarchicalRandomForest(BaseClassifier):
             "hierarchical": {"top": prob_root, "children": resp_children},
             "probabilities": prob_all,
             "class": prob_all.idxmax(axis=1),
+        }
+
+
+class ElasticcRandomForest(HierarchicalRandomForest):
+        def __init__(self,
+                 taxonomy_dictionary,
+                 non_used_features=None,
+                 n_trees=500,
+                 n_jobs=1,
+                 verbose: bool = False):
+
+        self.verbose = verbose
+        if self.verbose:
+            verbose_number = 11
+        else:
+            verbose_number = 0
+            
+        self.top_classifier = RandomForestClassifier(
+            n_estimators=n_trees, max_depth=None,
+            max_features="sqrt", min_samples_leaf=1,
+            n_jobs=n_jobs, max_samples=10000,
+            verbose=verbose_number
+        )
+
+        self.stochastic_classifier = RandomForestClassifier(
+            n_estimators=n_trees, max_depth=None,
+            max_features="sqrt", min_samples_leaf=1,
+            n_jobs=n_jobs, max_samples=10000,
+            verbose=verbose_number
+        )
+
+        self.periodic_classifier = RandomForestClassifier(
+            n_estimators=n_trees, max_depth=None,
+            max_features="sqrt", min_samples_leaf=1,
+            n_jobs=n_jobs, max_samples=10000,
+            verbose=verbose_number
+        )
+
+        self.transient_classifier = RandomForestClassifier(
+            n_estimators=n_trees, max_depth=None,
+            max_features="sqrt", min_samples_leaf=1,
+            n_jobs=n_jobs, max_samples=10000,
+            verbose=verbose_number
+        )
+
+        self.feature_preprocessor = FeaturePreprocessor(
+            non_used_features=non_used_features
+        )
+
+        self.feature_list = None
+
+        self.taxonomy_dictionary = taxonomy_dictionary
+
+        self.inverted_dictionary = invert_dictionary(self.taxonomy_dictionary)
+        self.pickles = {
+            "features_list": "features_RF_model.pkl",
+            "top_rf": "top_level_BRF_model.pkl",
+            "periodic_rf": "periodic_level_BRF_model.pkl",
+            "stochastic_rf": "stochastic_level_BRF_model.pkl",
+            "transient_rf": "transient_level_BRF_model.pkl",
         }
