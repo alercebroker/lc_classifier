@@ -400,35 +400,57 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             verbose_number = 11
         else:
             verbose_number = 0
+
+        max_depth = None
+        max_features = "sqrt"
+        min_samples_leaf = 1
+        min_samples_split = 2
+        max_samples = 10000
             
         self.top_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None,
-            max_features="sqrt", min_samples_leaf=1,
-            n_jobs=n_jobs, max_samples=10000,
+            n_estimators=n_trees,
+            max_depth=max_depth,
+            max_features=max_features,
+            min_samples_leaf=min_samples_leaf,
+            min_samples_split=min_samples_split,
+            max_samples=max_samples,
+            n_jobs=n_jobs,
             verbose=verbose_number
         )
 
         self.stochastic_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None,
-            max_features="sqrt", min_samples_leaf=1,
-            n_jobs=n_jobs, max_samples=10000,
+            n_estimators=n_trees,
+            max_depth=max_depth,
+            max_features=max_features,
+            min_samples_leaf=min_samples_leaf,
+            min_samples_split=min_samples_split,
+            max_samples=max_samples,
+            n_jobs=n_jobs,
             verbose=verbose_number
         )
 
         self.periodic_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None,
-            max_features="sqrt", min_samples_leaf=1,
-            n_jobs=n_jobs, max_samples=10000,
+            n_estimators=n_trees,
+            max_depth=max_depth,
+            max_features=max_features,
+            min_samples_leaf=min_samples_leaf,
+            min_samples_split=min_samples_split,
+            max_samples=max_samples,
+            n_jobs=n_jobs,
             verbose=verbose_number
         )
 
         self.transient_classifier = RandomForestClassifier(
-            n_estimators=n_trees, max_depth=None,
-            max_features="sqrt", min_samples_leaf=1,
-            n_jobs=n_jobs, max_samples=10000,
+            n_estimators=n_trees,
+            max_depth=max_depth,
+            max_features=max_features,
+            min_samples_leaf=min_samples_leaf,
+            min_samples_split=min_samples_split,
+            max_samples=max_samples,
+            n_jobs=n_jobs,
             verbose=verbose_number
         )
-
+        
         self.feature_preprocessor = FeaturePreprocessor(
             non_used_features=non_used_features
         )
