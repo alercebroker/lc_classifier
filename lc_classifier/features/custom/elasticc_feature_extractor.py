@@ -19,7 +19,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 from lc_classifier.features import SNFeaturesPhaseIIExtractor
 from lc_classifier.features import SPMExtractorPhaseII
-
+from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
 
 from ..core.base import FeatureExtractor
 from ..core.base import FeatureExtractorComposer
@@ -50,9 +50,11 @@ class ElasticcFeatureExtractor(FeatureExtractor):
 
         flux_extractors = [
             # input: difference flux
-            SNFeaturesPhaseIIExtractor(self.bands),
-            SPMExtractorPhaseII(self.bands)
+            # SNFeaturesPhaseIIExtractor(self.bands),
+            # SPMExtractorPhaseII(self.bands)
+            SPMExtractorElasticc(self.bands)
         ]
+        
         self.magnitude_feature_extractor = FeatureExtractorComposer(
             magnitude_extractors)
 
@@ -64,16 +66,16 @@ class ElasticcFeatureExtractor(FeatureExtractor):
     def get_features_keys(self) -> Tuple[str, ...]:
         return (
                 # self.gal_extractor.get_features_keys()
-                self.magnitude_feature_extractor.get_features_keys()
-                + self.flux_feature_extractor.get_features_keys()
+                #self.magnitude_feature_extractor.get_features_keys()
+            self.flux_feature_extractor.get_features_keys()
         )
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
         return (
             # self.gal_extractor.get_required_keys()
-            self.magnitude_feature_extractor.get_required_keys()
-            + self.flux_feature_extractor.get_required_keys()
+            # self.magnitude_feature_extractor.get_required_keys()
+            self.flux_feature_extractor.get_required_keys()
         )
 
     def get_enough_alerts_mask(self, detections):
@@ -117,14 +119,14 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         #     detections, **kwargs
         # )
 
-        magnitude_features = self.compute_magnitude_features(
-            detections, **kwargs)
+        # magnitude_features = self.compute_magnitude_features(
+        #     detections, **kwargs)
 
         flux_features = self.compute_flux_features(
             detections, **kwargs)
 
         df = pd.concat(
-            [magnitude_features, flux_features],
+            [flux_features],
             # [gal_features, magnitude_features, flux_features],
             axis=1, join="outer", sort=True)
         return df
