@@ -1,8 +1,12 @@
 import unittest
 import numpy as np
+import pandas as pd
+
 from lc_classifier.features.extractors.sn_model_tf import SNModel
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 from lc_classifier.features import ZTFLightcurvePreprocessor
+from lc_classifier.features.preprocess import ElasticcPreprocessor
+from lc_classifier.features import ElasticcFeatureExtractor
 from forced_photometry_data.txt_lc_parser import parse_lightcurve_txt, filter_name_to_int
 import os
 
@@ -46,3 +50,19 @@ class TestSPMExtractorPhaseII(unittest.TestCase):
         extractor = SPMExtractorPhaseII(self.bands)
         features = extractor.compute_features(self.light_curve_df)
         self.assertFalse(np.any(np.isnan(features.values)))
+
+
+class TestSPMElasticc(unittest.TestCase):
+    def setUp(self) -> None:
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        example_lc_filename = os.path.join(
+            this_dir,
+            "../../data_examples/elasticc_lc_chunk.parquet"
+        )
+        self.light_curve_df = pd.read_parquet(example_lc_filename)
+        preprocessor = ElasticcPreprocessor()
+        self.light_curve_df = preprocessor.preprocess(self.light_curve_df)
+
+    def test_fit(self):
+        extractor = ElasticcFeatureExtractor()
+        features = extractor.compute_features(self.light_curve_df)

@@ -30,7 +30,7 @@ class FeatureExtractor(ABC):
             One-row dataframe full of nans.
         """
         return pd.DataFrame(
-            columns=self.get_features_keys(), index=[index], dtype=np.float)
+            columns=self.get_features_keys(), index=[index], dtype=float)
 
     def nan_series(self):
         return pd.Series(

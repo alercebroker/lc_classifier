@@ -57,7 +57,7 @@ class BaselineRandomForest(BaseClassifier):
     def __init__(self):
         self.random_forest_classifier = RandomForestClassifier(
             n_estimators=500,
-            max_features="auto",
+            max_features="sqrt",
             max_depth=None,
             n_jobs=1,
             class_weight=None,

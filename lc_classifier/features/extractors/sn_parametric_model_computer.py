@@ -435,6 +435,59 @@ class SPMExtractorElasticc(FeatureExtractor):
         return sn_params
 
 
+@jit(nopython=True)
+def objective_function(params, times, fluxpsf, obs_errors, bands, available_bands):
+    params = params.reshape(-1, 6)
+    sum_sqerrs = 0.0
+    for i, band in enumerate(available_bands):
+        band_mask = bands == band
+        band_times = times[band_mask]
+        band_flux = fluxpsf[band_mask]
+        band_errors = obs_errors[band_mask]
+
+        band_params = params[i]
+
+        A = band_params[0]
+        t0 = band_params[1]
+        gamma = band_params[2]
+        beta = band_params[3]
+        t_rise = band_params[4]
+        t_fall = band_params[5]
+
+        sigmoid_factor = 1.0 / 3.0
+        t1 = t0 + gamma
+
+        sigmoid = 1.0 / (1.0 + np.exp(-sigmoid_factor * (band_times - t1)))
+        den = 1 + np.exp(-(band_times - t0) / t_rise)
+        model_output = ((1 - beta) * np.exp(-(band_times - t1) / t_fall)
+                        * sigmoid
+                        + (1. - beta * (band_times - t0) / gamma)
+                        * (1 - sigmoid)) * A / den
+
+        band_sqerr = np.sum(((model_output - band_flux) / (band_errors + 5.0)) ** 2)
+        sum_sqerrs += band_sqerr
+
+    params_var = np.empty(6, dtype=np.float32)
+    params_var[0] = np.std(params[:, 0])
+    params_var[1] = np.var(params[:, 1])
+    params_var[2] = np.var(params[:, 2])
+    params_var[3] = np.var(params[:, 3])
+    params_var[4] = np.var(params[:, 4])
+    params_var[5] = np.var(params[:, 5])
+
+    lambdas = np.array([
+        1.0 / np.mean(params[:, 0]),
+        20.0 / 10 ** 2,
+        3.0 / 10 ** 2,
+        1.0 / 1 ** 2,
+        1.0 / 10 ** 2,
+        1.0 / 30 ** 2
+    ], dtype=np.float32)
+
+    loss = sum_sqerrs + np.dot(lambdas, params_var)
+    return loss
+
+
 class SNModelScipyElasticc(object):
     def __init__(self, bands):
         self.parameters = None
@@ -479,58 +532,6 @@ class SNModelScipyElasticc(object):
 
             initial_guess.append(p0)
         initial_guess = np.concatenate(initial_guess, axis=0).astype(np.float32)
-
-        @jit(nopython=True)
-        def objective_function(params, times, fluxpsf, obs_errors, bands, available_bands):
-            params = params.reshape(-1, 6)
-            sum_sqerrs = 0.0
-            for i, band in enumerate(available_bands):
-                band_mask = bands == band
-                band_times = times[band_mask]
-                band_flux = fluxpsf[band_mask]
-                band_errors = obs_errors[band_mask]
-
-                band_params = params[i]
-
-                A = band_params[0]
-                t0 = band_params[1]
-                gamma = band_params[2]
-                beta = band_params[3]
-                t_rise = band_params[4]
-                t_fall = band_params[5]
-                
-                sigmoid_factor = 1.0 / 3.0
-                t1 = t0 + gamma
-
-                sigmoid = 1.0 / (1.0 + np.exp(-sigmoid_factor * (band_times - t1)))
-                den = 1 + np.exp(-(band_times - t0) / t_rise)
-                model_output = ((1 - beta) * np.exp(-(band_times - t1) / t_fall)
-                                * sigmoid
-                                + (1. - beta * (band_times - t0) / gamma)
-                                * (1 - sigmoid)) * A / den
-                
-                band_sqerr = np.sum(((model_output-band_flux)/(band_errors+5.0))**2)
-                sum_sqerrs += band_sqerr
-
-            params_var = np.empty(6, dtype=np.float32)
-            params_var[0] = np.std(params[:, 0])
-            params_var[1] = np.var(params[:, 1])
-            params_var[2] = np.var(params[:, 2])
-            params_var[3] = np.var(params[:, 3])
-            params_var[4] = np.var(params[:, 4])
-            params_var[5] = np.var(params[:, 5])
-            
-            lambdas = np.array([
-                1.0/np.mean(params[:, 0]),
-                20.0/10**2,
-                3.0/10**2,
-                1.0/1**2,
-                1.0/10**2,
-                1.0/30**2
-            ], dtype=np.float32)
-
-            loss = sum_sqerrs + np.dot(lambdas, params_var)
-            return loss
 
         bounds = [
             A_bounds,

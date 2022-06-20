@@ -1,17 +1,9 @@
 from typing import Tuple
 
-from lc_classifier.features import SupernovaeDetectionAndNonDetectionFeatureExtractor
-from lc_classifier.features import GalacticCoordinatesExtractor
 from lc_classifier.features import TurboFatsFeatureExtractor
-from lc_classifier.features import ZTFColorFeatureExtractor
 from lc_classifier.features import ZTFColorForcedFeatureExtractor
-from lc_classifier.features import SGScoreExtractor, StreamSGScoreExtractor
-from lc_classifier.features import RealBogusExtractor
 from lc_classifier.features import MHPSExtractor
 from lc_classifier.features import IQRExtractor
-from lc_classifier.features import SNParametricModelExtractor
-from lc_classifier.features import WiseStaticExtractor
-from lc_classifier.features import WiseStreamExtractor
 from lc_classifier.features import PeriodExtractor
 from lc_classifier.features import PowerRateExtractor
 from lc_classifier.features import FoldedKimExtractor
@@ -66,7 +58,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
     def get_features_keys(self) -> Tuple[str, ...]:
         return (
                 # self.gal_extractor.get_features_keys()
-                #self.magnitude_feature_extractor.get_features_keys()
+                # self.magnitude_feature_extractor.get_features_keys()
             self.flux_feature_extractor.get_features_keys()
         )
 
