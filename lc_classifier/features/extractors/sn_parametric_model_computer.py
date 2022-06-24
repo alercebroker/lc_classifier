@@ -5,7 +5,9 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit, minimize
 from numba import jit
-
+from astropy import units as u
+import extinction
+from astropy.cosmology import WMAP5
 
 from ..core.base import FeatureExtractorSingleBand, FeatureExtractor
 from scipy.optimize import OptimizeWarning
@@ -281,7 +283,7 @@ class SNParametricModelExtractor(FeatureExtractorSingleBand):
 
             times = times.astype(np.float32)
             targets = targets.astype(np.float32)
-
+            
             fit_error = self.sn_model.fit(times, targets, errors)
             model_parameters = self.sn_model.get_model_parameters()
             model_parameters.append(fit_error)
@@ -401,6 +403,7 @@ class SPMExtractorElasticc(FeatureExtractor):
     def _compute_features_from_df_groupby(
             self, detections, **kwargs) -> pd.DataFrame:
         columns = self.get_features_keys()
+        metadata = kwargs['metadata']
         
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
@@ -414,10 +417,19 @@ class SPMExtractorElasticc(FeatureExtractor):
                  'band']].values
 
             times = np_array_data[:, 0]
-            times = times - np.min(times)
             flux_target = np_array_data[:, 1]
             errors = np_array_data[:, 2]
             bands = np_array_data[:, 3]
+
+            # inplace correction (by reference)
+            metadata_lightcurve = metadata.loc[oid]
+            mwebv = metadata_lightcurve['MWEBV']
+            zhost = metadata_lightcurve['REDSHIFT_HELIO']
+            
+            self._correct_lightcurve(
+                times, flux_target, errors,
+                bands, available_bands,
+                mwebv, zhost)
             
             self.sn_model.fit(times, flux_target, errors, bands)
 
@@ -434,11 +446,50 @@ class SPMExtractorElasticc(FeatureExtractor):
         sn_params.index.name = 'oid'
         return sn_params
 
+    def _deattenuation_factor(self, band, mwebv):
+        rv = 3.1
+        av = rv * mwebv
+
+        cws = {
+            'u': 3671.,
+            'g': 4827.,
+            'r': 6223.,
+            'i': 7546.,
+            'z': 8691.,
+            'Y': 9712.}
+
+        return 10**(
+            extinction.odonnell94(np.array([cws[band]]), av, rv)[0] / 2.5)
+
+    def _correct_lightcurve(
+            self,
+            times, fluxes, errors,
+            bands, available_bands,
+            mwebv, zhost):
+
+        # lightcurve corrections: dust, redshift
+        if zhost < 0.003:
+            zdeatt = 1.0
+            zhost = 0.0
+        else:
+            zdeatt = 10.0**(-float((WMAP5.distmod(0.3) - WMAP5.distmod(zhost)) / u.mag) / 2.5)
+
+        for band in available_bands:
+            deatt = self._deattenuation_factor(band, mwebv) * zdeatt
+            band_mask = bands == band
+            fluxes[band_mask] *= deatt
+            errors[band_mask] *= deatt
+
+        # times
+        times -= np.min(times)
+        # times /= (1+zhost)
+        
 
 @jit(nopython=True)
 def objective_function(params, times, fluxpsf, obs_errors, bands, available_bands):
     params = params.reshape(-1, 6)
     sum_sqerrs = 0.0
+    smooth_error = np.percentile(obs_errors, 10) * 0.5
     for i, band in enumerate(available_bands):
         band_mask = bands == band
         band_times = times[band_mask]
@@ -464,27 +515,30 @@ def objective_function(params, times, fluxpsf, obs_errors, bands, available_band
                         + (1. - beta * (band_times - t0) / gamma)
                         * (1 - sigmoid)) * A / den
 
-        band_sqerr = np.sum(((model_output - band_flux) / (band_errors + 5.0)) ** 2)
+        band_sqerr = np.sum(((model_output - band_flux) / (band_errors + smooth_error)) ** 2)
         sum_sqerrs += band_sqerr
 
     params_var = np.empty(6, dtype=np.float32)
     params_var[0] = np.std(params[:, 0])
-    params_var[1] = np.var(params[:, 1])
-    params_var[2] = np.var(params[:, 2])
-    params_var[3] = np.var(params[:, 3])
-    params_var[4] = np.var(params[:, 4])
-    params_var[5] = np.var(params[:, 5])
+    params_var[1] = np.std(params[:, 1])
+    params_var[2] = np.std(params[:, 2])
+    params_var[3] = np.std(params[:, 3])
+    params_var[4] = np.std(params[:, 4])
+    params_var[5] = np.std(params[:, 5])
 
     lambdas = np.array([
-        1.0 / np.mean(params[:, 0]),
-        20.0 / 10 ** 2,
-        3.0 / 10 ** 2,
-        1.0 / 1 ** 2,
-        1.0 / 10 ** 2,
-        1.0 / 30 ** 2
+        0.0, #/ np.mean(params[:, 0]),
+        1.0,
+        0.1,
+        10.0,
+        0.7,
+        0.01
     ], dtype=np.float32)
 
-    loss = sum_sqerrs + np.dot(lambdas, params_var)
+    regularization = np.dot(lambdas, params_var)
+    # print(sum_sqerrs, regularization)
+    # print(lambdas*params_var)
+    loss = sum_sqerrs + regularization
     return loss
 
 
@@ -498,33 +552,42 @@ class SNModelScipyElasticc(object):
         """Assumptions:
             min(times) == 0"""
 
-        # Parameter bounds
-        argmax_fluxpsf = np.argmax(fluxpsf)
-        max_fluxpsf = fluxpsf[argmax_fluxpsf]
-        
-        A_bounds = [np.abs(max_fluxpsf)/10.0, np.abs(max_fluxpsf)*10.0]
-        t0_bounds = [-50.0, np.max(times)]
-        gamma_bounds = [1.0, 120.0]
-        beta_bounds = [0.0, 1.0]
-        trise_bounds = [1.0, 100.0]
-        tfall_bounds = [1.0, 180.0]
-
         # Available bands
         available_bands = np.unique(bands)
 
         initial_guess = []
-        
+        bounds = []
         for band in available_bands:
             band_mask = bands == band
             band_flux = fluxpsf[band_mask]
+
+            # Parameter bounds
+            max_band_flux = np.max(band_flux)
+            
+            A_bounds = [np.abs(max_band_flux)/10.0, np.abs(max_band_flux)*10.0]
+            t0_bounds = [-50.0, np.max(times)]
+            gamma_bounds = [1.0, 120.0]
+            beta_bounds = [0.0, 1.0]
+            trise_bounds = [1.0, 100.0]
+            tfall_bounds = [1.0, 180.0]
+
+            bounds += [
+                A_bounds,
+                t0_bounds,
+                gamma_bounds,
+                beta_bounds,
+                trise_bounds,
+                tfall_bounds
+            ]
             
             # Parameter guess
-            A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0], A_bounds[1])
-            t0_guess = np.clip(times[np.argmax(fluxpsf)], t0_bounds[0], t0_bounds[1])
-            gamma_guess = 3.0
+            tol = 1e-2
+            A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0]+tol, A_bounds[1]-tol)
+            t0_guess = np.clip(times[np.argmax(fluxpsf)]-10, t0_bounds[0]+tol, t0_bounds[1]-tol)
+            gamma_guess = 14.0
             beta_guess = 0.5
-            trise_guess = 3.0
-            tfall_guess = 50.0
+            trise_guess = 7.0
+            tfall_guess = 28.0
         
             # reference guess
             p0 = [A_guess, t0_guess, gamma_guess,
@@ -532,18 +595,8 @@ class SNModelScipyElasticc(object):
 
             initial_guess.append(p0)
         initial_guess = np.concatenate(initial_guess, axis=0).astype(np.float32)
-
-        bounds = [
-            A_bounds,
-            t0_bounds,
-            gamma_bounds,
-            beta_bounds,
-            trise_bounds,
-            tfall_bounds
-        ]*len(available_bands)
-
         band_mapper = dict(zip('ugrizY', range(6)))
-
+            
         res = minimize(
             objective_function,
             initial_guess,
@@ -553,9 +606,9 @@ class SNModelScipyElasticc(object):
                 obs_errors.astype(np.float32),
                 np.vectorize(band_mapper.get)(bands),
                 np.vectorize(band_mapper.get)(available_bands)),
-            method='L-BFGS-B',
+            method='TNC',  # 'L-BFGS-B',
             bounds=bounds,
-            options={'iprint': -1, 'maxcor': 10, 'maxiter': 200}
+            options={'maxfun': 1000}  # {'iprint': -1, 'maxcor': 10, 'maxiter': 400}
         )
         success = res.success
         best_params = res.x.reshape(-1, 6)
