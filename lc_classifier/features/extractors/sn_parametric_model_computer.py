@@ -30,6 +30,39 @@ def model_inference(times, A, t0, gamma, beta, t_rise, t_fall):
     return flux
 
 
+@jit(nopython=True)
+def model_inference_stable(times, A, t0, gamma, beta, t_rise, t_fall):
+    sigmoid_factor = 1.0/2.0
+    t1 = t0 + gamma
+
+    sigmoid_exp_arg = -sigmoid_factor * (times - t1)
+    sigmoid_exp_arg_big_mask = sigmoid_exp_arg >= 10.0
+    sigmoid_exp_arg = np.clip(sigmoid_exp_arg, -10.0, 10.0)
+    sigmoid = 1.0 / (1.0 + np.exp(sigmoid_exp_arg))
+    sigmoid[sigmoid_exp_arg_big_mask] = 0.0
+
+    # if t_fall < t_rise, the output diverges for early times
+    if t_fall < t_rise:
+        sigmoid_zero_mask = times < t1
+        sigmoid[sigmoid_zero_mask] = 0.0
+        
+    den_exp_arg = -(times - t0) / t_rise
+    den_exp_arg_big_mask = den_exp_arg >= 20.0
+    
+    den_exp_arg = np.clip(den_exp_arg, -20.0, 20.0)
+    one_over_den = 1.0 / (1.0 + np.exp(den_exp_arg))
+    one_over_den[den_exp_arg_big_mask] = 0.0
+    
+    fall_exp_arg = -(times - t1) / t_fall
+    fall_exp_arg = np.clip(fall_exp_arg, -20.0, 20.0)    
+    model_output = ((1.0 - beta) * np.exp(fall_exp_arg)
+                    * sigmoid
+                    + (1.0 - beta * (times - t0) / gamma)
+                    * (1.0 - sigmoid)) * A * one_over_den
+
+    return model_output
+
+
 class SNModelScipy(object):
     def __init__(self):
         self.parameters = None
@@ -490,6 +523,7 @@ def objective_function(params, times, fluxpsf, obs_errors, bands, available_band
     params = params.reshape(-1, 6)
     sum_sqerrs = 0.0
     smooth_error = np.percentile(obs_errors, 10) * 0.5
+    
     for i, band in enumerate(available_bands):
         band_mask = bands == band
         band_times = times[band_mask]
@@ -505,20 +539,44 @@ def objective_function(params, times, fluxpsf, obs_errors, bands, available_band
         t_rise = band_params[4]
         t_fall = band_params[5]
 
-        sigmoid_factor = 1.0 / 3.0
+        sigmoid_factor = 1.0/2.0
         t1 = t0 + gamma
 
-        sigmoid = 1.0 / (1.0 + np.exp(-sigmoid_factor * (band_times - t1)))
-        den = 1 + np.exp(-(band_times - t0) / t_rise)
-        model_output = ((1 - beta) * np.exp(-(band_times - t1) / t_fall)
+        sigmoid_exp_arg = -sigmoid_factor * (band_times - t1)
+        sigmoid_exp_arg_big_mask = sigmoid_exp_arg >= 10.0
+        sigmoid_exp_arg = np.clip(sigmoid_exp_arg, -10.0, 10.0)
+        sigmoid = 1.0 / (1.0 + np.exp(sigmoid_exp_arg))
+        sigmoid[sigmoid_exp_arg_big_mask] = 0.0
+
+        # if t_fall < t_rise, the output diverges for early times
+        if t_fall < t_rise:
+            sigmoid_zero_mask = band_times < t1
+            sigmoid[sigmoid_zero_mask] = 0.0
+        
+        den_exp_arg = -(band_times - t0) / t_rise
+        den_exp_arg_big_mask = den_exp_arg >= 20.0
+    
+        den_exp_arg = np.clip(den_exp_arg, -20.0, 20.0)
+        one_over_den = 1.0 / (1.0 + np.exp(den_exp_arg))
+        one_over_den[den_exp_arg_big_mask] = 0.0
+    
+        fall_exp_arg = -(band_times - t1) / t_fall
+        fall_exp_arg = np.clip(fall_exp_arg, -20.0, 20.0)    
+        model_output = ((1.0 - beta) * np.exp(fall_exp_arg)
                         * sigmoid
-                        + (1. - beta * (band_times - t0) / gamma)
-                        * (1 - sigmoid)) * A / den
+                        + (1.0 - beta * (band_times - t0) / gamma)
+                        * (1.0 - sigmoid)) * A * one_over_den
 
-        band_sqerr = np.sum(((model_output - band_flux) / (band_errors + smooth_error)) ** 2)
-        sum_sqerrs += band_sqerr
+        band_sqerr = ((model_output - band_flux) / (band_errors + smooth_error)) ** 2
 
-    params_var = np.empty(6, dtype=np.float32)
+        negative_observations = (band_flux + band_errors) < 0.0
+        negative_observations = negative_observations.astype(np.float64)
+        ignore_negative_fluxes = np.exp(
+            -((band_flux + band_errors)*negative_observations/(band_errors+1))**2)
+        sum_sqerrs += np.dot(band_sqerr, ignore_negative_fluxes)
+        #sum_sqerrs += np.sum(band_sqerr)
+
+    params_var = np.empty(6, dtype=np.float64)
     params_var[0] = np.std(params[:, 0])
     params_var[1] = np.std(params[:, 1])
     params_var[2] = np.std(params[:, 2])
@@ -527,13 +585,13 @@ def objective_function(params, times, fluxpsf, obs_errors, bands, available_band
     params_var[5] = np.std(params[:, 5])
 
     lambdas = np.array([
-        0.0, #/ np.mean(params[:, 0]),
-        1.0,
-        0.1,
-        10.0,
-        0.7,
-        0.01
-    ], dtype=np.float32)
+        0.0,  # A
+        1.0,  # t0
+        0.1,  # gamma
+        20.0, # beta
+        0.7,  # t_rise
+        0.01  # t_fall
+    ], dtype=np.float64)
 
     regularization = np.dot(lambdas, params_var)
     # print(sum_sqerrs, regularization)
@@ -581,8 +639,9 @@ class SNModelScipyElasticc(object):
             ]
             
             # Parameter guess
+            A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0]*1.1, A_bounds[1]*0.9)
+
             tol = 1e-2
-            A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0]+tol, A_bounds[1]-tol)
             t0_guess = np.clip(times[np.argmax(fluxpsf)]-10, t0_bounds[0]+tol, t0_bounds[1]-tol)
             gamma_guess = 14.0
             beta_guess = 0.5
@@ -596,14 +655,19 @@ class SNModelScipyElasticc(object):
             initial_guess.append(p0)
         initial_guess = np.concatenate(initial_guess, axis=0).astype(np.float32)
         band_mapper = dict(zip('ugrizY', range(6)))
+
+        # debugging
+        # for g, b in zip(initial_guess, bounds):
+        #     print(g, b)
+        #     print(b[0] < g, g < b[1])
             
         res = minimize(
             objective_function,
             initial_guess,
             args=(
-                times.astype(np.float32),
-                fluxpsf.astype(np.float32),
-                obs_errors.astype(np.float32),
+                times.astype(np.float64),
+                fluxpsf.astype(np.float64),
+                obs_errors.astype(np.float64),
                 np.vectorize(band_mapper.get)(bands),
                 np.vectorize(band_mapper.get)(available_bands)),
             method='TNC',  # 'L-BFGS-B',
@@ -625,8 +689,8 @@ class SNModelScipyElasticc(object):
                 band_flux = fluxpsf[band_mask]
                 band_errors = obs_errors[band_mask]
 
-                predictions = model_inference(
-                    band_times.astype(np.float32),
+                predictions = model_inference_stable(
+                    band_times.astype(np.float64),
                     *best_params[index, :])
 
                 chi = np.sum((predictions - band_flux) ** 2 / (band_errors + 5) ** 2)
@@ -635,6 +699,7 @@ class SNModelScipyElasticc(object):
                     chi_per_degree = chi / chi_den
                 else:
                     chi_per_degree = np.NaN
+
                 chis.append(chi_per_degree)
             else:
                 parameters.append([np.nan]*6)
