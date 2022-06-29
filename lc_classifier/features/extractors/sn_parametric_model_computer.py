@@ -21,10 +21,8 @@ def model_inference(times, A, t0, gamma, beta, t_rise, t_fall, C=0):
 
     sigmoid = 1.0 / (1.0 + np.exp(-sigmoid_factor * (times - t1)))
     den = 1 + np.exp(-(times - t0) / t_rise)
-    flux = C + ((1 - beta) * np.exp(-(times - t1) / t_fall)
-            * sigmoid
-            + (1. - beta * (times - t0) / gamma)
-            * (1 - sigmoid)) * A / den
+    flux = C + ((1 - beta) * np.exp(-(times - t1) / t_fall) * sigmoid + (1. - beta * (times - t0) / gamma) *
+                (1 - sigmoid)) * A / den
     return flux
 
 
