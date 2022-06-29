@@ -15,7 +15,7 @@ from ...utils import mag_to_flux
 
 
 @jit(nopython=True)
-def model_inference(times, A, t0, gamma, beta, t_rise, t_fall, C = 0):
+def model_inference(times, A, t0, gamma, beta, t_rise, t_fall, C=0):
     sigmoid_factor = 1.0 / 3.0
     t1 = t0 + gamma
 
