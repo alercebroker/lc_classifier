@@ -2,7 +2,7 @@ from .extractors.color_feature_extractor import ZTFColorFeatureExtractor
 from .extractors.color_feature_extractor import ZTFColorForcedFeatureExtractor
 from .extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .extractors.iqr_extractor import IQRExtractor
-from .extractors.mhps_extractor import MHPSExtractor
+from .extractors.mhps_extractor import MHPSExtractor, MHPSFluxExtractor
 from .extractors.real_bogus_extractor import RealBogusExtractor
 from .extractors.sg_score_extractor import SGScoreExtractor, StreamSGScoreExtractor
 from .extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
@@ -34,6 +34,7 @@ __all__ = [
     'GalacticCoordinatesExtractor',
     'IQRExtractor',
     'MHPSExtractor',
+    'MHPSFluxExtractor',
     'RealBogusExtractor',
     'SGScoreExtractor',
     'StreamSGScoreExtractor',

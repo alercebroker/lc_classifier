@@ -6,7 +6,7 @@ from lc_classifier.features.extractors.sn_model_tf import SNModel
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 from lc_classifier.features import ZTFLightcurvePreprocessor
 from lc_classifier.features.preprocess import ElasticcPreprocessor
-from lc_classifier.features import ElasticcFeatureExtractor
+from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
 from forced_photometry_data.txt_lc_parser import parse_lightcurve_txt, filter_name_to_int
 import os
 
@@ -62,7 +62,13 @@ class TestSPMElasticc(unittest.TestCase):
         self.light_curve_df = pd.read_parquet(example_lc_filename)
         preprocessor = ElasticcPreprocessor()
         self.light_curve_df = preprocessor.preprocess(self.light_curve_df)
+        example_metadata_filename = os.path.join(
+            this_dir,
+            "../../data_examples/elasticc_metadata_chunk.parquet"
+        )
+        self.metadata_df = pd.read_parquet(example_metadata_filename)
 
     def test_fit(self):
-        extractor = ElasticcFeatureExtractor()
-        features = extractor.compute_features(self.light_curve_df)
+        extractor = SPMExtractorElasticc([b for b in 'ugrizY'])
+        features = extractor.compute_features(
+            self.light_curve_df, metadata=self.metadata_df)

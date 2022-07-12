@@ -2,7 +2,7 @@ from typing import Tuple
 
 from lc_classifier.features import TurboFatsFeatureExtractor
 from lc_classifier.features import ZTFColorForcedFeatureExtractor
-from lc_classifier.features import MHPSExtractor
+from lc_classifier.features import MHPSFluxExtractor
 from lc_classifier.features import IQRExtractor
 from lc_classifier.features import PeriodExtractor
 from lc_classifier.features import PowerRateExtractor
@@ -10,7 +10,6 @@ from lc_classifier.features import FoldedKimExtractor
 from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 from lc_classifier.features import SNFeaturesPhaseIIExtractor
-from lc_classifier.features import SPMExtractorPhaseII
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
 
 from ..core.base import FeatureExtractor
@@ -30,7 +29,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         magnitude_extractors = [
             # input: apparent magnitude
             ZTFColorForcedFeatureExtractor(),  # TODO: remove or adapt
-            MHPSExtractor(self.bands),
+            MHPSFluxExtractor(self.bands),
             IQRExtractor(self.bands),
             TurboFatsFeatureExtractor(self.bands),
             PeriodExtractor(bands=self.bands),
