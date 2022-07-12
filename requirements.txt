@@ -18,6 +18,7 @@ wget >=3.2
 celerite2 >=0.1
 pickle5
 extinction
+jax[cpu]
 -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
 -e git+https://git@github.com/alercebroker/P4J#egg=P4J

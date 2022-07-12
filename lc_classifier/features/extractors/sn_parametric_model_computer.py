@@ -4,7 +4,15 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit, minimize
+import numba
 from numba import jit
+from numba import vectorize, float32, float64
+
+import jax.numpy as jnp
+from jax.nn import sigmoid as jax_sigmoid
+from jax import grad
+from jax import jit as jax_jit
+
 from astropy import units as u
 import extinction
 from astropy.cosmology import WMAP5
@@ -14,6 +22,15 @@ from scipy.optimize import OptimizeWarning
 import logging
 
 from ...utils import mag_to_flux
+
+
+@vectorize([float64(float64), float32(float32)])
+def sigmoid(x):
+    if x > 0:
+        return 1.0/(1.0 + np.exp(-x))
+    else:
+        exp_x = np.exp(x)
+        return exp_x/(1.0 + exp_x)
 
 
 @jit(nopython=True)
@@ -516,19 +533,35 @@ class SPMExtractorElasticc(FeatureExtractor):
         # times
         times -= np.min(times)
         # times /= (1+zhost)
-        
 
-@jit(nopython=True)
-def objective_function(params, times, fluxpsf, obs_errors, bands, available_bands):
+
+def pad(x_array, fill_value):
+    original_length = len(x_array)
+    pad_length = 25 - (original_length % 25)
+    pad_array = np.array([fill_value]*pad_length, dtype=np.float32)
+    return np.concatenate([x_array, pad_array])
+    
+
+@jax_jit
+def objective_function_jax(
+    params,
+    times,
+    fluxpsf,
+    obs_errors,
+    bands,
+    available_bands,
+    smooth_error,
+    ignore_negative_fluxes):
+
     params = params.reshape(-1, 6)
     sum_sqerrs = 0.0
-    smooth_error = np.percentile(obs_errors, 10) * 0.5
-    
+
     for i, band in enumerate(available_bands):
         band_mask = bands == band
-        band_times = times[band_mask]
-        band_flux = fluxpsf[band_mask]
-        band_errors = obs_errors[band_mask]
+        band_times = times
+        band_flux = fluxpsf
+        band_errors = obs_errors
+        band_ignore_negative_fluxes = ignore_negative_fluxes
 
         band_params = params[i]
 
@@ -542,39 +575,135 @@ def objective_function(params, times, fluxpsf, obs_errors, bands, available_band
         sigmoid_factor = 1.0/2.0
         t1 = t0 + gamma
 
-        sigmoid_exp_arg = -sigmoid_factor * (band_times - t1)
-        sigmoid_exp_arg_big_mask = sigmoid_exp_arg >= 10.0
-        sigmoid_exp_arg = np.clip(sigmoid_exp_arg, -10.0, 10.0)
-        sigmoid = 1.0 / (1.0 + np.exp(sigmoid_exp_arg))
-        sigmoid[sigmoid_exp_arg_big_mask] = 0.0
+        sigmoid_exp_arg = sigmoid_factor * (band_times - t1)
+        sig = jax_sigmoid(sigmoid_exp_arg)
+
+        # push to 0 and 1
+        sig *= (sigmoid_exp_arg > -10.0).astype(jnp.float32)
+        sig = jnp.maximum(
+            sig, 
+            (sigmoid_exp_arg >= 10.0).astype(np.float32))
+
+        # if t_fall < t_rise, the output diverges for early times
+        stable_case = (t_fall < t_rise).astype(jnp.float32)
+        sig *= stable_case + (1-stable_case)*(band_times > t1).astype(jnp.float32)
+
+        den_exp_arg = (band_times - t0) / t_rise
+
+        one_over_den = jax_sigmoid(den_exp_arg)
+
+        # push to 0
+        den_exp_arg_zero_mask = den_exp_arg > -20.0
+        one_over_den *= den_exp_arg_zero_mask.astype(jnp.float32)
+
+        fall_exp_arg = -(band_times - t1) / t_fall
+        fall_exp_arg = jnp.clip(fall_exp_arg, -20.0, 20.0)
+        model_output = ((1.0 - beta) * jnp.exp(fall_exp_arg)
+                        * sig
+                        + (1.0 - beta * (band_times - t0) / gamma)
+                        * (1.0 - sig)) * A * one_over_den
+
+        band_sqerr = ((model_output - band_flux) / (band_errors + smooth_error)) ** 2
+        band_sqerr *= band_mask.astype(jnp.float32)
+
+        sum_sqerrs += jnp.dot(band_sqerr, band_ignore_negative_fluxes)
+        # sum_sqerrs += np.sum(band_sqerr)
+
+    params_var = jnp.array([
+        jnp.var(params[:, 0])+1,
+        jnp.var(params[:, 1])+0.05,
+        jnp.var(params[:, 2])+0.05,
+        jnp.var(params[:, 3])+0.005,
+        jnp.var(params[:, 4])+0.05,
+        jnp.var(params[:, 5])+0.05,
+    ])
+    
+    lambdas = jnp.array([
+        0.0,  # A
+        1.0,  # t0
+        0.1,  # gamma
+        20.0, # beta    
+        0.7,  # t_rise
+        0.01  # t_fall
+    ], dtype=jnp.float32)
+
+    regularization = jnp.dot(lambdas, jnp.sqrt(params_var))
+    # print(sum_sqerrs, regularization)
+    # print(lambdas*params_var)
+    loss = sum_sqerrs + regularization
+    return loss
+
+
+grad_objective_function_jax = jax_jit(grad(objective_function_jax))
+
+
+@jit(nopython=True, fastmath=True)
+def objective_function(
+        params,
+        times,
+        fluxpsf,
+        obs_errors,
+        bands,
+        available_bands,
+        smooth_error,
+        ignore_negative_fluxes):
+    
+    params = params.reshape(-1, 6)
+    sum_sqerrs = 0.0
+    
+    for i, band in enumerate(available_bands):
+        band_mask = bands == band
+        band_times = times[band_mask]
+        band_flux = fluxpsf[band_mask]
+        band_errors = obs_errors[band_mask]
+        band_ignore_negative_fluxes = ignore_negative_fluxes[band_mask]
+
+        band_params = params[i]
+
+        A = band_params[0]
+        t0 = band_params[1]
+        gamma = band_params[2]
+        beta = band_params[3]
+        t_rise = band_params[4]
+        t_fall = band_params[5]
+
+        sigmoid_factor = 1.0/2.0
+        t1 = t0 + gamma
+
+        sigmoid_exp_arg = sigmoid_factor * (band_times - t1)
+        sig = sigmoid(sigmoid_exp_arg)
+
+        # push to 0 and 1
+        sigmoid_exp_arg_zero_mask = sigmoid_exp_arg <= -10.0
+        sigmoid_exp_arg_one_mask = sigmoid_exp_arg >= 10.0
+        sig[sigmoid_exp_arg_zero_mask] = 0.0
+        sig[sigmoid_exp_arg_one_mask] = 1.0
 
         # if t_fall < t_rise, the output diverges for early times
         if t_fall < t_rise:
             sigmoid_zero_mask = band_times < t1
-            sigmoid[sigmoid_zero_mask] = 0.0
+            sig[sigmoid_zero_mask] = 0.0
         
-        den_exp_arg = -(band_times - t0) / t_rise
-        den_exp_arg_big_mask = den_exp_arg >= 20.0
-    
-        den_exp_arg = np.clip(den_exp_arg, -20.0, 20.0)
-        one_over_den = 1.0 / (1.0 + np.exp(den_exp_arg))
-        one_over_den[den_exp_arg_big_mask] = 0.0
+        den_exp_arg = (band_times - t0) / t_rise
+        
+        #den_exp_arg = np.clip(den_exp_arg, -20.0, 20.0)
+        one_over_den = sigmoid(den_exp_arg)
+
+        # push to 0
+        den_exp_arg_zero_mask = den_exp_arg < -20.0
+        one_over_den[den_exp_arg_zero_mask] = 0.0
     
         fall_exp_arg = -(band_times - t1) / t_fall
         fall_exp_arg = np.clip(fall_exp_arg, -20.0, 20.0)    
         model_output = ((1.0 - beta) * np.exp(fall_exp_arg)
-                        * sigmoid
+                        * sig
                         + (1.0 - beta * (band_times - t0) / gamma)
-                        * (1.0 - sigmoid)) * A * one_over_den
+                        * (1.0 - sig)) * A * one_over_den
 
         band_sqerr = ((model_output - band_flux) / (band_errors + smooth_error)) ** 2
 
-        negative_observations = (band_flux + band_errors) < 0.0
-        negative_observations = negative_observations.astype(np.float64)
-        ignore_negative_fluxes = np.exp(
-            -((band_flux + band_errors)*negative_observations/(band_errors+1))**2)
-        sum_sqerrs += np.dot(band_sqerr, ignore_negative_fluxes)
-        #sum_sqerrs += np.sum(band_sqerr)
+        sum_sqerrs += np.dot(band_sqerr, band_ignore_negative_fluxes)
+        # sum_sqerrs += np.sum(band_sqerr)
 
     params_var = np.empty(6, dtype=np.float64)
     params_var[0] = np.std(params[:, 0])
@@ -605,16 +734,40 @@ class SNModelScipyElasticc(object):
         self.parameters = None
         self.chis = None
         self.bands = bands
+        numba.set_num_threads(1)
 
     def fit(self, times, fluxpsf, obs_errors, bands):
         """Assumptions:
             min(times) == 0"""
+
+        times = times.astype(np.float64)
+        fluxpsf = fluxpsf.astype(np.float64)
+        obs_errors = obs_errors.astype(np.float64)
 
         # Available bands
         available_bands = np.unique(bands)
 
         initial_guess = []
         bounds = []
+
+        # Parameter guess
+        tol = 1e-2
+
+        prefered_order = [c for c in 'irzYgu']
+        for c in prefered_order:
+            if c in available_bands:
+                best_available_band = c
+                break
+
+        band_mask = bands == best_available_band
+        t0_guess = times[band_mask][np.argmax(fluxpsf[band_mask])]
+        t0_bounds = [-50.0, np.max(times)]
+        t0_guess = np.clip(t0_guess-10, t0_bounds[0]+tol, t0_bounds[1]-tol)
+        gamma_guess = 14.0
+        beta_guess = 0.5
+        trise_guess = 7.0
+        tfall_guess = 28.0
+        
         for band in available_bands:
             band_mask = bands == band
             band_flux = fluxpsf[band_mask]
@@ -623,7 +776,6 @@ class SNModelScipyElasticc(object):
             max_band_flux = np.max(band_flux)
             
             A_bounds = [np.abs(max_band_flux)/10.0, np.abs(max_band_flux)*10.0]
-            t0_bounds = [-50.0, np.max(times)]
             gamma_bounds = [1.0, 120.0]
             beta_bounds = [0.0, 1.0]
             trise_bounds = [1.0, 100.0]
@@ -641,39 +793,62 @@ class SNModelScipyElasticc(object):
             # Parameter guess
             A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0]*1.1, A_bounds[1]*0.9)
 
-            tol = 1e-2
-            t0_guess = np.clip(times[np.argmax(fluxpsf)]-10, t0_bounds[0]+tol, t0_bounds[1]-tol)
-            gamma_guess = 14.0
-            beta_guess = 0.5
-            trise_guess = 7.0
-            tfall_guess = 28.0
-        
             # reference guess
             p0 = [A_guess, t0_guess, gamma_guess,
                   beta_guess, trise_guess, tfall_guess]
 
             initial_guess.append(p0)
-        initial_guess = np.concatenate(initial_guess, axis=0).astype(np.float32)
+        initial_guess = np.concatenate(initial_guess, axis=0).astype(np.float64)
         band_mapper = dict(zip('ugrizY', range(6)))
 
         # debugging
         # for g, b in zip(initial_guess, bounds):
         #     print(g, b)
         #     print(b[0] < g, g < b[1])
-            
+
+        negative_observations = (fluxpsf + obs_errors) < 0.0
+        negative_observations = negative_observations.astype(np.float64)
+        ignore_negative_fluxes = np.exp(
+            -((fluxpsf + obs_errors)*negative_observations/(obs_errors+1))**2)
+
+        # float32 cast
+        times = times.astype(np.float32)
+        fluxpsf = fluxpsf.astype(np.float32)
+        obs_errors = obs_errors.astype(np.float32)
+        bands_num = np.vectorize(band_mapper.get)(bands).astype(np.float32)
+        available_bands_num = np.vectorize(band_mapper.get)(available_bands).astype(np.float32)
+        smooth_error = np.percentile(obs_errors, 10) * 0.5
+        smooth_error = smooth_error.astype(np.float32)
+        ignore_negative_fluxes = ignore_negative_fluxes.astype(np.float32)
+
+        # padding
+        pad_times = pad(times, np.min(times))
+        pad_fluxpsf = pad(fluxpsf, 0.0)
+        pad_obs_errors = pad(obs_errors, 1.0)
+        pad_bands_num = pad(bands_num, -1.0)
+        pad_ignore_negative_fluxes = pad(ignore_negative_fluxes, 0.0)
+        
         res = minimize(
-            objective_function,
-            initial_guess,
+            objective_function_jax,
+            initial_guess.astype(np.float32),
+            jac=grad_objective_function_jax,
             args=(
-                times.astype(np.float64),
-                fluxpsf.astype(np.float64),
-                obs_errors.astype(np.float64),
-                np.vectorize(band_mapper.get)(bands),
-                np.vectorize(band_mapper.get)(available_bands)),
+                pad_times,
+                pad_fluxpsf,
+                pad_obs_errors,
+                pad_bands_num,
+                available_bands_num,
+                smooth_error,
+                pad_ignore_negative_fluxes
+            ),
             method='TNC',  # 'L-BFGS-B',
             bounds=bounds,
             options={'maxfun': 1000}  # {'iprint': -1, 'maxcor': 10, 'maxiter': 400}
         )
+
+        # with open('objective_function_numba.txt', 'w') as f:
+        #     objective_function.inspect_types(file=f)
+        
         success = res.success
         best_params = res.x.reshape(-1, 6)
 
@@ -707,6 +882,7 @@ class SNModelScipyElasticc(object):
                 
         self.parameters = np.concatenate(parameters, axis=0)
         self.chis = np.array(chis)
+        # print(objective_function.inspect_asm())
 
     def get_model_parameters(self):
         return self.parameters.tolist()

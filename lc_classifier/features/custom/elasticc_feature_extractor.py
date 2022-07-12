@@ -29,7 +29,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
 
         magnitude_extractors = [
             # input: apparent magnitude
-            ZTFColorForcedFeatureExtractor(),
+            ZTFColorForcedFeatureExtractor(),  # TODO: remove or adapt
             MHPSExtractor(self.bands),
             IQRExtractor(self.bands),
             TurboFatsFeatureExtractor(self.bands),
@@ -111,8 +111,8 @@ class ElasticcFeatureExtractor(FeatureExtractor):
             detections, **kwargs)
 
         df = pd.concat(
+            # [flux_features],
             [magnitude_features, flux_features],
-            # [gal_features, magnitude_features, flux_features],
             axis=1, join="outer", sort=True)
         return df
 
