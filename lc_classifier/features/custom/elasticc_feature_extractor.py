@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from lc_classifier.features import TurboFatsFeatureExtractor
-from lc_classifier.features import ZTFColorForcedFeatureExtractor
+from lc_classifier.features import ElasticcColorFeatureExtractor
 from lc_classifier.features import MHPSFluxExtractor
 from lc_classifier.features import IQRExtractor
 from lc_classifier.features import PeriodExtractor
@@ -28,8 +28,6 @@ class ElasticcFeatureExtractor(FeatureExtractor):
 
         magnitude_extractors = [
             # input: apparent magnitude
-            ZTFColorForcedFeatureExtractor(),  # TODO: remove or adapt
-            MHPSFluxExtractor(self.bands),
             IQRExtractor(self.bands),
             TurboFatsFeatureExtractor(self.bands),
             PeriodExtractor(bands=self.bands),
@@ -41,6 +39,8 @@ class ElasticcFeatureExtractor(FeatureExtractor):
 
         flux_extractors = [
             # input: difference flux
+            ElasticcColorFeatureExtractor(self.bands),
+            MHPSFluxExtractor(self.bands),
             SNFeaturesPhaseIIExtractor(self.bands),
             SPMExtractorElasticc(self.bands)
         ]

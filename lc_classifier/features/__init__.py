@@ -1,5 +1,6 @@
 from .extractors.color_feature_extractor import ZTFColorFeatureExtractor
 from .extractors.color_feature_extractor import ZTFColorForcedFeatureExtractor
+from .extractors.color_feature_extractor import ElasticcColorFeatureExtractor
 from .extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .extractors.iqr_extractor import IQRExtractor
 from .extractors.mhps_extractor import MHPSExtractor, MHPSFluxExtractor
@@ -31,6 +32,7 @@ from .core.base import FeatureExtractorComposer
 __all__ = [
     'ZTFColorFeatureExtractor',
     'ZTFColorForcedFeatureExtractor',
+    'ElasticcColorFeatureExtractor',
     'GalacticCoordinatesExtractor',
     'IQRExtractor',
     'MHPSExtractor',

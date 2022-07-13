@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from functools import lru_cache
 
 from ..core.base import FeatureExtractor
@@ -110,6 +110,66 @@ class ZTFColorForcedFeatureExtractor(FeatureExtractor):
 
             data = [g_r_max, g_r_mean]
             oid_color = pd.Series(data=data, index=self.get_features_keys())
+            return oid_color
+
+        colors = detections.apply(aux_function)
+        colors.index.name = 'oid'
+        return colors
+
+
+class ElasticcColorFeatureExtractor(FeatureExtractor):
+    def __init__(self, bands: List[str]) -> None:
+        super().__init__()
+        if len(bands) < 2:
+            raise ValueError('Elasticc color feature extractor needs at least two bands')
+        self.bands = bands
+
+    @lru_cache(1)
+    def get_features_keys(self) -> Tuple[str, ...]:
+        return [f'{self.bands[i]}-{self.bands[i+1]}'for i in range(len(self.bands)-1)]
+
+    @lru_cache(1)
+    def get_required_keys(self) -> Tuple[str, ...]:
+        return 'band', 'difference_flux'
+
+    def _compute_features(self, detections, **kwargs):
+        return self._compute_features_from_df_groupby(
+            detections.groupby(level=0),
+            **kwargs)
+
+    def _compute_features_from_df_groupby(self, detections, **kwargs):
+        """
+        Parameters
+        ----------
+        detections
+        DataFrame with detections of an object.
+        kwargs Not required.
+        Returns :class:pandas.`DataFrame`
+        -------
+        """
+
+        def aux_function(oid_detections):
+            oid = oid_detections.index.values[0]
+            bands = oid_detections['band'].values
+            fluxes = oid_detections['difference_flux'].values
+            available_bands = np.unique(bands)
+            d = {}
+            for band in available_bands:
+                band_mask = bands == band
+                band_fluxes = fluxes[band_mask]
+                band_fluxes_abs = np.abs(band_fluxes)
+                band_90p = np.percentile(band_fluxes_abs, 90)
+                d[band] = band_90p
+
+            output = []
+            for i in range(len(self.bands)-1):
+                if (self.bands[i] not in available_bands 
+                or self.bands[i+1] not in available_bands):
+                    output.append(np.nan)
+                    continue
+                output.append(d[self.bands[i]]/(d[self.bands[i+1]] + 1))
+
+            oid_color = pd.Series(data=output, index=self.get_features_keys())
             return oid_color
 
         colors = detections.apply(aux_function)
