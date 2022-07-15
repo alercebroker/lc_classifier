@@ -405,7 +405,10 @@ class ElasticcRandomForest(HierarchicalRandomForest):
         max_features = "sqrt"
         min_samples_leaf = 1
         min_samples_split = 2
-        max_samples = 10000
+
+        # imblearn uses a weight mask, not slicing
+        max_samples = None  # 10000
+        bootstrap = False
             
         self.top_classifier = RandomForestClassifier(
             n_estimators=n_trees,
@@ -413,6 +416,7 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             max_features=max_features,
             min_samples_leaf=min_samples_leaf,
             min_samples_split=min_samples_split,
+            bootstrap=bootstrap,
             max_samples=max_samples,
             n_jobs=n_jobs,
             verbose=verbose_number
@@ -424,6 +428,7 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             max_features=max_features,
             min_samples_leaf=min_samples_leaf,
             min_samples_split=min_samples_split,
+            bootstrap=bootstrap,
             max_samples=max_samples,
             n_jobs=n_jobs,
             verbose=verbose_number
@@ -435,6 +440,7 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             max_features=max_features,
             min_samples_leaf=min_samples_leaf,
             min_samples_split=min_samples_split,
+            bootstrap=bootstrap,
             max_samples=max_samples,
             n_jobs=n_jobs,
             verbose=verbose_number
@@ -446,6 +452,7 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             max_features=max_features,
             min_samples_leaf=min_samples_leaf,
             min_samples_split=min_samples_split,
+            bootstrap=bootstrap,
             max_samples=max_samples,
             n_jobs=n_jobs,
             verbose=verbose_number
