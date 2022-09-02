@@ -19,7 +19,7 @@ from .extractors.harmonics_extractor import HarmonicsExtractor
 from .extractors.gp_drw_extractor import GPDRWExtractor
 from .extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
 from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
-
+from .extractors.elasticc_metadata_extractor import ElasticcMetadataExtractor
 
 from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
 from .custom.elasticc_feature_extractor import ElasticcFeatureExtractor
@@ -58,5 +58,6 @@ __all__ = [
     'FeatureExtractorComposer',
     'SNFeaturesPhaseIIExtractor',
     'SPMExtractorPhaseII',
-    'ElasticcFeatureExtractor'
+    'ElasticcFeatureExtractor',
+    'ElasticcMetadataExtractor'
 ]

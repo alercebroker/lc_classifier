@@ -11,6 +11,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 from lc_classifier.features import SNFeaturesPhaseIIExtractor
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
+from lc_classifier.features import ElasticcMetadataExtractor
 
 from ..core.base import FeatureExtractor
 from ..core.base import FeatureExtractorComposer
@@ -22,9 +23,6 @@ from functools import lru_cache
 class ElasticcFeatureExtractor(FeatureExtractor):
     def __init__(self):
         self.bands = ['u', 'g', 'r', 'i', 'z', 'Y']
-
-        # input: metadata
-        # self.gal_extractor = GalacticCoordinatesExtractor(from_metadata=True)
 
         magnitude_extractors = [
             # input: apparent magnitude
@@ -39,6 +37,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
 
         flux_extractors = [
             # input: difference flux
+            ElasticcMetadataExtractor(),
             ElasticcColorFeatureExtractor(self.bands),
             MHPSFluxExtractor(self.bands),
             SNFeaturesPhaseIIExtractor(self.bands),
@@ -95,7 +94,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         -------
 
         """
-        required = []  # ['metadata']
+        required = ['metadata']
         for key in required:
             if key not in kwargs:
                 raise Exception(f"{key} argument is missing")
