@@ -23,6 +23,28 @@ class FeaturePreprocessor:
         return features
 
 
+class MLPFeaturePreprocessor:
+    def __init__(self, non_used_features=None):
+        self.non_used_features = non_used_features
+
+    def preprocess_features(self, features) -> pd.DataFrame:
+        if self.non_used_features is not None:
+            new_columns = [
+                feature for feature in features.columns
+                if feature not in self.non_used_features]
+            features = features[new_columns]
+        features = features.replace([np.inf, -np.inf], np.nan)
+
+        # todo finish this code
+        features = features.fillna(-999.0)
+        features[features > 1e32] = 0.0
+        return features
+
+    def remove_duplicates(self, features):
+        features = features.loc[~features.index.duplicated(keep='first')]
+        return features
+
+
 class LabelPreprocessor:
     """Groups and filters classes"""
     def __init__(self, class_dictionary_filename):

@@ -474,3 +474,25 @@ class ElasticcRandomForest(HierarchicalRandomForest):
             "stochastic_rf": "stochastic_level_BRF_model.pkl",
             "transient_rf": "transient_level_BRF_model.pkl",
         }
+
+
+class ElasticcMLP(BaseClassifier):
+    def __init__(self, non_used_features=None):
+        self.feature_preprocessor = FeaturePreprocessor(
+            non_used_features=non_used_features
+        )
+
+    def fit(self, samples: pd.DataFrame, labels: pd.DataFrame) -> None:
+        pass
+
+    def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
+        pass
+
+    def get_list_of_classes(self) -> list:
+        pass
+
+    def save_model(self, directory: str) -> None:
+        pass
+
+    def load_model(self, directory: str) -> None:
+        pass
