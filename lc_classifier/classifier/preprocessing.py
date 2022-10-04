@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import json
+from sklearn.preprocessing import QuantileTransformer
 
 
 class FeaturePreprocessor:
@@ -26,18 +27,33 @@ class FeaturePreprocessor:
 class MLPFeaturePreprocessor:
     def __init__(self, non_used_features=None):
         self.non_used_features = non_used_features
+        self.transformer = QuantileTransformer(n_quantiles=1000, random_state=0)
+        self.feature_list = None
 
-    def preprocess_features(self, features) -> pd.DataFrame:
+    def remove_unnecesary_features_and_inf(self, features):
         if self.non_used_features is not None:
             new_columns = [
                 feature for feature in features.columns
                 if feature not in self.non_used_features]
             features = features[new_columns]
         features = features.replace([np.inf, -np.inf], np.nan)
+        return features
 
-        # todo finish this code
-        features = features.fillna(-999.0)
-        features[features > 1e32] = 0.0
+    def fit(self, features):
+        features = self.remove_unnecesary_features_and_inf(features)
+        self.transformer.fit(features.values)
+        self.feature_list = features.columns.values
+        
+    def preprocess_features(self, features) -> pd.DataFrame:
+        if self.feature_list is None:
+            raise Exception('fit method must be called before preprocess_features')
+        features = self.remove_unnecesary_features_and_inf(features).copy()
+        transformed_values = self.transformer.transform(
+            features[self.feature_list].values)
+        features[:] = transformed_values
+        features += 0.1
+
+        features = features.fillna(0.0)
         return features
 
     def remove_duplicates(self, features):

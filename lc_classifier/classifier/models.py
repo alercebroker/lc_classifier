@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 import os
 from pathlib import Path
 import pickle5 as pickle
@@ -7,7 +8,9 @@ import wget
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from imblearn.under_sampling import RandomUnderSampler
 from lc_classifier.classifier.preprocessing import FeaturePreprocessor
+from lc_classifier.classifier.preprocessing import MLPFeaturePreprocessor
 from lc_classifier.classifier.preprocessing import intersect_oids_in_dataframes
+from lc_classifier.classifier.mlp import MLP
 from abc import ABC, abstractmethod
 
 
@@ -646,14 +649,56 @@ class ElasticcRandomForest(HierarchicalRandomForest):
 
 
 class ElasticcMLP(BaseClassifier):
-    def __init__(self, non_used_features=None):
-        self.feature_preprocessor = FeaturePreprocessor(
+    def __init__(self, list_of_classes, non_used_features=None):
+        self.feature_preprocessor = MLPFeaturePreprocessor(
             non_used_features=non_used_features
         )
+        self.list_of_classes = list_of_classes
+        self.mlp = MLP(len(self.list_of_classes))
+        self.batch_size = 128
 
-    def fit(self, samples: pd.DataFrame, labels: pd.DataFrame) -> None:
-        pass
+    def fit(self,
+            x_training: pd.DataFrame,
+            y_training: pd.DataFrame,
+            x_validation: pd.DataFrame,
+            y_validation: pd.DataFrame) -> None:
 
+        print('shuffling training set')
+        new_order = np.random.permutation(len(x_training))
+        x_training = x_training.iloc[new_order]
+        y_training = y_training.iloc[new_order]
+
+        print('tf dataset training')
+        training_dataset = self._tf_dataset_from_dataframes(
+            x_training, y_training, fit_preprocessor=True)
+        print('tf dataset validation')
+        validation_dataset = self._tf_dataset_from_dataframes(
+            x_validation, y_validation, fit_preprocessor=False)
+
+        training_dataset = training_dataset.shuffle(self.batch_size*25).batch(self.batch_size)
+        validation_dataset = validation_dataset.shuffle(self.batch_size*25).batch(self.batch_size)
+
+        self.training_dataset = training_dataset
+        self.validation_dataset = validation_dataset
+        
+        print('training')
+        self.mlp.train(training_dataset, validation_dataset)
+
+    def _tf_dataset_from_dataframes(self, x_dataframe, y_dataframe, fit_preprocessor=False):
+        if fit_preprocessor:
+            self.feature_preprocessor.fit(x_dataframe)
+        samples = self.feature_preprocessor.preprocess_features(x_dataframe).values.astype(np.float32)
+        labels = self._label_list_to_one_hot(y_dataframe['classALeRCE'].values)
+
+        tf_dataset = tf.data.Dataset.from_tensor_slices((samples, labels))
+        return tf_dataset
+        
+    def _label_list_to_one_hot(self, label_list: np.ndarray):
+        matches = np.stack(
+            [label_list == s for s in self.list_of_classes], axis=-1)
+        onehot_labels = matches.astype(np.float32)
+        return onehot_labels
+        
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
         pass
 
