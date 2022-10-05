@@ -654,7 +654,7 @@ class ElasticcMLP(BaseClassifier):
             non_used_features=non_used_features
         )
         self.list_of_classes = list_of_classes
-        self.mlp = MLP(len(self.list_of_classes))
+        self.mlp = MLP(self.list_of_classes)
         self.batch_size = 128
 
     def fit(self,
