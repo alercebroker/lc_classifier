@@ -462,12 +462,12 @@ class ElasticcRandomForest(HierarchicalRandomForest):
         )
 
         self.transient_classifier = RandomForestClassifier(
-            n_estimators=300,  # n_trees,
+            n_estimators=350,  # n_trees,
             max_depth=max_depth,
             max_features=max_features,
             min_samples_leaf=min_samples_leaf,
             min_samples_split=min_samples_split,
-            min_impurity_decrease=0.0,  # 0.00004,
+            min_impurity_decrease=0.00003,
             sampling_strategy=sampling_strategy['Transient'],
             bootstrap=bootstrap,
             max_samples=max_samples,
