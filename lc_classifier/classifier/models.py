@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import pickle5 as pickle
 import wget
+import tarfile
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
 from imblearn.under_sampling import RandomUnderSampler
 from lc_classifier.classifier.preprocessing import FeaturePreprocessor
@@ -339,12 +340,26 @@ class HierarchicalRandomForest(BaseClassifier):
                == set(self.taxonomy_dictionary["Periodic"])
 
     def download_model(self):
+        print(self.MODEL_PICKLE_PATH)
+        print(self.url_model)
         if not os.path.exists(self.MODEL_PICKLE_PATH):
             os.makedirs(self.MODEL_PICKLE_PATH)
-        for pkl in self.pickles.values():
-            tmp_path = os.path.join(self.MODEL_PICKLE_PATH, pkl)
-            if not os.path.exists(tmp_path):
-                wget.download(os.path.join(self.url_model, pkl), tmp_path)
+
+        compressed_extension = '.tar.gz'
+        if self.url_model[-len(compressed_extension):] == compressed_extension:
+            filename = 'model' + compressed_extension
+            full_filename = os.path.join(self.MODEL_PICKLE_PATH, filename)
+            wget.download(
+                self.url_model,
+                full_filename)
+            file = tarfile.open(full_filename)
+            file.extractall(self.MODEL_PICKLE_PATH)
+            file.close()
+        else:
+            for pkl in self.pickles.values():
+                tmp_path = os.path.join(self.MODEL_PICKLE_PATH, pkl)
+                if not os.path.exists(tmp_path):
+                    wget.download(os.path.join(self.url_model, pkl), tmp_path)
 
     def predict_in_pipeline(self, input_features: pd.DataFrame) -> dict:
         if not isinstance(input_features, pd.core.frame.DataFrame):
@@ -392,6 +407,11 @@ class HierarchicalRandomForest(BaseClassifier):
 
 
 class ElasticcRandomForest(HierarchicalRandomForest):
+    MODEL_NAME = "elasticc_BHRF"
+    MODEL_VERSION = "2.0.0"
+    MODEL_VERSION_NAME = f"{MODEL_NAME}_{MODEL_VERSION}"
+    MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
+
     def __init__(self,
                  taxonomy_dictionary,
                  feature_list_dict: dict,
@@ -412,11 +432,12 @@ class ElasticcRandomForest(HierarchicalRandomForest):
         min_samples_split = 2
 
         if sampling_strategy is None:
-            sampling_strategy = {}
-            sampling_strategy['Top'] = 'auto'
-            sampling_strategy['Stochastic'] = 'auto'
-            sampling_strategy['Periodic'] = 'auto'
-            sampling_strategy['Transient'] = 'auto'
+            sampling_strategy = {
+                'Top': 'auto',
+                'Stochastic': 'auto',
+                'Periodic': 'auto',
+                'Transient': 'auto'
+            }
 
         # imblearn uses a weight mask, not slicing
         max_samples = None  # 10000
