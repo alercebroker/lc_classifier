@@ -574,18 +574,22 @@ class ElasticcRandomForest(HierarchicalRandomForest):
         with open(os.path.join(directory, self.pickles["feature_list_dict"]), "wb") as f:
             pickle.dump(self.feature_list_dict, f, pickle.HIGHEST_PROTOCOL)
 
-    def load_model(self, directory: str) -> None:
+    def load_model(self, directory: str, n_jobs: int) -> None:
         with open(os.path.join(directory, self.pickles["top_rf"]), 'rb') as f:
             self.top_classifier = pickle.load(f)
+            self.top_classifier.n_jobs = n_jobs
 
         with open(os.path.join(directory, self.pickles["stochastic_rf"]), 'rb') as f:
             self.stochastic_classifier = pickle.load(f)
-
+            self.stochastic_classifier.n_jobs = n_jobs
+            
         with open(os.path.join(directory, self.pickles["periodic_rf"]), 'rb') as f:
             self.periodic_classifier = pickle.load(f)
+            self.periodic_classifier.n_jobs = n_jobs
 
         with open(os.path.join(directory, self.pickles["transient_rf"]), 'rb') as f:
             self.transient_classifier = pickle.load(f)
+            self.transient_classifier.n_jobs = n_jobs
 
         with open(os.path.join(directory, self.pickles["feature_list_dict"]), 'rb') as f:
             self.feature_list_dict = pickle.load(f)
