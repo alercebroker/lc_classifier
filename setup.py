@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/markdown",
     author="ALeRCE Team",
     author_email="contact@alerce.online",
-    packages=find_packages(),
+    packages=find_packages("lc_classifier"),
     install_requires=required_packages,
     build_requires=required_packages,
 )
