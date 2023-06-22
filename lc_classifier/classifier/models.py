@@ -413,18 +413,25 @@ class ElasticcRandomForest(HierarchicalRandomForest):
     MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{MODEL_VERSION_NAME}")
 
     def __init__(self,
-                 taxonomy_dictionary,
-                 feature_list_dict: dict,
-                 sampling_strategy=None,
-                 n_trees=500,
-                 n_jobs=1,
-                 verbose: bool = False):
+        taxonomy_dictionary,
+        feature_list_dict: dict,
+        sampling_strategy=None,
+        n_trees=500,
+        n_jobs=1,
+        verbose: bool = False,
+        model_name: str = None,
+        ):
 
         self.verbose = verbose
         if self.verbose:
             verbose_number = 11
         else:
             verbose_number = 0
+        
+        if model_name is not None:
+            self.MODEL_NAME = model_name
+            self.MODEL_VERSION_NAME = f"{model_name}_{self.MODEL_VERSION}"
+            self.MODEL_PICKLE_PATH = os.path.join(PICKLE_PATH, f"{self.MODEL_VERSION_NAME}")
 
         max_depth = None
         max_features = "sqrt"
