@@ -1,8 +1,9 @@
 from .extractors.color_feature_extractor import ZTFColorFeatureExtractor
 from .extractors.color_feature_extractor import ZTFColorForcedFeatureExtractor
+from .extractors.color_feature_extractor import ElasticcColorFeatureExtractor
 from .extractors.galactic_coordinates_extractor import GalacticCoordinatesExtractor
 from .extractors.iqr_extractor import IQRExtractor
-from .extractors.mhps_extractor import MHPSExtractor
+from .extractors.mhps_extractor import MHPSExtractor, MHPSFluxExtractor
 from .extractors.real_bogus_extractor import RealBogusExtractor
 from .extractors.sg_score_extractor import SGScoreExtractor, StreamSGScoreExtractor
 from .extractors.sn_detections_extractor import SupernovaeDetectionFeatureExtractor
@@ -18,9 +19,10 @@ from .extractors.harmonics_extractor import HarmonicsExtractor
 from .extractors.gp_drw_extractor import GPDRWExtractor
 from .extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
 from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
-
+from .extractors.elasticc_metadata_extractor import ElasticcMetadataExtractor
 
 from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
+from .custom.elasticc_feature_extractor import ElasticcFeatureExtractor
 
 from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor, ZTFForcedPhotometryLightcurvePreprocessor
 
@@ -30,9 +32,11 @@ from .core.base import FeatureExtractorComposer
 __all__ = [
     'ZTFColorFeatureExtractor',
     'ZTFColorForcedFeatureExtractor',
+    'ElasticcColorFeatureExtractor',
     'GalacticCoordinatesExtractor',
     'IQRExtractor',
     'MHPSExtractor',
+    'MHPSFluxExtractor',
     'RealBogusExtractor',
     'SGScoreExtractor',
     'StreamSGScoreExtractor',
@@ -53,5 +57,7 @@ __all__ = [
     'ZTFForcedPhotometryLightcurvePreprocessor',
     'FeatureExtractorComposer',
     'SNFeaturesPhaseIIExtractor',
-    'SPMExtractorPhaseII'
+    'SPMExtractorPhaseII',
+    'ElasticcFeatureExtractor',
+    'ElasticcMetadataExtractor'
 ]

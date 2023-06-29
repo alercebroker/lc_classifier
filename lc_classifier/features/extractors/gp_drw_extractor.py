@@ -58,7 +58,7 @@ class GPDRWExtractor(FeatureExtractorSingleBand):
                 gp = set_params(params, gp, time, sq_error)
                 return -gp.log_likelihood(mag)
 
-            initial_params = np.zeros((2,), dtype=np.float)
+            initial_params = np.zeros((2,), dtype=float)
             sol = minimize(
                 neg_log_like,
                 initial_params,

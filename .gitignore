@@ -112,3 +112,4 @@ lc_classifier/features/extractors/data
 
 *.profile
 src/
+lc_classifier/classifier/pickles/

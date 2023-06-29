@@ -39,7 +39,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
 
             # positive_fraction
             positive_observations = diff_flux_band > 0
-            positive_fraction = positive_observations.astype(np.float).mean()
+            positive_fraction = positive_observations.astype(float).mean()
 
             # first detection in any band
             if not is_sorted(oid_detections['time'].values):
@@ -69,11 +69,11 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
             else:
                 # number of non detections in band before the 1st detection is any band
                 n_non_det_before_band = (
-                        band_mask[:first_detection_index]).astype(np.int).sum()
+                        band_mask[:first_detection_index]).astype(int).sum()
 
                 # fraction of non detections in band after the 1st detection in any band
-                n_det_after_band = (band_mask & detected)[first_detection_index:].astype(np.float).sum()
-                n_non_det_after_band = (band_mask & ~detected)[first_detection_index:].astype(np.float).sum()
+                n_det_after_band = (band_mask & detected)[first_detection_index:].astype(float).sum()
+                n_non_det_after_band = (band_mask & ~detected)[first_detection_index:].astype(float).sum()
 
                 # frac_non_det_after_band = n_det_after_band / (n_det_after_band + n_non_det_after_band)
 
@@ -95,7 +95,7 @@ class SNFeaturesPhaseIIExtractor(FeatureExtractorSingleBand):
                     max_flux_before_band = np.max(non_det_flux_in_band)
                     median_flux_before_band = np.median(non_det_flux_in_band)
 
-                after_mask = np.zeros(len(bands), dtype=np.bool)
+                after_mask = np.zeros(len(bands), dtype=bool)
                 after_mask[first_detection_index:] = True
                 non_det_after_band = diff_flux_any_band[~detected & band_mask & after_mask]
                 if len(non_det_after_band) == 0:
