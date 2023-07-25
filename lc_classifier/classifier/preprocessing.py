@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 from sklearn.preprocessing import QuantileTransformer
+import pickle
 
 
 class FeaturePreprocessor:
@@ -43,6 +44,23 @@ class MLPFeaturePreprocessor:
         features = self.remove_unnecesary_features_and_inf(features)
         self.transformer.fit(features.values)
         self.feature_list = features.columns.values
+
+    def save(self, filename: str):
+        with open(filename, 'wb') as f:
+            pickle.dump(
+                {
+                    'feature_list': self.feature_list,
+                    'transformer': self.transformer
+                },
+                f
+            )
+
+    def load(self, filename: str):
+        with open(filename, 'rb') as f:
+            attributes_dict = pickle.load(f)
+
+        self.feature_list = attributes_dict['feature_list']
+        self.transformer = attributes_dict['transformer']
         
     def preprocess_features(self, features) -> pd.DataFrame:
         if self.feature_list is None:

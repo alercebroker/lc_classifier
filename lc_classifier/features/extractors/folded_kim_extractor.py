@@ -32,10 +32,8 @@ class FoldedKimExtractor(FeatureExtractorSingleBand):
                 'period' in kwargs['shared_data'].keys()):
             periods = kwargs['shared_data']['period']
         else:
-            logging.info('Folded Kim extractor was not provided with period '
-                         'data, so a periodogram is being computed')
-            period_extractor = PeriodExtractor(self.bands)
-            periods = period_extractor.compute_features(detections)
+            raise Exception('Folded Kim extractor was not provided '
+                            'with period data')
 
         columns = self.get_features_keys_with_band(band)
 

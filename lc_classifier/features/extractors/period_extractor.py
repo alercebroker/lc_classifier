@@ -5,12 +5,26 @@ from ..core.base import FeatureExtractor
 from P4J import MultiBandPeriodogram
 import logging
 from functools import lru_cache
+from typing import List, Optional
 
 
 class PeriodExtractor(FeatureExtractor):
-    def __init__(self, bands):
+    def __init__(
+            self, 
+            bands: List[str], 
+            smallest_period: float, 
+            largest_period: float, 
+            optimal_grid : bool,
+            trim_lightcurve_to_n_days: Optional[float],
+            min_length: int):
+        
+        self.optimal_grid = optimal_grid
         self.periodogram_computer = MultiBandPeriodogram(method='MHAOV')
         self.bands = bands
+        self.smallest_period = smallest_period
+        self.largest_period = largest_period
+        self.trim_lightcurve_to_n_days = trim_lightcurve_to_n_days
+        self.min_length = min_length
 
     @lru_cache(maxsize=1)
     def get_features_keys(self) -> Tuple[str, ...]:
@@ -33,13 +47,48 @@ class PeriodExtractor(FeatureExtractor):
         return self._compute_features_from_df_groupby(
             detections.groupby(level=0),
             **kwargs)
+
+    def _trim_lightcurve(self, lightcurve: pd.DataFrame):
+        if self.trim_lightcurve_to_n_days is None:
+            return lightcurve
+        
+        times = lightcurve['time'].values
+
+        best_starting = 0
+        best_ending = 0
+
+        starting = 0
+        ending = 0
+        while True:
+            current_n = ending - starting
+            if current_n > (best_ending - best_starting):
+                best_starting = starting
+                best_ending = ending
+            current_timespan = times[ending] - times[starting]
+            if current_timespan < self.trim_lightcurve_to_n_days:
+                ending += 1
+                if ending >= len(times):
+                    break
+            else:
+                starting += 1
+
+        return lightcurve.iloc[best_starting:(best_ending+1)]
     
     def _compute_features_from_df_groupby(
             self, detections, **kwargs) -> pd.DataFrame:
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
+            oid_detections = self._trim_lightcurve(oid_detections)
             oid_detections = oid_detections.groupby('band').filter(
-                lambda x: len(x) > 5).sort_values('time')
+                lambda x: len(x) > self.min_length).sort_values('time')
+            
+            if len(oid_detections) == 0:
+                object_features = self.nan_series()
+                kwargs['periodograms'][oid] = {
+                    'freq': None,
+                    'per': None
+                }
+                return object_features
 
             bands = oid_detections['band'].values
             available_bands = np.unique(bands)
@@ -51,10 +100,31 @@ class PeriodExtractor(FeatureExtractor):
                 fids=bands)
 
             try:
-                self.periodogram_computer.frequency_grid_evaluation(
-                    fmin=1e-3, fmax=20.0, fresolution=1e-3)
-                self.frequencies = self.periodogram_computer.finetune_best_frequencies(
-                    n_local_optima=10, fresolution=1e-4)
+                if self.optimal_grid:
+                    self.periodogram_computer.optimal_frequency_grid_evaluation(
+                        smallest_period=self.smallest_period,
+                        largest_period=self.largest_period,
+                        shift=0.2
+                    )
+                    self.frequencies = self.periodogram_computer.optimal_finetune_best_frequencies(
+                        times_finer=10.0, n_local_optima=10)
+                else:
+                    self.periodogram_computer.frequency_grid_evaluation(
+                        fmin=1/self.largest_period, 
+                        fmax=1/self.smallest_period, 
+                        fresolution=1e-3)
+                    self.frequencies = self.periodogram_computer.finetune_best_frequencies(
+                        n_local_optima=10, fresolution=1e-4)
+                best_freq, best_per = self.periodogram_computer.get_best_frequencies()
+                if len(best_freq) == 0:
+                    logging.error(f'[PeriodExtractor] best frequencies has len 0: '
+                                f'oid {oid}')
+                    object_features = self.nan_series()
+                    kwargs['periodograms'][oid] = {
+                        'freq': None,
+                        'per': None
+                    }
+                    return object_features
             except TypeError as e:
                 logging.error(f'TypeError exception in PeriodExtractor: '
                               f'oid {oid}\n{e}')
@@ -65,8 +135,6 @@ class PeriodExtractor(FeatureExtractor):
                 }
                 return object_features
             
-            best_freq, best_per = self.periodogram_computer.get_best_frequencies()
-
             freq, per = self.periodogram_computer.get_periodogram()
             period_candidate = 1.0 / best_freq[0]
 

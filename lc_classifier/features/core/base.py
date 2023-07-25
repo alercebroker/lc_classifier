@@ -55,6 +55,9 @@ class FeatureExtractor(ABC):
 
         if len(detections) == 0:
             return pd.DataFrame(columns=self.get_features_keys(), index=[])
+        
+        if 'shared_data' not in kwargs.keys():
+            kwargs['shared_data'] = {}
 
         if type(detections) == pd.core.groupby.generic.DataFrameGroupBy:
             aux_df = pd.DataFrame(columns=detections.obj.columns)
@@ -203,4 +206,4 @@ class FeatureExtractorComposer(FeatureExtractor):
         for extractor in self.feature_extractors:
             feature_dataframes.append(
                 extractor.compute_features(detections, **kwargs))
-        return pd.concat(feature_dataframes, axis=1)
+        return pd.concat(feature_dataframes, axis=1, join="outer", sort=True)

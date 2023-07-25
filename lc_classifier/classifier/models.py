@@ -13,6 +13,7 @@ from lc_classifier.classifier.preprocessing import MLPFeaturePreprocessor
 from lc_classifier.classifier.preprocessing import intersect_oids_in_dataframes
 from lc_classifier.classifier.mlp import MLP
 from abc import ABC, abstractmethod
+from typing import List
 
 
 MODEL_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -681,48 +682,95 @@ class ElasticcRandomForest(HierarchicalRandomForest):
 
 
 class ElasticcMLP(BaseClassifier):
-    def __init__(self, list_of_classes, non_used_features=None):
+    def __init__(
+            self, 
+            list_of_classes: List[str], 
+            non_used_features: List[str] = None):
         self.feature_preprocessor = MLPFeaturePreprocessor(
             non_used_features=non_used_features
         )
         self.list_of_classes = list_of_classes
         self.mlp = MLP(self.list_of_classes)
         self.batch_size = 128
+        self.n_features = 497
 
     def fit(self,
             x_training: pd.DataFrame,
             y_training: pd.DataFrame,
+            y_teacher: pd.DataFrame,
             x_validation: pd.DataFrame,
-            y_validation: pd.DataFrame) -> None:
+            y_validation: pd.DataFrame,
+            x_test: pd.DataFrame,
+            y_test: pd.DataFrame) -> None:
 
         print('shuffling training set')
         new_order = np.random.permutation(len(x_training))
         x_training = x_training.iloc[new_order]
         y_training = y_training.iloc[new_order]
+        y_teacher = y_teacher.iloc[new_order]
 
         print('tf dataset training')
         training_dataset = self._tf_dataset_from_dataframes(
-            x_training, y_training, fit_preprocessor=True)
+            x_training, y_training, y_teacher, 
+            balanced=True, fit_preprocessor=True)
         print('tf dataset validation')
         validation_dataset = self._tf_dataset_from_dataframes(
-            x_validation, y_validation, fit_preprocessor=False)
+            x_validation, y_validation, None, 
+            balanced=False, fit_preprocessor=False)
+        print('tf dataset test')
+        test_dataset = self._tf_dataset_from_dataframes(
+            x_test, y_test, None, 
+            balanced=False, fit_preprocessor=False)
 
         training_dataset = training_dataset.shuffle(self.batch_size*25).batch(self.batch_size)
-        validation_dataset = validation_dataset.shuffle(self.batch_size*25).batch(self.batch_size)
+        validation_dataset = validation_dataset.batch(self.batch_size)
+        test_dataset = test_dataset.batch(self.batch_size)
 
         self.training_dataset = training_dataset
         self.validation_dataset = validation_dataset
+        self.test_dataset = test_dataset
         
         print('training')
-        self.mlp.train(training_dataset, validation_dataset)
+        self.mlp.train(training_dataset, validation_dataset, test_dataset)
 
-    def _tf_dataset_from_dataframes(self, x_dataframe, y_dataframe, fit_preprocessor=False):
+    def _tf_dataset_from_dataframes(
+            self, 
+            x_dataframe: pd.DataFrame, 
+            y_dataframe: pd.DataFrame, 
+            y_teacher_df: pd.DataFrame,
+            balanced: bool, 
+            fit_preprocessor: bool = False):
+        
         if fit_preprocessor:
             self.feature_preprocessor.fit(x_dataframe)
-        samples = self.feature_preprocessor.preprocess_features(x_dataframe).values.astype(np.float32)
+        
+        samples = self.feature_preprocessor.preprocess_features(
+            x_dataframe).values.astype(np.float32)
         labels = self._label_list_to_one_hot(y_dataframe['classALeRCE'].values)
+        if y_teacher_df is not None:
+            y_teacher_np = y_teacher_df[self.list_of_classes].values
 
-        tf_dataset = tf.data.Dataset.from_tensor_slices((samples, labels))
+            if balanced:
+                datasets_from_class = []
+                for class_i in range(len(self.list_of_classes)):
+                    from_class = labels[:, class_i].astype(bool)
+                    samples_from_class = samples[from_class]
+                    labels_from_class = labels[from_class]
+                    y_teacher_from_class = y_teacher_np[from_class]
+
+                    tf_dataset_from_class = tf.data.Dataset.from_tensor_slices(
+                        (samples_from_class, labels_from_class, y_teacher_from_class))
+                    tf_dataset_from_class = tf_dataset_from_class\
+                        .repeat().shuffle(100, reshuffle_each_iteration=True).prefetch(20)
+                    datasets_from_class.append(tf_dataset_from_class)
+                tf_dataset = tf.data.Dataset.sample_from_datasets(
+                    datasets_from_class)
+            else:
+                tf_dataset = tf.data.Dataset.from_tensor_slices(
+                    (samples, labels, y_teacher_np))
+        else:
+            tf_dataset = tf.data.Dataset.from_tensor_slices(
+                (samples, labels))
         return tf_dataset
         
     def _label_list_to_one_hot(self, label_list: np.ndarray):
@@ -732,13 +780,46 @@ class ElasticcMLP(BaseClassifier):
         return onehot_labels
         
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
-        pass
+        # feature preprocessor guarantees output columns in the right order
+        samples_index = samples.index.values
+        samples = self.feature_preprocessor.preprocess_features(
+            samples).values.astype(np.float32)
 
-    def get_list_of_classes(self) -> list:
-        pass
+        n_batches = int(np.ceil(len(samples) / self.batch_size))
+        probs = []
+        for i_batch in range(n_batches):
+            batch_samples = samples[i_batch*self.batch_size:(i_batch+1)*self.batch_size]
+            batch_probs = self.mlp(batch_samples, training=False, logits=False)
+            probs.append(batch_probs)
+
+        probs = np.concatenate(probs, axis=0)
+        probs_df = pd.DataFrame(
+            data=probs,
+            columns=self.list_of_classes,
+            index=samples_index
+        )
+        return probs_df
+
+    def get_list_of_classes(self) -> List[str]:
+        return self.list_of_classes
 
     def save_model(self, directory: str) -> None:
-        pass
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+        self.mlp.save_weights(
+            os.path.join(directory, 'mlp.h5')
+        )
+
+        self.feature_preprocessor.save(
+            os.path.join(directory, 'feature_preprocessor.pkl')
+        )
 
     def load_model(self, directory: str) -> None:
-        pass
+        self.mlp(np.random.randn(self.batch_size, self.n_features))
+        self.mlp.load_weights(
+            os.path.join(directory, 'mlp.h5')
+        )
+        self.feature_preprocessor.load(
+            os.path.join(directory, 'feature_preprocessor.pkl')
+        )

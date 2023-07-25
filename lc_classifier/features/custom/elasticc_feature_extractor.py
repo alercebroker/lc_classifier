@@ -11,7 +11,7 @@ from lc_classifier.features import HarmonicsExtractor
 from lc_classifier.features import GPDRWExtractor
 from lc_classifier.features import SNFeaturesPhaseIIExtractor
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
-from lc_classifier.features import ElasticcMetadataExtractor
+from lc_classifier.features import ElasticcFullMetadataExtractor
 
 from ..core.base import FeatureExtractor
 from ..core.base import FeatureExtractorComposer
@@ -21,14 +21,21 @@ from functools import lru_cache
 
 
 class ElasticcFeatureExtractor(FeatureExtractor):
-    def __init__(self):
+    def __init__(self, round=1):
         self.bands = ['u', 'g', 'r', 'i', 'z', 'Y']
 
         magnitude_extractors = [
             # input: apparent magnitude
             IQRExtractor(self.bands),
             TurboFatsFeatureExtractor(self.bands),
-            PeriodExtractor(bands=self.bands),
+            PeriodExtractor(
+                bands=self.bands,
+                smallest_period=0.045,
+                largest_period=50.0,
+                optimal_grid=True,
+                trim_lightcurve_to_n_days=500.0,
+                min_length=15
+            ),
             PowerRateExtractor(self.bands),
             FoldedKimExtractor(self.bands),
             HarmonicsExtractor(self.bands),
@@ -36,8 +43,8 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         ]
 
         flux_extractors = [
-            # input: difference flux
-            ElasticcMetadataExtractor(),
+            # input: difference fluxd
+            ElasticcFullMetadataExtractor(),
             ElasticcColorFeatureExtractor(self.bands),
             MHPSFluxExtractor(self.bands),
             SNFeaturesPhaseIIExtractor(self.bands),
@@ -102,6 +109,8 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         shared_data = dict()
         kwargs['shared_data'] = shared_data
 
+        input_snids = detections.index.unique()
+
         magnitude_features = self.compute_magnitude_features(
             detections, **kwargs)
 
@@ -112,6 +121,9 @@ class ElasticcFeatureExtractor(FeatureExtractor):
             # [flux_features],
             [magnitude_features, flux_features],
             axis=1, join="outer", sort=True)
+        
+        output_snids = df.index
+        assert len(input_snids) == len(output_snids.intersection(input_snids))
         return df
 
     def compute_magnitude_features(self, detections, **kwargs):
@@ -130,6 +142,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
             detections, **kwargs
         )
 
+        too_short_oids = [oid for oid in too_short_oids if oid not in magnitude_features.index.values]
         too_short_features = pd.DataFrame(index=too_short_oids)
         df = pd.concat(
             [magnitude_features, too_short_features],
@@ -151,7 +164,7 @@ class ElasticcFeatureExtractor(FeatureExtractor):
         flux_features = self.flux_feature_extractor.compute_features(
             detections, **kwargs
         )
-
+        too_short_oids = [oid for oid in too_short_oids if oid not in flux_features.index.values]
         too_short_features = pd.DataFrame(index=too_short_oids)
         df = pd.concat(
             [flux_features, too_short_features],

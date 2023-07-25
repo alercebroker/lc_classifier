@@ -26,7 +26,15 @@ class PowerRateExtractor(FeatureExtractor):
 
     @lru_cache(1)
     def get_required_keys(self) -> Tuple[str, ...]:
-        return PeriodExtractor(self.bands).get_required_keys()
+        # constructor argument values are not really important
+        return PeriodExtractor(
+            bands=self.bands,
+            smallest_period=0.05,
+            largest_period=1000.0,
+            optimal_grid=True,
+            trim_lightcurve_to_n_days=1000.0,
+            min_length=15
+        ).get_required_keys()
 
     def _compute_features(self, detections, **kwargs):
         return self._compute_features_from_df_groupby(
@@ -38,14 +46,9 @@ class PowerRateExtractor(FeatureExtractor):
                 'periodogram' in kwargs['shared_data'].keys()):
             periodograms = kwargs['shared_data']['periodogram']
         else:
-            logging.info('PowerRateExtractor was not provided with periodogram '
-                         'data, so a periodogram is being computed')
-            shared_data = dict()
-            period_extractor = PeriodExtractor(self.bands)
-            _ = period_extractor.compute_features(
-                detections,
-                shared_data=shared_data)
-            periodograms = shared_data['periodogram']
+            raise ValueError(
+                'PowerRateExtractor was not provided with periodogram data'
+            )
 
         def aux_function(oid_detections, **kwargs):
             oid = oid_detections.index.values[0]
@@ -58,8 +61,9 @@ class PowerRateExtractor(FeatureExtractor):
                     data=power_rate_values,
                     index=self.get_features_keys())
             else:
-                logging.error(f'PeriodPowerRateExtractor: period is not '
-                              f'available for {oid}')
+                logging.error(
+                    f'PeriodPowerRateExtractor: period is not '
+                    f'available for {oid}')
                 return self.nan_series()
 
         power_rates = detections.apply(aux_function)

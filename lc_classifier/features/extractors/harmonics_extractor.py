@@ -76,8 +76,17 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
                 coef_phi = coef_phi[1:] % (2 * np.pi)
 
                 mse = np.mean((fitted_magnitude - magnitude) ** 2)
+                
+                # Calculate reduced chi-squared statistic
+                chi = np.sum((fitted_magnitude - magnitude) ** 2 / (error + 5) ** 2)
+                chi_den = len(fitted_magnitude) - (1 + 2*self.n_harmonics)
+                if chi_den >= 1:
+                    chi_per_degree = chi / chi_den
+                else:
+                    chi_per_degree = np.nan
+                
                 out = pd.Series(
-                    data=np.concatenate([coef_mag, coef_phi, np.array([mse])]),
+                    data=np.concatenate([coef_mag, coef_phi, np.array([mse, chi_per_degree])]),
                     index=columns)
                 return out
 
@@ -95,6 +104,7 @@ class HarmonicsExtractor(FeatureExtractorSingleBand):
         feature_names = ['Harmonics_mag_%d' % (i+1) for i in range(self.n_harmonics)]
         feature_names += ['Harmonics_phase_%d' % (i+1) for i in range(1, self.n_harmonics)]
         feature_names.append('Harmonics_mse')
+        feature_names.append('Harmonics_chi')
         return tuple(feature_names)
 
     @lru_cache(1)

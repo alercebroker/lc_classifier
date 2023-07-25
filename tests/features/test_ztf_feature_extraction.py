@@ -32,7 +32,7 @@ class ZTFFeatureExtractorTest(unittest.TestCase):
             detections=detections,
             non_detections=non_detections)
         self.assertEqual(98, features_df.shape[0])
-        self.assertEqual(178, features_df.shape[1])
+        self.assertEqual(180, features_df.shape[1])
         for f in features_df.columns:
             print(f)
 
@@ -70,5 +70,5 @@ class ZTFFeatureExtractorTest(unittest.TestCase):
             bands=(1, 2), stream=False).get_features_keys()
         keys_stream = ZTFFeatureExtractor(
             bands=(1, 2), stream=True).get_features_keys()
-        self.assertEqual(178, len(keys))
-        self.assertEqual(178, len(keys_stream))
+        self.assertEqual(180, len(keys))
+        self.assertEqual(180, len(keys_stream))
