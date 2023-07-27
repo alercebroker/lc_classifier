@@ -5,22 +5,13 @@
 
 ## Installing late_classifier
 
-From PyPI stable version:
-
-```
-pip install numpy Cython
-pip install -e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
-pip install -e git+https://git@github.com/alercebroker/mhps#egg=mhps
-pip install -e git+https://git@github.com/alercebroker/P4J#egg=P4J
-pip install lc-classifier
-```
-
-For development:
-
 ```
 git clone https://github.com/alercebroker/lc_classifier.git
+python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
+
+Some packages like matplotlib and tqdm are necessary to run the examples.
 
 ## How to use the library?
 
