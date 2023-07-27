@@ -10,7 +10,6 @@ from lc_classifier.utils import LightcurveBuilder, mag_to_flux
 from lc_classifier.features import FeatureExtractorComposer
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def load_sn2012aw():
@@ -37,24 +36,6 @@ def load_sn2012aw():
     lightcurve['oid'] = oid
     lightcurve.set_index('oid', inplace=True)
     return lightcurve
-
-
-def plot_sn2012aw():
-    lightcurve = load_sn2012aw()
-    lightcurve.rename(
-        columns={
-            'MJD': 'time',
-            'Mag': 'magnitude',
-            'DMag': 'error'
-        },
-        inplace=True
-    )
-    print(lightcurve)
-    for band in lightcurve['band'].unique():
-        band_lc = lightcurve[lightcurve['band'] == band]
-        plt.scatter(band_lc.time, band_lc.magnitude)
-    plt.gca().invert_yaxis()
-    plt.show()
 
 
 class TestUserInterface(unittest.TestCase):

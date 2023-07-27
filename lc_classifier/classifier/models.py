@@ -3,7 +3,7 @@ import pandas as pd
 import tensorflow as tf
 import os
 from pathlib import Path
-import pickle5 as pickle
+import pickle
 import wget
 import tarfile
 from imblearn.ensemble import BalancedRandomForestClassifier as RandomForestClassifier
