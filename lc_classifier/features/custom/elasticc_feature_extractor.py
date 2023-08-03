@@ -12,6 +12,7 @@ from lc_classifier.features import GPDRWExtractor
 from lc_classifier.features import SNFeaturesPhaseIIExtractor
 from lc_classifier.features.extractors.sn_parametric_model_computer import SPMExtractorElasticc
 from lc_classifier.features import ElasticcFullMetadataExtractor
+from lc_classifier.features import TimespanExtractor
 
 from ..core.base import FeatureExtractor
 from ..core.base import FeatureExtractorComposer
@@ -48,7 +49,8 @@ class ElasticcFeatureExtractor(FeatureExtractor):
             ElasticcColorFeatureExtractor(self.bands),
             MHPSFluxExtractor(self.bands),
             SNFeaturesPhaseIIExtractor(self.bands),
-            SPMExtractorElasticc(self.bands)
+            SPMExtractorElasticc(self.bands),
+            TimespanExtractor()
         ]
         
         self.magnitude_feature_extractor = FeatureExtractorComposer(

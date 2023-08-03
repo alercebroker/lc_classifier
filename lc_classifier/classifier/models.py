@@ -685,14 +685,16 @@ class ElasticcMLP(BaseClassifier):
     def __init__(
             self, 
             list_of_classes: List[str], 
-            non_used_features: List[str] = None):
+            non_used_features: List[str] = None,
+            n_features: int = 498
+            ):
         self.feature_preprocessor = MLPFeaturePreprocessor(
             non_used_features=non_used_features
         )
         self.list_of_classes = list_of_classes
         self.mlp = MLP(self.list_of_classes)
         self.batch_size = 128
-        self.n_features = 497
+        self.n_features = n_features
 
     def fit(self,
             x_training: pd.DataFrame,

@@ -127,7 +127,7 @@ class MLP(Model):
                     'iteration', iteration, 
                     'training loss', training_loss.numpy(),
                     f'teacher weight: {teacher_weight:.3f}',
-                    f'lr {self.optimizer._decayed_lr("float32").numpy()}')
+                    f'lr {self.optimizer.learning_rate.numpy()}')
 
             if iteration % 2_500 == 0:
                 epoch += 1
