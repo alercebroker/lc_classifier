@@ -42,7 +42,14 @@ class ZTFFeatureExtractor(FeatureExtractor):
             TurboFatsFeatureExtractor(bands),
             SupernovaeDetectionAndNonDetectionFeatureExtractor(bands),
             SNParametricModelExtractor(bands),
-            PeriodExtractor(bands=bands),
+            PeriodExtractor(
+                bands=bands,
+                smallest_period=0.045,
+                largest_period=500.0,
+                optimal_grid=True,
+                trim_lightcurve_to_n_days=3000.0,
+                min_length=10
+            ),            
             PowerRateExtractor(bands),
             FoldedKimExtractor(bands),
             HarmonicsExtractor(bands),
@@ -145,7 +152,14 @@ class ZTFForcedPhotometryFeatureExtractor(FeatureExtractor):
             MHPSExtractor(bands),
             IQRExtractor(bands),
             TurboFatsFeatureExtractor(bands),
-            PeriodExtractor(bands=bands),
+            PeriodExtractor(
+                bands=bands,
+                smallest_period=0.045,
+                largest_period=500.0,
+                optimal_grid=True,
+                trim_lightcurve_to_n_days=3000.0,
+                min_length=10
+            ),
             PowerRateExtractor(bands),
             FoldedKimExtractor(bands),
             HarmonicsExtractor(bands),

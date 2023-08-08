@@ -20,6 +20,8 @@ from .extractors.gp_drw_extractor import GPDRWExtractor
 from .extractors.sn_features_phase_ii import SNFeaturesPhaseIIExtractor
 from .extractors.sn_parametric_model_computer import SPMExtractorPhaseII
 from .extractors.elasticc_metadata_extractor import ElasticcMetadataExtractor
+from .extractors.elasticc_metadata_extractor import ElasticcFullMetadataExtractor
+from .extractors.timespan_extractor import TimespanExtractor
 
 from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotometryFeatureExtractor
 from .custom.elasticc_feature_extractor import ElasticcFeatureExtractor
@@ -59,5 +61,7 @@ __all__ = [
     'SNFeaturesPhaseIIExtractor',
     'SPMExtractorPhaseII',
     'ElasticcFeatureExtractor',
-    'ElasticcMetadataExtractor'
+    'ElasticcMetadataExtractor',
+    'ElasticcFullMetadataExtractor',
+    'TimespanExtractor'
 ]

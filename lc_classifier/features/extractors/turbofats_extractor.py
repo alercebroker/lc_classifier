@@ -2,7 +2,7 @@ from typing import Tuple, List
 from functools import lru_cache
 
 from ..core.base import FeatureExtractorSingleBand
-from turbofats import FeatureSpace
+from ..turbofats import FeatureSpace
 import pandas as pd
 import logging
 

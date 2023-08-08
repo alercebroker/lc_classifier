@@ -459,7 +459,7 @@ class SPMExtractorElasticc(FeatureExtractor):
             oid = oid_detections.index.values[0]
             bands = oid_detections['band'].values
             available_bands = np.unique(bands)
-
+            
             np_array_data = oid_detections[
                 ['time',
                  'difference_flux',
@@ -791,7 +791,7 @@ class SNModelScipyElasticc(object):
             ]
             
             # Parameter guess
-            A_guess = np.clip(1.2*np.max(band_flux), A_bounds[0]*1.1, A_bounds[1]*0.9)
+            A_guess = np.clip(1.2*np.abs(max_band_flux), A_bounds[0]*1.1, A_bounds[1]*0.9)
 
             # reference guess
             p0 = [A_guess, t0_guess, gamma_guess,

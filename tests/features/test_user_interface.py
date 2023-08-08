@@ -10,7 +10,6 @@ from lc_classifier.utils import LightcurveBuilder, mag_to_flux
 from lc_classifier.features import FeatureExtractorComposer
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def load_sn2012aw():
@@ -28,7 +27,8 @@ def load_sn2012aw():
         loaded_csv = pd.read_csv(
             os.path.join(data_dir, filename),
             sep="\s{2,}",
-            header=3
+            header=3,
+            engine='python'
         )
         loaded_csv['band'] = band
         dfs.append(loaded_csv)
@@ -36,24 +36,6 @@ def load_sn2012aw():
     lightcurve['oid'] = oid
     lightcurve.set_index('oid', inplace=True)
     return lightcurve
-
-
-def plot_sn2012aw():
-    lightcurve = load_sn2012aw()
-    lightcurve.rename(
-        columns={
-            'MJD': 'time',
-            'Mag': 'magnitude',
-            'DMag': 'error'
-        },
-        inplace=True
-    )
-    print(lightcurve)
-    for band in lightcurve['band'].unique():
-        band_lc = lightcurve[lightcurve['band'] == band]
-        plt.scatter(band_lc.time, band_lc.magnitude)
-    plt.gca().invert_yaxis()
-    plt.show()
 
 
 class TestUserInterface(unittest.TestCase):
@@ -97,7 +79,14 @@ class TestUserInterface(unittest.TestCase):
         feature_extractor = FeatureExtractorComposer(
             [
                 MHPSExtractor(bands),
-                PeriodExtractor(bands),
+                PeriodExtractor(
+                    bands=bands,
+                    smallest_period=0.045,
+                    largest_period=500.0,
+                    optimal_grid=True,
+                    trim_lightcurve_to_n_days=None,
+                    min_length=5
+                ),
                 GPDRWExtractor(bands),
                 FoldedKimExtractor(bands),
                 GalacticCoordinatesExtractor(),

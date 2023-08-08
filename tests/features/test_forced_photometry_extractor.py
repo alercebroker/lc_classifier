@@ -41,7 +41,7 @@ class ForcedPhotometryExtractorTest(unittest.TestCase):
 
     def test_get_features_keys(self):
         keys = self.forced_photometry_extractor.get_features_keys()
-        self.assertEqual(150, len(keys))
+        self.assertEqual(152, len(keys))
 
 
 if __name__ == '__main__':

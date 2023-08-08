@@ -1,24 +1,20 @@
 astropy >=4.0
 click >=7.1
 Cython >=0.29
-GPy >=1.9
-Jinja2 >=2.11
 imbalanced-learn >= 0.7
-matplotlib >=3.3
 numba >=0.51
 numpy >=1.16
+pyarrow
 requests >=2.24
 scipy >=1.4
 setuptools >=49.6
 scikit-learn >=0.23,<=1.2.2
-tqdm >=4.48
+statsmodels
 tensorflow >=2.3
 pandas >=1.1
 wget >=3.2
 celerite2 >=0.1
-pickle5
 extinction
 jax[cpu]
--e git+https://git@github.com/alercebroker/turbo-fats#egg=turbofats
 -e git+https://git@github.com/alercebroker/mhps#egg=mhps
 -e git+https://git@github.com/alercebroker/P4J#egg=P4J
