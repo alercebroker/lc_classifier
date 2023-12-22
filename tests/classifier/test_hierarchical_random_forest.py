@@ -1,8 +1,9 @@
 import unittest
+from unittest import mock
 import pandas as pd
+import random
 
 from lc_classifier.classifier.models import HierarchicalRandomForest
-
 
 class TestHierarchicalRF(unittest.TestCase):
     def setUp(self) -> None:
@@ -50,3 +51,126 @@ class TestHierarchicalRF(unittest.TestCase):
         self.model_silly.fit(self.train_features, self.train_labels)
         self.model_silly.save_model("")
         self.model_silly.load_model("")
+
+class TestHierarchicalRFCanPredict(unittest.TestCase):
+    def setUp(self) -> None:
+        self.test_features = pd.read_csv('data_examples/100_objects_features.csv')
+        self.test_detections = pd.DataFrame(
+            {
+                "candid": str(random.randint(1000000, 9000000)),
+                "oid": "ZTFoid",
+                "aid": "aid",
+                "tid": "ZTF",
+                "mjd": random.uniform(59000, 60000),
+                "sid": "ZTF",
+                "fid": "g",
+                "pid": random.randint(1000000, 9000000),
+                "ra": random.uniform(-90, 90),
+                "e_ra": random.uniform(-90, 90),
+                "dec": random.uniform(-90, 90),
+                "e_dec": random.uniform(-90, 90),
+                "mag": random.uniform(15, 20),
+                "e_mag": random.uniform(0, 1),
+                "mag_corr": random.uniform(15, 20),
+                "e_mag_corr": random.uniform(0, 1),
+                "e_mag_corr_ext": random.uniform(0, 1),
+                "isdiffpos": random.choice([-1, 1]),
+                "corrected": random.choice([True, False]),
+                "dubious": random.choice([True, False]),
+                "has_stamp": random.choice([True, False]),
+                "stellar": random.choice([True, False]),
+                "new": random.choice([True, False]),
+                "forced": random.choice([True, False]),
+                "extra_fields": {},
+            }
+        )
+
+        self.model = HierarchicalRandomForest()
+        self.model.download_model()
+        self.model.load_model(self.model.MODEL_PICKLE_PATH)
+
+    def test_can_predict_true(self):
+        test_detections = pd.DataFrame(
+            {
+                "candid": str(random.randint(1000000, 9000000)),
+                "oid": "ZTFoid",
+                "aid": "aid",
+                "tid": "ZTF",
+                "mjd": random.uniform(59000, 60000),
+                "sid": "ZTF",
+                "fid": "g",
+                "pid": random.randint(1000000, 9000000),
+                "ra": random.uniform(-90, 90),
+                "e_ra": random.uniform(-90, 90),
+                "dec": random.uniform(-90, 90),
+                "e_dec": random.uniform(-90, 90),
+                "mag": random.uniform(15, 20),
+                "e_mag": random.uniform(0, 1),
+                "mag_corr": random.uniform(15, 20),
+                "e_mag_corr": random.uniform(0, 1),
+                "e_mag_corr_ext": random.uniform(0, 1),
+                "isdiffpos": random.choice([-1, 1]),
+                "corrected": random.choice([True, False]),
+                "dubious": random.choice([True, False]),
+                "has_stamp": random.choice([True, False]),
+                "stellar": random.choice([True, False]),
+                "new": random.choice([True, False]),
+                "forced": random.choice([True, False]),
+                "extra_fields": {},
+            }
+        )
+        data_for_test = mock.MagicMock()
+        data_for_test.features.return_value = self.test_features
+        data_for_test.detections.return_value = test_detections
+            
+        can_predict = self.model.can_predict(data_for_test)
+
+        self.assertTrue(can_predict)
+
+    def test_can_precit_false(self):
+        # No features With alerts
+        test_detections = pd.DataFrame(
+            {
+                "candid": str(random.randint(1000000, 9000000)),
+                "oid": "ZTFoid",
+                "aid": "aid",
+                "tid": "ZTF",
+                "mjd": random.uniform(59000, 60000),
+                "sid": "ZTF",
+                "fid": "g",
+                "pid": random.randint(1000000, 9000000),
+                "ra": random.uniform(-90, 90),
+                "e_ra": random.uniform(-90, 90),
+                "dec": random.uniform(-90, 90),
+                "e_dec": random.uniform(-90, 90),
+                "mag": random.uniform(15, 20),
+                "e_mag": random.uniform(0, 1),
+                "mag_corr": random.uniform(15, 20),
+                "e_mag_corr": random.uniform(0, 1),
+                "e_mag_corr_ext": random.uniform(0, 1),
+                "isdiffpos": random.choice([-1, 1]),
+                "corrected": random.choice([True, False]),
+                "dubious": random.choice([True, False]),
+                "has_stamp": random.choice([True, False]),
+                "stellar": random.choice([True, False]),
+                "new": random.choice([True, False]),
+                "forced": random.choice([True, False]),
+                "extra_fields": {},
+            }
+        )
+        data_for_test = mock.MagicMock()
+        data_for_test.features.return_value = pd.DataFrame()
+        data_for_test.detections.return_value = test_detections
+            
+        can_predict = self.model.can_predict(data_for_test)
+
+        self.assertFalse(can_predict)
+
+        # With features No Alerts
+        data_for_test = mock.MagicMock()
+        data_for_test.features.return_value = pd.DataFrame()
+        data_for_test.detections.return_value = pd.DataFrame()
+            
+        can_predict = self.model.can_predict(data_for_test)
+
+        self.assertFalse(can_predict)
