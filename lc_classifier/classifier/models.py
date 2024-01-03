@@ -409,6 +409,22 @@ class HierarchicalRandomForest(BaseClassifier):
             "probabilities": prob_all,
             "class": prob_all.idxmax(axis=1),
         }
+    
+    def can_predict(self, data):
+        """
+        data is an inputDTO.
+        We will use data.feature to check for missing features
+        We will use data.detections to check if there are any ztf detections
+        """
+        missing = self.check_missing_features(data.features.columns, self.feature_list)
+        features_ok = len(missing) == 0
+        
+        try:
+            detections_ok = (data.detections["tid"] == "ztf").any()
+        except Exception:
+            detections_ok = False
+
+        return features_ok and detections_ok
 
 
 class ElasticcRandomForest(HierarchicalRandomForest):
