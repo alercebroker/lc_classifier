@@ -35,8 +35,8 @@ class BaseClassifier(ABC):
         return predicted_class_df
 
     # compatibility method for new lc_classification step
-    def can_predict(self, data):
-        return True
+    def can_predict(self, data) -> (bool, str):
+        return True, ""
 
     @abstractmethod
     def predict_proba(self, samples: pd.DataFrame) -> pd.DataFrame:
@@ -416,15 +416,24 @@ class HierarchicalRandomForest(BaseClassifier):
         We will use data.feature to check for missing features
         We will use data.detections to check if there are any ztf detections
         """
+        result_message = ""
+
         missing = self.check_missing_features(data.features.columns, self.feature_list)
-        features_ok = len(missing) == 0
+        if len(missing) > 0:
+            features_ok = False
+            result_message = f"Missing Features: \n{missing}\n"
+        else:
+            features_ok = True
         
         try:
             detections_ok = (data.detections["tid"] == "ztf").any()
-        except Exception:
+            if not detections_ok:
+                result_message += "No ztf detections found\n"
+        except Exception as e:
             detections_ok = False
+            result_message += f"Error loking for ztf detections\n{e}\n"
 
-        return features_ok and detections_ok
+        return features_ok and detections_ok, result_message
 
 
 class ElasticcRandomForest(HierarchicalRandomForest):
