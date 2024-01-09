@@ -131,7 +131,7 @@ class TestHierarchicalRFCanPredict(unittest.TestCase):
         )
         data_for_test = MockDTO(test_detections, self.test_features)
             
-        can_predict = self.model.can_predict(data_for_test)
+        can_predict, _ = self.model.can_predict(data_for_test)
 
         self.assertTrue(can_predict)
 
@@ -194,7 +194,7 @@ class TestHierarchicalRFCanPredict(unittest.TestCase):
         )
         data_for_test = MockDTO(test_detections, pd.DataFrame())
             
-        can_predict = self.model.can_predict(data_for_test)
+        can_predict, message = self.model.can_predict(data_for_test)
 
         self.assertFalse(can_predict)
 
@@ -256,20 +256,20 @@ class TestHierarchicalRFCanPredict(unittest.TestCase):
         )
         data_for_test = MockDTO(test_detections, pd.DataFrame())
             
-        can_predict = self.model.can_predict(data_for_test)
+        can_predict, message = self.model.can_predict(data_for_test)
 
         self.assertFalse(can_predict)
         
         # With features and Atlas detections
         data_for_test = MockDTO(test_detections, self.test_features)
             
-        can_predict = self.model.can_predict(data_for_test)
+        can_predict, message = self.model.can_predict(data_for_test)
 
         self.assertFalse(can_predict)
 
         # With features No Alerts
         data_for_test = MockDTO(pd.DataFrame(), self.test_features)
             
-        can_predict = self.model.can_predict(data_for_test)
+        can_predict, message = self.model.can_predict(data_for_test)
 
         self.assertFalse(can_predict)
