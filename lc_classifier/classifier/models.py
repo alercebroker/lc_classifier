@@ -416,24 +416,18 @@ class HierarchicalRandomForest(BaseClassifier):
         We will use data.feature to check for missing features
         We will use data.detections to check if there are any ztf detections
         """
-        result_message = ""
-
         missing = self.check_missing_features(data.features.columns, self.feature_list)
         if len(missing) > 0:
-            features_ok = False
-            result_message = f"Missing Features: \n{missing}\n"
-        else:
-            features_ok = True
-        
+            return False, f"Missing Features: \n{missing}"  
+              
         try:
             detections_ok = (data.detections["tid"] == "ztf").any()
             if not detections_ok:
-                result_message += "No ztf detections found\n"
+                return False, "No ztf detections found"
         except Exception as e:
-            detections_ok = False
-            result_message += f"Error loking for ztf detections\n{e}\n"
+            return False, f"Error loking for ztf detections\n{e}"
 
-        return features_ok and detections_ok, result_message
+        return True, ""
 
 
 class ElasticcRandomForest(HierarchicalRandomForest):
