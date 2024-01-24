@@ -27,6 +27,7 @@ from .custom.ztf_feature_extractor import ZTFFeatureExtractor, ZTFForcedPhotomet
 from .custom.elasticc_feature_extractor import ElasticcFeatureExtractor
 
 from .preprocess.preprocess_ztf import ZTFLightcurvePreprocessor, ZTFForcedPhotometryLightcurvePreprocessor
+from .preprocess.preprocess_elasticc import ElasticcPreprocessor
 
 from .core.base import FeatureExtractorComposer
 
